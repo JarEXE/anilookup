@@ -1,0 +1,666 @@
+.dark {
+  background-color: #282828;
+  color: #ffffff; /* Your text color for better contrast */
+  margin: 0;
+  padding: 0;
+  min-height: 100vh; /* Cover the entire viewport height */
+  overflow: hidden; /* Hide horizontal overflow if needed */
+}
+
+.thumbnail {
+  max-width: 300px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+.loader {
+  position: fixed;
+  margin-top: 50px;
+  width: 100px;
+  height: 100px;
+}
+
+.loader:before,
+.loader:after {
+  content: "";
+  border-radius: 50%;
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.3) inset;
+}
+.loader:after {
+  box-shadow: 0 2px 0 #0dcaf0 inset;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.zoomed {
+  transform: scale(1); /* Initial scale */
+  transition: transform 0.2s ease; /* Transition effect with a duration of 0.3 seconds */
+}
+
+.zoomed:hover {
+  transform: scale(1.05); /* Scale up to 1.1 times when hovered */
+  margin-left: 10px;
+}
+
+.zoomed-landing-page {
+  transform: scale(1); /* Initial scale */
+  transition: transform 0.2s ease; /* Transition effect with a duration of 0.3 seconds */
+}
+
+.zoomed-landing-page:hover {
+  transform: scale(1.05); /* Scale up to 1.1 times when hovered */
+}
+
+.fadeContainer {
+  position: relative;
+  overflow: hidden;
+}
+
+.fadeContainer:before,
+.fadeContainer:after {
+  content: "\2190";
+  font-size: 1.2em;
+  position: absolute;
+  z-index: 1;
+  top: 0; /* Keep 'top' to position the fades at the top */
+  pointer-events: none;
+  width: 2em; /* Change the width to control the width of the fade effect */
+  height: 100%; /* Set height to 100% to cover the entire container */
+}
+
+.fadeContainer:before {
+  left: 0; /* Position the left fade effect on the left side */
+  background-image: linear-gradient(
+    to left,
+    /* Create a horizontal gradient from right to left */ rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 1) 90%
+  );
+}
+
+.fadeContainer:after {
+  content: "\2192";
+  right: 0; /* Position the right fade effect on the right side */
+  background-image: linear-gradient(
+    to right,
+    /* Create a horizontal gradient from left to right */ rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 1) 90%
+  );
+}
+
+.fadeContainerDark {
+  position: relative;
+  overflow: hidden;
+}
+
+.fadeContainerDark:before,
+.fadeContainerDark:after {
+  content: "\2190";
+  font-size: 1.2em;
+  position: absolute;
+  z-index: 1;
+  top: 0; /* Keep 'top' to position the fades at the top */
+  pointer-events: none;
+  width: 2em; /* Change the width to control the width of the fade effect */
+  height: 100%; /* Set height to 100% to cover the entire container */
+}
+
+.fadeContainerDark:before {
+  left: 0; /* Position the left fade effect on the left side */
+  background-image: linear-gradient(
+    to left,
+    /* Create a horizontal gradient from right to left */ rgba(255, 255, 255, 0),
+    #282828 90%
+  );
+}
+
+.fadeContainerDark:after {
+  content: "\2192";
+  right: 0; /* Position the right fade effect on the right side */
+  background-image: linear-gradient(
+    to right,
+    /* Create a horizontal gradient from left to right */ rgba(255, 255, 255, 0),
+    #282828 90%
+  );
+}
+
+.fadeContainerInputToggles {
+  position: relative;
+  overflow: hidden;
+}
+
+.fadeContainerInputToggles:before,
+.fadeContainerInputToggles:after {
+  content: "";
+  font-size: 1.2em;
+  position: absolute;
+  z-index: 1;
+  top: 0; /* Keep 'top' to position the fades at the top */
+  pointer-events: none;
+  width: 2em; /* Change the width to control the width of the fade effect */
+  height: 100%; /* Set height to 100% to cover the entire container */
+  opacity: 1; /* Start with the fade effect visible */
+  transition: opacity 0.3s; /* Add a smooth transition for visibility changes */
+}
+
+.fadeContainerInputToggles:before {
+  left: 0; /* Position the left fade effect on the left side */
+  background-image: linear-gradient(
+    to left,
+    /* Create a horizontal gradient from right to left */ rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 1) 90%
+  );
+}
+
+.fadeContainerInputToggles:after {
+  content: "";
+  right: 0; /* Position the right fade effect on the right side */
+  background-image: linear-gradient(
+    to right,
+    /* Create a horizontal gradient from left to right */ rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 1) 90%
+  );
+}
+
+.fadeContainerInputTogglesDark {
+  position: relative;
+  overflow: hidden;
+}
+
+.fadeContainerInputTogglesDark:before,
+.fadeContainerInputTogglesDark:after {
+  content: "";
+  font-size: 1.2em;
+  position: absolute;
+  z-index: 1;
+  top: 0; /* Keep 'top' to position the fades at the top */
+  pointer-events: none;
+  width: 2em; /* Change the width to control the width of the fade effect */
+  height: 100%; /* Set height to 100% to cover the entire container */
+}
+
+.fadeContainerInputTogglesDark:before {
+  left: 0; /* Position the left fade effect on the left side */
+  background-image: linear-gradient(
+    to left,
+    /* Create a horizontal gradient from right to left */ rgba(255, 255, 255, 0),
+    #282828 90%
+  );
+}
+
+.fadeContainerInputTogglesDark:after {
+  content: "";
+  right: 0; /* Position the right fade effect on the right side */
+  background-image: linear-gradient(
+    to right,
+    /* Create a horizontal gradient from left to right */ rgba(255, 255, 255, 0),
+    #282828 90%
+  );
+}
+
+.inputToggles {
+  display: flex;
+  overflow-x: auto;
+  align-items: center;
+  max-width: 900px;
+  position: relative;
+  justify-content: center;
+}
+
+.inputTogglesManga {
+  display: flex;
+  overflow-x: auto;
+  align-items: center;
+  max-width: 900px;
+  position: relative;
+}
+
+.inputToggleContainer {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  margin-bottom: 20px;
+  white-space: nowrap;
+}
+
+.btn-group {
+  display: inline-flex;
+}
+
+@media (min-width: 768px) {
+  .inputToggleContainer {
+    justify-content: center;
+  }
+}
+
+.recommendations {
+  display: flex;
+  overflow-x: auto;
+  align-items: center;
+  gap: 10px;
+  max-width: 900px;
+  height: 300px;
+  position: relative;
+}
+
+.recommendations.active {
+  background: rgba(255, 255, 255, 0.3);
+  cursor: grabbing;
+  cursor: -webkit-grabbing;
+  transform: scale(1);
+}
+
+.recommendations > div {
+  flex-basis: 170px; /* width: 350px; */
+  position: relative;
+  cursor: pointer;
+}
+
+.recommendations > div > img {
+  object-fit: cover;
+  max-width: 100%;
+  min-width: 170px;
+  height: 250px;
+  vertical-align: middle;
+  border-radius: 10px;
+}
+
+.recommendations div:hover .overlay {
+  transform: scale(1);
+}
+
+.recommendations::-webkit-scrollbar {
+  display: none;
+}
+
+.image-gallery {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding-left: 0;
+}
+
+.image-gallery > li {
+  flex-basis: 170px; /* width: 350px; */
+  position: relative;
+  cursor: pointer;
+}
+
+.image-gallery li img {
+  object-fit: cover;
+  max-width: 100%;
+  min-width: 170px;
+  height: 250px;
+  vertical-align: middle;
+  border-radius: 10px;
+}
+
+/* hover */
+.image-gallery li:hover .overlay {
+  transform: scale(1);
+}
+
+.image-gallery::after {
+  content: "";
+  flex-basis: 170px;
+}
+
+.overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(28, 28, 28, 0.502);
+  top: 0;
+  left: 0;
+  transform: scale(0);
+  transition: all 0.2s 0.1s ease-in-out;
+  color: #fff;
+  border-radius: 5px;
+  /* center overlay text */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+/* Default styles for light mode */
+.list-group-item {
+  background-color: #fff;
+  color: #000;
+}
+
+/* Styles for dark mode */
+.dark-mode .list-group-item {
+  background-color: #282828; /* Dark background color */
+  color: #fff; /* Light text color for contrast */
+  border: 1px solid #444;
+}
+
+.toggle-container {
+  width: auto;
+  display: inline-block;
+  margin-right: 5px; /* Adjust the margin as needed to control spacing */
+}
+
+.details-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: flex-start; /* Adjust alignment as needed */
+}
+
+.text-container {
+  flex-grow: 1;
+  max-width: 650px;
+}
+
+.gauge-container {
+  display: flex;
+  flex-direction: column; /* Create a column layout */
+  align-items: center; /* Horizontally center items */
+  justify-content: center; /* Vertically center items */
+  max-width: 125px;
+}
+
+.gauge-wrapper {
+  max-width: 125px;
+}
+
+.ranked-wrapper {
+  max-width: auto;
+}
+
+.summary-container {
+  height: 300px;
+  overflow: hidden;
+  position: relative;
+}
+
+.synopsis {
+  max-height: 100%;
+  overflow-y: auto; /* Hide overflowed content */
+  padding: 0 10px;
+}
+
+.synopsis p {
+  margin: 0; /* Remove default margin to avoid extra spacing */
+  padding: 0; /* Remove default padding to avoid extra spacing */
+}
+
+.synopsis::after {
+  content: ""; /* Create a pseudo-element */
+  position: absolute; /* Position it absolutely */
+  bottom: 0; /* Position it at the bottom */
+  left: 0; /* Position it at the left */
+  width: 100%; /* Take up the full width */
+  height: 20px; /* Set the height for ellipsis */
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    white
+  ); /* Create a gradient background */
+}
+
+.synopsisDark {
+  max-height: 100%;
+  overflow-y: auto; /* Hide overflowed content */
+  padding: 0 10px;
+}
+
+.synopsisDark p {
+  margin: 0; /* Remove default margin to avoid extra spacing */
+  padding: 0; /* Remove default padding to avoid extra spacing */
+}
+
+.synopsisDark::after {
+  content: ""; /* Create a pseudo-element */
+  position: absolute; /* Position it absolutely */
+  bottom: 0; /* Position it at the bottom */
+  left: 0; /* Position it at the left */
+  width: 100%; /* Take up the full width */
+  height: 20px; /* Set the height for ellipsis */
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(28, 28, 28, 1.5)
+  ); /* Create a gradient background */
+}
+
+.imgContainer {
+  height: 400px;
+}
+
+.scroll-button-dark {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #0dcaf0;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.scroll-button-dark:hover {
+  background-color: #31d2f2;
+}
+
+.scroll-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #212529;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.scroll-button:hover {
+  background-color: #424649;
+}
+
+.react-switch {
+  vertical-align: middle;
+  margin-left: 5px;
+  margin-bottom: 3px;
+}
+
+#customNav {
+  max-width: auto;
+  margin: "0 auto 20px auto";
+  padding: 20px;
+}
+
+body html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.btn-primary {
+  margin-bottom: 15px;
+}
+
+.btn-default {
+  background-color: slategrey;
+  margin-bottom: 15px;
+}
+
+.boxContainer {
+  display: table;
+  height: 650px;
+}
+
+@media (max-width: 600px) {
+  .boxContainer {
+    flex-basis: 400px;
+  }
+}
+
+@media (max-width: 400px) {
+  .boxContainer {
+    flex-basis: 400px;
+  }
+}
+
+/* for any screen less than 420px */
+@media (max-width: 420px) {
+  body {
+    font-size: smaller;
+  }
+  h3 {
+    font-size: medium;
+  }
+  h5 {
+    font-size: medium;
+  }
+  .thumbnail {
+    max-width: 300px;
+  }
+  .text-container {
+    font-size: smaller;
+    max-width: 175px;
+  }
+  .text-container > h2 {
+    font-size: medium;
+  }
+  .ranked-wrapper {
+    font-size: x-small;
+  }
+  .gauge-container {
+    max-width: 75px;
+  }
+  #returnBtn {
+    font-size: smaller;
+  }
+  #customNav {
+    font-size: smaller;
+  }
+  .fadeContainer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .fadeContainer:before,
+  .fadeContainer:after {
+    content: "\2190";
+    font-size: 1.2em;
+    position: absolute;
+    z-index: 1;
+    top: 0; /* Keep 'top' to position the fades at the top */
+    pointer-events: none;
+    width: 2em; /* Change the width to control the width of the fade effect */
+    height: 100%; /* Set height to 100% to cover the entire container */
+    opacity: 0;
+  }
+
+  .fadeContainer:before {
+    left: 0; /* Position the left fade effect on the left side */
+    background-image: linear-gradient(
+      to left,
+      /* Create a horizontal gradient from right to left */
+        rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 1) 90%
+    );
+  }
+
+  .fadeContainer:after {
+    content: "\2192";
+    right: 0; /* Position the right fade effect on the right side */
+    background-image: linear-gradient(
+      to right,
+      /* Create a horizontal gradient from left to right */
+        rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 1) 90%
+    );
+  }
+
+  .fadeContainerDark {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .fadeContainerDark:before,
+  .fadeContainerDark:after {
+    content: "\2190";
+    font-size: 1.2em;
+    position: absolute;
+    z-index: 1;
+    top: 0; /* Keep 'top' to position the fades at the top */
+    pointer-events: none;
+    width: 2em; /* Change the width to control the width of the fade effect */
+    height: 100%; /* Set height to 100% to cover the entire container */
+    opacity: 0;
+  }
+
+  .fadeContainerDark:before {
+    left: 0; /* Position the left fade effect on the left side */
+    background-image: linear-gradient(
+      to left,
+      /* Create a horizontal gradient from right to left */
+        rgba(255, 255, 255, 0),
+      #282828 90%
+    );
+  }
+
+  .fadeContainerDark:after {
+    content: "\2192";
+    right: 0; /* Position the right fade effect on the right side */
+    background-image: linear-gradient(
+      to right,
+      /* Create a horizontal gradient from left to right */
+        rgba(255, 255, 255, 0),
+      #282828 90%
+    );
+  }
+
+  .separator {
+    margin-bottom: -10px;
+    margin-top: -10px;
+  }
+
+  .lead {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .btn {
+    font-size: smaller;
+  }
+
+  .form-control {
+    font-size: smaller;
+  }
+}
+
+@media (max-width: 360px) {
+  .inputToggles {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 320px) {
+  .thumbnail {
+    max-width: 250px;
+  }
+}
