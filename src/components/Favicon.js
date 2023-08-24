@@ -5,16 +5,18 @@ function Favicon({ url }) {
   useEffect(() => {
     async function fetchFavicon() {
       try {
-        let domain;
-        const parsedURL = new URL(url);
-        domain = parsedURL.hostname;
+        const response = await fetch("/.netlify/functions/favicon-proxy", {
+          method: "POST",
+          body: JSON.stringify({ url }),
+        });
 
-        const response = await fetch(
-          `https://upper-bronze-crawdad.faviconkit.com/${domain}/25`
-        );
-        const blob = await response.blob();
-        const faviconUrl = URL.createObjectURL(blob);
-        setFavicon(faviconUrl);
+        if (!response.ok) {
+          throw new Error("Failed to fetch favicon");
+        }
+
+        const data = await response.json();
+
+        setFavicon(data.faviconUrl);
       } catch (error) {
         console.error("Invalid URL:", error);
         return null;

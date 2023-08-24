@@ -1,7 +1,7 @@
 import React from "react";
 
 function YouTubeEmbed({ embedUrl }) {
-  const unavailableString = "Trailer unavailable 😵‍💫";
+  const unavailableString = "Trailer unavailable.";
   return (
     <div
       className="video-container"
