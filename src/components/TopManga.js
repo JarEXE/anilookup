@@ -1,6 +1,7 @@
 import React from "react";
 import LandingPageManga from "./LandingPageManga.js";
 import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function TopPublishing({ isDarkMode, allowNSFW }) {
   let sfwToggle = sessionStorage.getItem("sfw");
@@ -10,6 +11,7 @@ export default function TopPublishing({ isDarkMode, allowNSFW }) {
   const [loading, setLoading] = React.useState(true);
   const [pagination, setPagination] = React.useState({});
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [inputValue, setInputValue] = React.useState(currentPage);
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -48,10 +50,21 @@ export default function TopPublishing({ isDarkMode, allowNSFW }) {
       });
   }, [isDarkMode, allowNSFW, sfwToggle, currentPage]);
 
+  const notifyInvalidPage = () =>
+    toast(`Invalid page! Max is ${pagination.last_visible_page}`, {
+      icon: "⚠️",
+      style: {
+        borderRadius: "10px",
+        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+        color: `${isDarkMode ? "#333" : "#fff"}`,
+      },
+    });
+
   const nextPage = () => {
     if (pagination.has_next_page) {
       setLoading(true);
       const nextPage = currentPage + 1;
+      setInputValue(nextPage);
       setCurrentPage(nextPage);
     }
   };
@@ -60,7 +73,45 @@ export default function TopPublishing({ isDarkMode, allowNSFW }) {
     if (currentPage > 1) {
       setLoading(true);
       const prevPage = currentPage - 1;
+      setInputValue(prevPage);
       setCurrentPage(prevPage);
+    }
+  };
+
+  const handleInputChange = (event) => {
+    const value = parseInt(event.target.value, 10); // Parse the input value as an integer
+    setInputValue(value); // Update the input value state
+  };
+
+  const handleInputBlur = () => {
+    // When the input loses focus, update the currentPage state
+
+    if (inputValue > pagination.last_visible_page) {
+      notifyInvalidPage();
+      return;
+    } else {
+      setCurrentPage(inputValue);
+    }
+  };
+
+  const handleInputKeyPress = (event) => {
+    // Check if Enter key was pressed
+    if (event.key === "Enter") {
+      if (inputValue > pagination.last_visible_page) {
+        notifyInvalidPage();
+        return;
+      } else {
+        setCurrentPage(inputValue); // Update currentPage when Enter is pressed
+      }
+    }
+  };
+
+  const handleArrowClick = () => {
+    if (inputValue > pagination.last_visible_page) {
+      notifyInvalidPage();
+      return;
+    } else {
+      setCurrentPage(inputValue);
     }
   };
 
@@ -78,25 +129,57 @@ export default function TopPublishing({ isDarkMode, allowNSFW }) {
           </div>
           <div className="pagination">
             <button
-              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              className={`btn btn-${
+                isDarkMode ? "info" : "dark"
+              } pagination-prev`}
               onClick={prevPage}
               disabled={currentPage === 1}
-              style={{ borderRadius: "25px", marginRight: "10px" }}
             >
               Previous
             </button>
-            <p style={{ marginBottom: "0" }}>
-              Page {currentPage} of {pagination.last_visible_page}
-            </p>
+
+            <div className="row align-items-center pagination-container-full">
+              &nbsp;&nbsp;&nbsp;&nbsp;Page&nbsp;
+              <div className="col pagination-container">
+                <input
+                  className="pagination-input"
+                  value={inputValue}
+                  type="number"
+                  min={1}
+                  max={pagination.last_visible_page}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  onKeyDown={handleInputKeyPress}
+                />
+              </div>
+              <div
+                className="col-auto"
+                style={{ paddingLeft: "0", paddingRight: "0" }}
+              >
+                <button
+                  className={`btn btn-${
+                    isDarkMode ? "info" : "dark"
+                  } pagination-button`}
+                  onClick={handleArrowClick}
+                  aria-label="Go to Page"
+                >
+                  <span>&#8594;</span>
+                </button>
+              </div>
+              &nbsp;of {pagination.last_visible_page}&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
+
             <button
-              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              className={`btn btn-${
+                isDarkMode ? "info" : "dark"
+              } pagination-next`}
               onClick={nextPage}
               disabled={!pagination.has_next_page}
-              style={{ borderRadius: "25px", marginLeft: "10px" }}
             >
               Next
             </button>
           </div>
+          <Toaster position="top-left" />
         </div>
       )}
     </>
@@ -111,6 +194,7 @@ export function TopManhwa({ isDarkMode, allowNSFW }) {
   const [loading, setLoading] = React.useState(true);
   const [pagination, setPagination] = React.useState({});
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [inputValue, setInputValue] = React.useState(currentPage);
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -149,10 +233,21 @@ export function TopManhwa({ isDarkMode, allowNSFW }) {
       });
   }, [isDarkMode, allowNSFW, sfwToggle, currentPage]);
 
+  const notifyInvalidPage = () =>
+    toast(`Invalid page! Max is ${pagination.last_visible_page}`, {
+      icon: "⚠️",
+      style: {
+        borderRadius: "10px",
+        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+        color: `${isDarkMode ? "#333" : "#fff"}`,
+      },
+    });
+
   const nextPage = () => {
     if (pagination.has_next_page) {
       setLoading(true);
       const nextPage = currentPage + 1;
+      setInputValue(nextPage);
       setCurrentPage(nextPage);
     }
   };
@@ -161,7 +256,45 @@ export function TopManhwa({ isDarkMode, allowNSFW }) {
     if (currentPage > 1) {
       setLoading(true);
       const prevPage = currentPage - 1;
+      setInputValue(prevPage);
       setCurrentPage(prevPage);
+    }
+  };
+
+  const handleInputChange = (event) => {
+    const value = parseInt(event.target.value, 10); // Parse the input value as an integer
+    setInputValue(value); // Update the input value state
+  };
+
+  const handleInputBlur = () => {
+    // When the input loses focus, update the currentPage state
+
+    if (inputValue > pagination.last_visible_page) {
+      notifyInvalidPage();
+      return;
+    } else {
+      setCurrentPage(inputValue);
+    }
+  };
+
+  const handleInputKeyPress = (event) => {
+    // Check if Enter key was pressed
+    if (event.key === "Enter") {
+      if (inputValue > pagination.last_visible_page) {
+        notifyInvalidPage();
+        return;
+      } else {
+        setCurrentPage(inputValue); // Update currentPage when Enter is pressed
+      }
+    }
+  };
+
+  const handleArrowClick = () => {
+    if (inputValue > pagination.last_visible_page) {
+      notifyInvalidPage();
+      return;
+    } else {
+      setCurrentPage(inputValue);
     }
   };
 
@@ -179,25 +312,57 @@ export function TopManhwa({ isDarkMode, allowNSFW }) {
           </div>
           <div className="pagination">
             <button
-              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              className={`btn btn-${
+                isDarkMode ? "info" : "dark"
+              } pagination-prev`}
               onClick={prevPage}
               disabled={currentPage === 1}
-              style={{ borderRadius: "25px", marginRight: "10px" }}
             >
               Previous
             </button>
-            <p style={{ marginBottom: "0" }}>
-              Page {currentPage} of {pagination.last_visible_page}
-            </p>
+
+            <div className="row align-items-center pagination-container-full">
+              &nbsp;&nbsp;&nbsp;&nbsp;Page&nbsp;
+              <div className="col pagination-container">
+                <input
+                  className="pagination-input"
+                  value={inputValue}
+                  type="number"
+                  min={1}
+                  max={pagination.last_visible_page}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  onKeyDown={handleInputKeyPress}
+                />
+              </div>
+              <div
+                className="col-auto"
+                style={{ paddingLeft: "0", paddingRight: "0" }}
+              >
+                <button
+                  className={`btn btn-${
+                    isDarkMode ? "info" : "dark"
+                  } pagination-button`}
+                  onClick={handleArrowClick}
+                  aria-label="Go to Page"
+                >
+                  <span>&#8594;</span>
+                </button>
+              </div>
+              &nbsp;of {pagination.last_visible_page}&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
+
             <button
-              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              className={`btn btn-${
+                isDarkMode ? "info" : "dark"
+              } pagination-next`}
               onClick={nextPage}
               disabled={!pagination.has_next_page}
-              style={{ borderRadius: "25px", marginLeft: "10px" }}
             >
               Next
             </button>
           </div>
+          <Toaster position="top-left" />
         </div>
       )}
     </>
@@ -212,6 +377,7 @@ export function TopManhua({ isDarkMode, allowNSFW }) {
   const [loading, setLoading] = React.useState(true);
   const [pagination, setPagination] = React.useState({});
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [inputValue, setInputValue] = React.useState(currentPage);
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -250,10 +416,21 @@ export function TopManhua({ isDarkMode, allowNSFW }) {
       });
   }, [isDarkMode, allowNSFW, sfwToggle, currentPage]);
 
+  const notifyInvalidPage = () =>
+    toast(`Invalid page! Max is ${pagination.last_visible_page}`, {
+      icon: "⚠️",
+      style: {
+        borderRadius: "10px",
+        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+        color: `${isDarkMode ? "#333" : "#fff"}`,
+      },
+    });
+
   const nextPage = () => {
     if (pagination.has_next_page) {
       setLoading(true);
       const nextPage = currentPage + 1;
+      setInputValue(nextPage);
       setCurrentPage(nextPage);
     }
   };
@@ -262,7 +439,45 @@ export function TopManhua({ isDarkMode, allowNSFW }) {
     if (currentPage > 1) {
       setLoading(true);
       const prevPage = currentPage - 1;
+      setInputValue(prevPage);
       setCurrentPage(prevPage);
+    }
+  };
+
+  const handleInputChange = (event) => {
+    const value = parseInt(event.target.value, 10); // Parse the input value as an integer
+    setInputValue(value); // Update the input value state
+  };
+
+  const handleInputBlur = () => {
+    // When the input loses focus, update the currentPage state
+
+    if (inputValue > pagination.last_visible_page) {
+      notifyInvalidPage();
+      return;
+    } else {
+      setCurrentPage(inputValue);
+    }
+  };
+
+  const handleInputKeyPress = (event) => {
+    // Check if Enter key was pressed
+    if (event.key === "Enter") {
+      if (inputValue > pagination.last_visible_page) {
+        notifyInvalidPage();
+        return;
+      } else {
+        setCurrentPage(inputValue); // Update currentPage when Enter is pressed
+      }
+    }
+  };
+
+  const handleArrowClick = () => {
+    if (inputValue > pagination.last_visible_page) {
+      notifyInvalidPage();
+      return;
+    } else {
+      setCurrentPage(inputValue);
     }
   };
 
@@ -280,25 +495,57 @@ export function TopManhua({ isDarkMode, allowNSFW }) {
           </div>
           <div className="pagination">
             <button
-              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              className={`btn btn-${
+                isDarkMode ? "info" : "dark"
+              } pagination-prev`}
               onClick={prevPage}
               disabled={currentPage === 1}
-              style={{ borderRadius: "25px", marginRight: "10px" }}
             >
               Previous
             </button>
-            <p style={{ marginBottom: "0" }}>
-              Page {currentPage} of {pagination.last_visible_page}
-            </p>
+
+            <div className="row align-items-center pagination-container-full">
+              &nbsp;&nbsp;&nbsp;&nbsp;Page&nbsp;
+              <div className="col pagination-container">
+                <input
+                  className="pagination-input"
+                  value={inputValue}
+                  type="number"
+                  min={1}
+                  max={pagination.last_visible_page}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  onKeyDown={handleInputKeyPress}
+                />
+              </div>
+              <div
+                className="col-auto"
+                style={{ paddingLeft: "0", paddingRight: "0" }}
+              >
+                <button
+                  className={`btn btn-${
+                    isDarkMode ? "info" : "dark"
+                  } pagination-button`}
+                  onClick={handleArrowClick}
+                  aria-label="Go to Page"
+                >
+                  <span>&#8594;</span>
+                </button>
+              </div>
+              &nbsp;of {pagination.last_visible_page}&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
+
             <button
-              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              className={`btn btn-${
+                isDarkMode ? "info" : "dark"
+              } pagination-next`}
               onClick={nextPage}
               disabled={!pagination.has_next_page}
-              style={{ borderRadius: "25px", marginLeft: "10px" }}
             >
               Next
             </button>
           </div>
+          <Toaster position="top-left" />
         </div>
       )}
     </>
@@ -313,6 +560,7 @@ export function TopManga({ isDarkMode, allowNSFW }) {
   const [loading, setLoading] = React.useState(true);
   const [pagination, setPagination] = React.useState({});
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [inputValue, setInputValue] = React.useState(currentPage);
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -351,10 +599,21 @@ export function TopManga({ isDarkMode, allowNSFW }) {
       });
   }, [isDarkMode, allowNSFW, sfwToggle, currentPage]);
 
+  const notifyInvalidPage = () =>
+    toast(`Invalid page! Max is ${pagination.last_visible_page}`, {
+      icon: "⚠️",
+      style: {
+        borderRadius: "10px",
+        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+        color: `${isDarkMode ? "#333" : "#fff"}`,
+      },
+    });
+
   const nextPage = () => {
     if (pagination.has_next_page) {
       setLoading(true);
       const nextPage = currentPage + 1;
+      setInputValue(nextPage);
       setCurrentPage(nextPage);
     }
   };
@@ -363,7 +622,45 @@ export function TopManga({ isDarkMode, allowNSFW }) {
     if (currentPage > 1) {
       setLoading(true);
       const prevPage = currentPage - 1;
+      setInputValue(prevPage);
       setCurrentPage(prevPage);
+    }
+  };
+
+  const handleInputChange = (event) => {
+    const value = parseInt(event.target.value, 10); // Parse the input value as an integer
+    setInputValue(value); // Update the input value state
+  };
+
+  const handleInputBlur = () => {
+    // When the input loses focus, update the currentPage state
+
+    if (inputValue > pagination.last_visible_page) {
+      notifyInvalidPage();
+      return;
+    } else {
+      setCurrentPage(inputValue);
+    }
+  };
+
+  const handleInputKeyPress = (event) => {
+    // Check if Enter key was pressed
+    if (event.key === "Enter") {
+      if (inputValue > pagination.last_visible_page) {
+        notifyInvalidPage();
+        return;
+      } else {
+        setCurrentPage(inputValue); // Update currentPage when Enter is pressed
+      }
+    }
+  };
+
+  const handleArrowClick = () => {
+    if (inputValue > pagination.last_visible_page) {
+      notifyInvalidPage();
+      return;
+    } else {
+      setCurrentPage(inputValue);
     }
   };
 
@@ -381,25 +678,57 @@ export function TopManga({ isDarkMode, allowNSFW }) {
           </div>
           <div className="pagination">
             <button
-              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              className={`btn btn-${
+                isDarkMode ? "info" : "dark"
+              } pagination-prev`}
               onClick={prevPage}
               disabled={currentPage === 1}
-              style={{ borderRadius: "25px", marginRight: "10px" }}
             >
               Previous
             </button>
-            <p style={{ marginBottom: "0" }}>
-              Page {currentPage} of {pagination.last_visible_page}
-            </p>
+
+            <div className="row align-items-center pagination-container-full">
+              &nbsp;&nbsp;&nbsp;&nbsp;Page&nbsp;
+              <div className="col pagination-container">
+                <input
+                  className="pagination-input"
+                  value={inputValue}
+                  type="number"
+                  min={1}
+                  max={pagination.last_visible_page}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  onKeyDown={handleInputKeyPress}
+                />
+              </div>
+              <div
+                className="col-auto"
+                style={{ paddingLeft: "0", paddingRight: "0" }}
+              >
+                <button
+                  className={`btn btn-${
+                    isDarkMode ? "info" : "dark"
+                  } pagination-button`}
+                  onClick={handleArrowClick}
+                  aria-label="Go to Page"
+                >
+                  <span>&#8594;</span>
+                </button>
+              </div>
+              &nbsp;of {pagination.last_visible_page}&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
+
             <button
-              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              className={`btn btn-${
+                isDarkMode ? "info" : "dark"
+              } pagination-next`}
               onClick={nextPage}
               disabled={!pagination.has_next_page}
-              style={{ borderRadius: "25px", marginLeft: "10px" }}
             >
               Next
             </button>
           </div>
+          <Toaster position="top-left" />
         </div>
       )}
     </>
@@ -414,6 +743,7 @@ export function TopNovel({ isDarkMode, allowNSFW }) {
   const [loading, setLoading] = React.useState(true); // Start with loading state
   const [pagination, setPagination] = React.useState({});
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [inputValue, setInputValue] = React.useState(currentPage);
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -452,10 +782,21 @@ export function TopNovel({ isDarkMode, allowNSFW }) {
       });
   }, [isDarkMode, allowNSFW, sfwToggle, currentPage]);
 
+  const notifyInvalidPage = () =>
+    toast(`Invalid page! Max is ${pagination.last_visible_page}`, {
+      icon: "⚠️",
+      style: {
+        borderRadius: "10px",
+        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+        color: `${isDarkMode ? "#333" : "#fff"}`,
+      },
+    });
+
   const nextPage = () => {
     if (pagination.has_next_page) {
       setLoading(true);
       const nextPage = currentPage + 1;
+      setInputValue(nextPage);
       setCurrentPage(nextPage);
     }
   };
@@ -464,7 +805,45 @@ export function TopNovel({ isDarkMode, allowNSFW }) {
     if (currentPage > 1) {
       setLoading(true);
       const prevPage = currentPage - 1;
+      setInputValue(prevPage);
       setCurrentPage(prevPage);
+    }
+  };
+
+  const handleInputChange = (event) => {
+    const value = parseInt(event.target.value, 10); // Parse the input value as an integer
+    setInputValue(value); // Update the input value state
+  };
+
+  const handleInputBlur = () => {
+    // When the input loses focus, update the currentPage state
+
+    if (inputValue > pagination.last_visible_page) {
+      notifyInvalidPage();
+      return;
+    } else {
+      setCurrentPage(inputValue);
+    }
+  };
+
+  const handleInputKeyPress = (event) => {
+    // Check if Enter key was pressed
+    if (event.key === "Enter") {
+      if (inputValue > pagination.last_visible_page) {
+        notifyInvalidPage();
+        return;
+      } else {
+        setCurrentPage(inputValue); // Update currentPage when Enter is pressed
+      }
+    }
+  };
+
+  const handleArrowClick = () => {
+    if (inputValue > pagination.last_visible_page) {
+      notifyInvalidPage();
+      return;
+    } else {
+      setCurrentPage(inputValue);
     }
   };
 
@@ -482,25 +861,57 @@ export function TopNovel({ isDarkMode, allowNSFW }) {
           </div>
           <div className="pagination">
             <button
-              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              className={`btn btn-${
+                isDarkMode ? "info" : "dark"
+              } pagination-prev`}
               onClick={prevPage}
               disabled={currentPage === 1}
-              style={{ borderRadius: "25px", marginRight: "10px" }}
             >
               Previous
             </button>
-            <p style={{ marginBottom: "0" }}>
-              Page {currentPage} of {pagination.last_visible_page}
-            </p>
+
+            <div className="row align-items-center pagination-container-full">
+              &nbsp;&nbsp;&nbsp;&nbsp;Page&nbsp;
+              <div className="col pagination-container">
+                <input
+                  className="pagination-input"
+                  value={inputValue}
+                  type="number"
+                  min={1}
+                  max={pagination.last_visible_page}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  onKeyDown={handleInputKeyPress}
+                />
+              </div>
+              <div
+                className="col-auto"
+                style={{ paddingLeft: "0", paddingRight: "0" }}
+              >
+                <button
+                  className={`btn btn-${
+                    isDarkMode ? "info" : "dark"
+                  } pagination-button`}
+                  onClick={handleArrowClick}
+                  aria-label="Go to Page"
+                >
+                  <span>&#8594;</span>
+                </button>
+              </div>
+              &nbsp;of {pagination.last_visible_page}&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
+
             <button
-              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              className={`btn btn-${
+                isDarkMode ? "info" : "dark"
+              } pagination-next`}
               onClick={nextPage}
               disabled={!pagination.has_next_page}
-              style={{ borderRadius: "25px", marginLeft: "10px" }}
             >
               Next
             </button>
           </div>
+          <Toaster position="top-left" />
         </div>
       )}
     </>
@@ -515,6 +926,7 @@ export function TopDoujin({ isDarkMode, allowNSFW }) {
   const [loading, setLoading] = React.useState(true);
   const [pagination, setPagination] = React.useState({});
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [inputValue, setInputValue] = React.useState(currentPage);
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -548,10 +960,21 @@ export function TopDoujin({ isDarkMode, allowNSFW }) {
       });
   }, [isDarkMode, allowNSFW, sfwToggle, currentPage]);
 
+  const notifyInvalidPage = () =>
+    toast(`Invalid page! Max is ${pagination.last_visible_page}`, {
+      icon: "⚠️",
+      style: {
+        borderRadius: "10px",
+        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+        color: `${isDarkMode ? "#333" : "#fff"}`,
+      },
+    });
+
   const nextPage = () => {
     if (pagination.has_next_page) {
       setLoading(true);
       const nextPage = currentPage + 1;
+      setInputValue(nextPage);
       setCurrentPage(nextPage);
     }
   };
@@ -560,7 +983,45 @@ export function TopDoujin({ isDarkMode, allowNSFW }) {
     if (currentPage > 1) {
       setLoading(true);
       const prevPage = currentPage - 1;
+      setInputValue(prevPage);
       setCurrentPage(prevPage);
+    }
+  };
+
+  const handleInputChange = (event) => {
+    const value = parseInt(event.target.value, 10); // Parse the input value as an integer
+    setInputValue(value); // Update the input value state
+  };
+
+  const handleInputBlur = () => {
+    // When the input loses focus, update the currentPage state
+
+    if (inputValue > pagination.last_visible_page) {
+      notifyInvalidPage();
+      return;
+    } else {
+      setCurrentPage(inputValue);
+    }
+  };
+
+  const handleInputKeyPress = (event) => {
+    // Check if Enter key was pressed
+    if (event.key === "Enter") {
+      if (inputValue > pagination.last_visible_page) {
+        notifyInvalidPage();
+        return;
+      } else {
+        setCurrentPage(inputValue); // Update currentPage when Enter is pressed
+      }
+    }
+  };
+
+  const handleArrowClick = () => {
+    if (inputValue > pagination.last_visible_page) {
+      notifyInvalidPage();
+      return;
+    } else {
+      setCurrentPage(inputValue);
     }
   };
 
@@ -578,25 +1039,57 @@ export function TopDoujin({ isDarkMode, allowNSFW }) {
           </div>
           <div className="pagination">
             <button
-              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              className={`btn btn-${
+                isDarkMode ? "info" : "dark"
+              } pagination-prev`}
               onClick={prevPage}
               disabled={currentPage === 1}
-              style={{ borderRadius: "25px", marginRight: "10px" }}
             >
               Previous
             </button>
-            <p style={{ marginBottom: "0" }}>
-              Page {currentPage} of {pagination.last_visible_page}
-            </p>
+
+            <div className="row align-items-center pagination-container-full">
+              &nbsp;&nbsp;&nbsp;&nbsp;Page&nbsp;
+              <div className="col pagination-container">
+                <input
+                  className="pagination-input"
+                  value={inputValue}
+                  type="number"
+                  min={1}
+                  max={pagination.last_visible_page}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  onKeyDown={handleInputKeyPress}
+                />
+              </div>
+              <div
+                className="col-auto"
+                style={{ paddingLeft: "0", paddingRight: "0" }}
+              >
+                <button
+                  className={`btn btn-${
+                    isDarkMode ? "info" : "dark"
+                  } pagination-button`}
+                  onClick={handleArrowClick}
+                  aria-label="Go to Page"
+                >
+                  <span>&#8594;</span>
+                </button>
+              </div>
+              &nbsp;of {pagination.last_visible_page}&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
+
             <button
-              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              className={`btn btn-${
+                isDarkMode ? "info" : "dark"
+              } pagination-next`}
               onClick={nextPage}
               disabled={!pagination.has_next_page}
-              style={{ borderRadius: "25px", marginLeft: "10px" }}
             >
               Next
             </button>
           </div>
+          <Toaster position="top-left" />
         </div>
       )}
     </>

@@ -18,7 +18,6 @@ function YouTubeEmbed({ embedUrl }) {
           width="100%" // You can adjust the width and height as needed
           height="400"
           src={`${embedUrl}?enablejsapi=1&fs=1`}
-          frameborder="0"
           allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen="allowFullScreen"
           title="Trailer"

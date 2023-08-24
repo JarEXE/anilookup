@@ -14,9 +14,7 @@ import toast, { Toaster } from "react-hot-toast";
 function Details({ isDarkMode }) {
   const [itemId, setItemId] = React.useState(sessionStorage.getItem("itemId"));
   const [details, setDetails] = React.useState({});
-  const [relations, setRelations] = React.useState({});
   const [recommendations, setRecommendations] = React.useState({});
-  const [streaming, setStreaming] = React.useState({});
   const [loading, setLoading] = React.useState(false);
 
   const notifyRequestRate = () =>
@@ -40,16 +38,9 @@ function Details({ isDarkMode }) {
         try {
           setLoading(true);
           // Fetch both details and relations data concurrently
-          const [
-            detailsResponse,
-            relationsResponse,
-            recommendationsResponse,
-            streamingResponse,
-          ] = await Promise.all([
-            fetch(`https://api.jikan.moe/v4${itemId}`),
-            fetch(`https://api.jikan.moe/v4${itemId}/relations`),
+          const [detailsResponse, recommendationsResponse] = await Promise.all([
+            fetch(`https://api.jikan.moe/v4${itemId}/full`),
             fetch(`https://api.jikan.moe/v4${itemId}/recommendations`),
-            fetch(`https://api.jikan.moe/v4${itemId}/streaming`),
           ]);
 
           // component unmounted, don't set the state
@@ -66,22 +57,13 @@ function Details({ isDarkMode }) {
             return;
           }
 
-          const [
-            detailsData,
-            relationsData,
-            recommendationsData,
-            streamingData,
-          ] = await Promise.all([
+          const [detailsData, recommendationsData] = await Promise.all([
             detailsResponse.json(),
-            relationsResponse.json(),
             recommendationsResponse.json(),
-            streamingResponse.json(),
           ]);
 
           setDetails(detailsData.data);
-          setRelations(relationsData.data);
           setRecommendations(recommendationsData.data);
-          setStreaming(streamingData.data);
           setLoading(false);
         } catch (error) {
           console.log(error);
@@ -306,10 +288,11 @@ function Details({ isDarkMode }) {
               ) : null}
 
               <h5>Streaming Sites</h5>
-              {typeof streaming !== "undefined" && streaming.length > 0 ? (
+              {typeof details.streaming !== "undefined" &&
+              details.streaming.length > 0 ? (
                 <>
                   <ul style={{ listStyle: "none", padding: "0" }}>
-                    {streaming.map((item, index) => (
+                    {details.streaming.map((item, index) => (
                       <li
                         key={index}
                         style={{ display: "flex", alignItems: "center" }}
@@ -329,11 +312,12 @@ function Details({ isDarkMode }) {
               )}
 
               <h5>Related Works</h5>
-              {typeof relations !== "undefined" && relations.length > 0 ? (
+              {typeof details.relations !== "undefined" &&
+              details.relations.length > 0 ? (
                 <>
                   <table style={{ borderSpacing: "0px" }}>
                     <tbody>
-                      {relations.map((item, index) => (
+                      {details.relations.map((item, index) => (
                         <React.Fragment key={index}>
                           <tr>
                             <td nowrap="" valign="top">
