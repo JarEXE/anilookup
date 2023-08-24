@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../src/style.css";
 import Anime from "./Anime";
@@ -14,6 +14,7 @@ function Cards({ allowNSFW, isDarkMode }) {
   const [cards, setCards] = React.useState(null);
   const [loading, setLoading] = React.useState(true); // Start with loading state
 
+  const navigate = useNavigate();
   const location = useLocation();
 
   // Use useEffect to re-render the component when allowNSFW changes
@@ -83,6 +84,10 @@ function Cards({ allowNSFW, isDarkMode }) {
         });
     }
   }, [oldSearch, location.pathname, sfwToggle, allowNSFW, isDarkMode]);
+
+  if (oldSearch === null) {
+    navigate("/");
+  }
 
   return (
     <div

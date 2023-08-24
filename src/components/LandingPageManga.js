@@ -14,6 +14,7 @@ function LandingPageManga(props) {
         src={props.img}
         alt="loading cover..."
         onClick={() => showDetails(`${props.malid}`)}
+        style={{ maxWidth: "190px" }}
       />
       <div className="overlay" onClick={() => showDetails(`${props.malid}`)}>
         <span>{props.title}</span>

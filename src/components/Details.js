@@ -1,5 +1,6 @@
 import React from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import { useNavigate } from "react-router-dom";
 import AnimatedProgressProvider from "./AnimatedProgressProvider";
 import { easeQuadIn } from "d3-ease";
 import ScrollContainer from "react-indiana-drag-scroll";
@@ -7,47 +8,87 @@ import "react-circular-progressbar/dist/styles.css";
 import mal from "../images/mal.png";
 import "../../src/style.css";
 import YouTubeEmbed from "./YoutubeEmbed";
+import Favicon from "./Favicon";
+import toast, { Toaster } from "react-hot-toast";
 
 function Details({ isDarkMode }) {
   const [itemId, setItemId] = React.useState(sessionStorage.getItem("itemId"));
   const [details, setDetails] = React.useState({});
   const [relations, setRelations] = React.useState({});
   const [recommendations, setRecommendations] = React.useState({});
+  const [streaming, setStreaming] = React.useState({});
   const [loading, setLoading] = React.useState(false);
 
+  const notifyRequestRate = () =>
+    toast("Too many requests! Please wait a moment then try again.", {
+      icon: "⚠️",
+      style: {
+        borderRadius: "10px",
+        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+        color: `${isDarkMode ? "#333" : "#fff"}`,
+      },
+    });
+
+  const navigate = useNavigate();
   let isMounted = true;
 
   React.useEffect(() => {
     async function fetchData() {
-      try {
-        setLoading(true);
-        // Fetch both details and relations data concurrently
-        const [detailsResponse, relationsResponse, recommendationsResponse] =
-          await Promise.all([
+      if (itemId === null) {
+        navigate("/");
+      } else {
+        try {
+          setLoading(true);
+          // Fetch both details and relations data concurrently
+          const [
+            detailsResponse,
+            relationsResponse,
+            recommendationsResponse,
+            streamingResponse,
+          ] = await Promise.all([
             fetch(`https://api.jikan.moe/v4${itemId}`),
             fetch(`https://api.jikan.moe/v4${itemId}/relations`),
             fetch(`https://api.jikan.moe/v4${itemId}/recommendations`),
+            fetch(`https://api.jikan.moe/v4${itemId}/streaming`),
           ]);
 
-        // component unmounted, don't set the state
-        if (!isMounted) {
-          return;
-        }
+          // component unmounted, don't set the state
+          if (!isMounted) {
+            return;
+          }
 
-        const [detailsData, relationsData, recommendationsData] =
-          await Promise.all([
+          // Check the response status before proceeding
+          if (detailsResponse.status === 429) {
+            // Handle rate limiting error
+            console.error("Rate limiting error");
+            setLoading(false);
+            notifyRequestRate();
+            return;
+          }
+
+          const [
+            detailsData,
+            relationsData,
+            recommendationsData,
+            streamingData,
+          ] = await Promise.all([
             detailsResponse.json(),
             relationsResponse.json(),
             recommendationsResponse.json(),
+            streamingResponse.json(),
           ]);
 
-        setDetails(detailsData.data);
-        setRelations(relationsData.data);
-        setRecommendations(recommendationsData.data);
-        setLoading(false);
-      } catch (error) {
-        console.log(error);
-        setLoading(false);
+          setDetails(detailsData.data);
+          setRelations(relationsData.data);
+          setRecommendations(recommendationsData.data);
+          setStreaming(streamingData.data);
+          setLoading(false);
+        } catch (error) {
+          console.log(error);
+          setLoading(false);
+          notifyRequestRate();
+          return;
+        }
       }
     }
 
@@ -75,21 +116,29 @@ function Details({ isDarkMode }) {
     setItemId(sessionStorage.getItem("itemId"));
   };
 
+  const landingPageRoute = () => {
+    navigate("/");
+  };
+
   // Apply 'dark-mode' class conditionally based on the darkMode state
   const listGroupClass = `list-group${isDarkMode ? " dark-mode" : ""}`;
 
   let itemType;
 
-  if (
-    details.type === "TV" ||
-    details.type === "Special" ||
-    details.type === "ONA" ||
-    details.type === "OVA" ||
-    details.type === "Movie"
-  ) {
-    itemType = "anime";
+  if (typeof details.type === "undefined") {
+    return;
   } else {
-    itemType = "manga";
+    if (
+      details.type === "TV" ||
+      details.type === "Special" ||
+      details.type === "ONA" ||
+      details.type === "OVA" ||
+      details.type === "Movie"
+    ) {
+      itemType = "anime";
+    } else {
+      itemType = "manga";
+    }
   }
 
   return (
@@ -214,7 +263,11 @@ function Details({ isDarkMode }) {
                 {typeof details.producers !== "undefined" ? (
                   <li className="list-group-item">
                     <strong>Studios:</strong>{" "}
-                    {details.studios.map((x) => x.name).join(", ") || "-"}
+                    {details.studios.map((studio) => (
+                      <a key={studio.mal_id} href={studio.url}>
+                        {studio.name}
+                      </a>
+                    ))}
                   </li>
                 ) : (
                   <li className="list-group-item">
@@ -251,6 +304,29 @@ function Details({ isDarkMode }) {
                   <hr></hr>
                 </>
               ) : null}
+
+              <h5>Streaming Sites</h5>
+              {typeof streaming !== "undefined" && streaming.length > 0 ? (
+                <>
+                  <ul style={{ listStyle: "none", padding: "0" }}>
+                    {streaming.map((item, index) => (
+                      <li
+                        key={index}
+                        style={{ display: "flex", alignItems: "center" }}
+                      >
+                        <Favicon url={item.url} />
+                        <a href={item.url}>{item.name}</a>
+                      </li>
+                    ))}
+                  </ul>
+                  <hr></hr>
+                </>
+              ) : (
+                <div>
+                  No streaming sites available.
+                  <hr></hr>
+                </div>
+              )}
 
               <h5>Related Works</h5>
               {typeof relations !== "undefined" && relations.length > 0 ? (
@@ -294,11 +370,11 @@ function Details({ isDarkMode }) {
                 </>
               ) : (
                 <div>
-                  Nothing to show
+                  No related works available.
                   <hr></hr>
                 </div>
               )}
-              <h5>Recommendations*</h5>
+              <h5>Recommended*</h5>
 
               {typeof recommendations !== "undefined" &&
               recommendations.length > 0 ? (
@@ -331,26 +407,28 @@ function Details({ isDarkMode }) {
                   </ScrollContainer>
                 </div>
               ) : (
-                <div>No recommendations available.</div>
+                <div>No recommended works available.</div>
               )}
 
               <hr></hr>
               <div style={{ marginTop: "-15px", color: "gray" }}>
                 <small>
-                  <i>*Recommendations are based on MAL user votes.</i>
+                  <i>*Recommended works are based on MAL user votes.</i>
                 </small>
               </div>
               <a
                 id="returnBtn"
-                href="/"
+                href="#/"
                 className={`${
                   isDarkMode ? "btn btn-info mt-4" : "btn btn-dark mt-4"
                 }`}
                 style={{ borderRadius: "25px" }}
+                onClick={() => landingPageRoute()}
               >
                 Return to Lookup Page
               </a>
             </div>
+            <Toaster position="top-left" />
           </div>
         </>
       ) : (

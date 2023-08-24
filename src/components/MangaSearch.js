@@ -51,6 +51,10 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW }) {
     }
   };
 
+  const animeRoute = () => {
+    navigate("/");
+  };
+
   return (
     <div>
       <div className="container text-center">
@@ -77,7 +81,7 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW }) {
               Search
             </button>
             <a
-              href="/"
+              href="#/"
               className="btn btn-secondary"
               style={{
                 width: "40%",
@@ -85,6 +89,7 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW }) {
                 borderRadius: "25px",
                 marginLeft: "5px",
               }}
+              onClick={() => animeRoute()}
             >
               Anime Section
             </a>
@@ -219,7 +224,7 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW }) {
           </div>
         </ScrollContainer>
       </div>
-      <div className="container">
+      <div>
         <ul className="image-gallery">
           {selectedOption === "publishing" ? (
             <TopPublishing isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
@@ -239,6 +244,20 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW }) {
         </ul>
       </div>
       <Toaster position="top-left" />
+      <hr className="footer-separator"></hr>
+      <div className="text-center">
+        Powered by{" "}
+        <strong>
+          <a href="https://jikan.moe/">Jikan</a>
+        </strong>{" "}
+        REST API
+        <p>
+          Made by{" "}
+          <strong>
+            <a href="https://github.com/JarEXE">Jarome Eyken</a>
+          </strong>
+        </p>
+      </div>
     </div>
   );
 }

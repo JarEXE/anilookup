@@ -7,7 +7,9 @@ export default function TopPublishing({ isDarkMode, allowNSFW }) {
   // State to hold the key for re-rendering
   const [key, setKey] = React.useState(0);
   const [cards, setCards] = React.useState(null);
-  const [loading, setLoading] = React.useState(true); // Start with loading state
+  const [loading, setLoading] = React.useState(true);
+  const [pagination, setPagination] = React.useState({});
+  const [currentPage, setCurrentPage] = React.useState(1);
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -16,13 +18,14 @@ export default function TopPublishing({ isDarkMode, allowNSFW }) {
 
     axios
       .get(
-        `https://api.jikan.moe/v4/top/manga?filter=publishing&limit=24${
+        `https://api.jikan.moe/v4/top/manga?filter=publishing&page=${currentPage}${
           // eslint-disable-next-line
           sfwToggle == 1 ? "&" : "&sfw"
         }`
       )
       .then((response) => {
         const animes = response.data.data;
+        setPagination(response.data.pagination);
 
         // Map data to Anime components
         const animeCards = animes.map((anime) => (
@@ -43,15 +46,58 @@ export default function TopPublishing({ isDarkMode, allowNSFW }) {
       .catch((error) => {
         console.error("Error fetching API data:", error);
       });
-  }, [isDarkMode, allowNSFW, sfwToggle]);
+  }, [isDarkMode, allowNSFW, sfwToggle, currentPage]);
+
+  const nextPage = () => {
+    if (pagination.has_next_page) {
+      setLoading(true);
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setLoading(true);
+      const prevPage = currentPage - 1;
+      setCurrentPage(prevPage);
+    }
+  };
 
   return (
     <>
       {loading ? (
-        <span className="loader"></span>
+        <div className="loadContainer">
+          <span className="loader"></span>
+        </div>
       ) : (
         // Render the component with a unique key to force re-render
-        <React.Fragment key={key}>{cards}</React.Fragment>
+        <div>
+          <div className="cards" key={key}>
+            {cards}
+          </div>
+          <div className="pagination">
+            <button
+              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              onClick={prevPage}
+              disabled={currentPage === 1}
+              style={{ borderRadius: "25px", marginRight: "10px" }}
+            >
+              Previous
+            </button>
+            <p style={{ marginBottom: "0" }}>
+              Page {currentPage} of {pagination.last_visible_page}
+            </p>
+            <button
+              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              onClick={nextPage}
+              disabled={!pagination.has_next_page}
+              style={{ borderRadius: "25px", marginLeft: "10px" }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       )}
     </>
   );
@@ -62,7 +108,9 @@ export function TopManhwa({ isDarkMode, allowNSFW }) {
   // State to hold the key for re-rendering
   const [key, setKey] = React.useState(0);
   const [cards, setCards] = React.useState(null);
-  const [loading, setLoading] = React.useState(true); // Start with loading state
+  const [loading, setLoading] = React.useState(true);
+  const [pagination, setPagination] = React.useState({});
+  const [currentPage, setCurrentPage] = React.useState(1);
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -71,13 +119,14 @@ export function TopManhwa({ isDarkMode, allowNSFW }) {
 
     axios
       .get(
-        `https://api.jikan.moe/v4/top/manga?type=manhwa&limit=24${
+        `https://api.jikan.moe/v4/top/manga?type=manhwa&page=${currentPage}${
           // eslint-disable-next-line
           sfwToggle == 1 ? "&" : "&sfw"
         }`
       )
       .then((response) => {
         const animes = response.data.data;
+        setPagination(response.data.pagination);
 
         // Map data to Anime components
         const animeCards = animes.map((anime) => (
@@ -98,15 +147,58 @@ export function TopManhwa({ isDarkMode, allowNSFW }) {
       .catch((error) => {
         console.error("Error fetching API data:", error);
       });
-  }, [isDarkMode, allowNSFW, sfwToggle]);
+  }, [isDarkMode, allowNSFW, sfwToggle, currentPage]);
+
+  const nextPage = () => {
+    if (pagination.has_next_page) {
+      setLoading(true);
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setLoading(true);
+      const prevPage = currentPage - 1;
+      setCurrentPage(prevPage);
+    }
+  };
 
   return (
     <>
       {loading ? (
-        <span className="loader"></span>
+        <div className="loadContainer">
+          <span className="loader"></span>
+        </div>
       ) : (
         // Render the component with a unique key to force re-render
-        <React.Fragment key={key}>{cards}</React.Fragment>
+        <div>
+          <div className="cards" key={key}>
+            {cards}
+          </div>
+          <div className="pagination">
+            <button
+              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              onClick={prevPage}
+              disabled={currentPage === 1}
+              style={{ borderRadius: "25px", marginRight: "10px" }}
+            >
+              Previous
+            </button>
+            <p style={{ marginBottom: "0" }}>
+              Page {currentPage} of {pagination.last_visible_page}
+            </p>
+            <button
+              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              onClick={nextPage}
+              disabled={!pagination.has_next_page}
+              style={{ borderRadius: "25px", marginLeft: "10px" }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       )}
     </>
   );
@@ -117,7 +209,9 @@ export function TopManhua({ isDarkMode, allowNSFW }) {
   // State to hold the key for re-rendering
   const [key, setKey] = React.useState(0);
   const [cards, setCards] = React.useState(null);
-  const [loading, setLoading] = React.useState(true); // Start with loading state
+  const [loading, setLoading] = React.useState(true);
+  const [pagination, setPagination] = React.useState({});
+  const [currentPage, setCurrentPage] = React.useState(1);
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -126,13 +220,14 @@ export function TopManhua({ isDarkMode, allowNSFW }) {
 
     axios
       .get(
-        `https://api.jikan.moe/v4/top/manga?type=manhua&limit=24${
+        `https://api.jikan.moe/v4/top/manga?type=manhua&page=${currentPage}${
           // eslint-disable-next-line
           sfwToggle == 1 ? "&" : "&sfw"
         }`
       )
       .then((response) => {
         const animes = response.data.data;
+        setPagination(response.data.pagination);
 
         // Map data to Anime components
         const animeCards = animes.map((anime) => (
@@ -153,15 +248,58 @@ export function TopManhua({ isDarkMode, allowNSFW }) {
       .catch((error) => {
         console.error("Error fetching API data:", error);
       });
-  }, [isDarkMode, allowNSFW, sfwToggle]);
+  }, [isDarkMode, allowNSFW, sfwToggle, currentPage]);
+
+  const nextPage = () => {
+    if (pagination.has_next_page) {
+      setLoading(true);
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setLoading(true);
+      const prevPage = currentPage - 1;
+      setCurrentPage(prevPage);
+    }
+  };
 
   return (
     <>
       {loading ? (
-        <span className="loader"></span>
+        <div className="loadContainer">
+          <span className="loader"></span>
+        </div>
       ) : (
         // Render the component with a unique key to force re-render
-        <React.Fragment key={key}>{cards}</React.Fragment>
+        <div>
+          <div className="cards" key={key}>
+            {cards}
+          </div>
+          <div className="pagination">
+            <button
+              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              onClick={prevPage}
+              disabled={currentPage === 1}
+              style={{ borderRadius: "25px", marginRight: "10px" }}
+            >
+              Previous
+            </button>
+            <p style={{ marginBottom: "0" }}>
+              Page {currentPage} of {pagination.last_visible_page}
+            </p>
+            <button
+              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              onClick={nextPage}
+              disabled={!pagination.has_next_page}
+              style={{ borderRadius: "25px", marginLeft: "10px" }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       )}
     </>
   );
@@ -172,7 +310,9 @@ export function TopManga({ isDarkMode, allowNSFW }) {
   // State to hold the key for re-rendering
   const [key, setKey] = React.useState(0);
   const [cards, setCards] = React.useState(null);
-  const [loading, setLoading] = React.useState(true); // Start with loading state
+  const [loading, setLoading] = React.useState(true);
+  const [pagination, setPagination] = React.useState({});
+  const [currentPage, setCurrentPage] = React.useState(1);
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -181,13 +321,14 @@ export function TopManga({ isDarkMode, allowNSFW }) {
 
     axios
       .get(
-        `https://api.jikan.moe/v4/top/manga?type=manga&limit=24${
+        `https://api.jikan.moe/v4/top/manga?type=manga&page=${currentPage}${
           // eslint-disable-next-line
           sfwToggle == 1 ? "&" : "&sfw"
         }`
       )
       .then((response) => {
         const animes = response.data.data;
+        setPagination(response.data.pagination);
 
         // Map data to Anime components
         const animeCards = animes.map((anime) => (
@@ -208,15 +349,58 @@ export function TopManga({ isDarkMode, allowNSFW }) {
       .catch((error) => {
         console.error("Error fetching API data:", error);
       });
-  }, [isDarkMode, allowNSFW, sfwToggle]);
+  }, [isDarkMode, allowNSFW, sfwToggle, currentPage]);
+
+  const nextPage = () => {
+    if (pagination.has_next_page) {
+      setLoading(true);
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setLoading(true);
+      const prevPage = currentPage - 1;
+      setCurrentPage(prevPage);
+    }
+  };
 
   return (
     <>
       {loading ? (
-        <span className="loader"></span>
+        <div className="loadContainer">
+          <span className="loader"></span>
+        </div>
       ) : (
         // Render the component with a unique key to force re-render
-        <React.Fragment key={key}>{cards}</React.Fragment>
+        <div>
+          <div className="cards" key={key}>
+            {cards}
+          </div>
+          <div className="pagination">
+            <button
+              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              onClick={prevPage}
+              disabled={currentPage === 1}
+              style={{ borderRadius: "25px", marginRight: "10px" }}
+            >
+              Previous
+            </button>
+            <p style={{ marginBottom: "0" }}>
+              Page {currentPage} of {pagination.last_visible_page}
+            </p>
+            <button
+              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              onClick={nextPage}
+              disabled={!pagination.has_next_page}
+              style={{ borderRadius: "25px", marginLeft: "10px" }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       )}
     </>
   );
@@ -228,6 +412,8 @@ export function TopNovel({ isDarkMode, allowNSFW }) {
   const [key, setKey] = React.useState(0);
   const [cards, setCards] = React.useState(null);
   const [loading, setLoading] = React.useState(true); // Start with loading state
+  const [pagination, setPagination] = React.useState({});
+  const [currentPage, setCurrentPage] = React.useState(1);
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -236,13 +422,14 @@ export function TopNovel({ isDarkMode, allowNSFW }) {
 
     axios
       .get(
-        `https://api.jikan.moe/v4/top/manga?type=novel&limit=24${
+        `https://api.jikan.moe/v4/top/manga?type=novel&page=${currentPage}${
           // eslint-disable-next-line
           sfwToggle == 1 ? "&" : "&sfw"
         }`
       )
       .then((response) => {
         const animes = response.data.data;
+        setPagination(response.data.pagination);
 
         // Map data to Anime components
         const animeCards = animes.map((anime) => (
@@ -263,15 +450,58 @@ export function TopNovel({ isDarkMode, allowNSFW }) {
       .catch((error) => {
         console.error("Error fetching API data:", error);
       });
-  }, [isDarkMode, allowNSFW, sfwToggle]);
+  }, [isDarkMode, allowNSFW, sfwToggle, currentPage]);
+
+  const nextPage = () => {
+    if (pagination.has_next_page) {
+      setLoading(true);
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setLoading(true);
+      const prevPage = currentPage - 1;
+      setCurrentPage(prevPage);
+    }
+  };
 
   return (
     <>
       {loading ? (
-        <span className="loader"></span>
+        <div className="loadContainer">
+          <span className="loader"></span>
+        </div>
       ) : (
         // Render the component with a unique key to force re-render
-        <React.Fragment key={key}>{cards}</React.Fragment>
+        <div>
+          <div className="cards" key={key}>
+            {cards}
+          </div>
+          <div className="pagination">
+            <button
+              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              onClick={prevPage}
+              disabled={currentPage === 1}
+              style={{ borderRadius: "25px", marginRight: "10px" }}
+            >
+              Previous
+            </button>
+            <p style={{ marginBottom: "0" }}>
+              Page {currentPage} of {pagination.last_visible_page}
+            </p>
+            <button
+              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              onClick={nextPage}
+              disabled={!pagination.has_next_page}
+              style={{ borderRadius: "25px", marginLeft: "10px" }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       )}
     </>
   );
@@ -282,7 +512,9 @@ export function TopDoujin({ isDarkMode, allowNSFW }) {
   // State to hold the key for re-rendering
   const [key, setKey] = React.useState(0);
   const [cards, setCards] = React.useState(null);
-  const [loading, setLoading] = React.useState(true); // Start with loading state
+  const [loading, setLoading] = React.useState(true);
+  const [pagination, setPagination] = React.useState({});
+  const [currentPage, setCurrentPage] = React.useState(1);
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -290,9 +522,10 @@ export function TopDoujin({ isDarkMode, allowNSFW }) {
     setKey((prevKey) => prevKey + 1);
 
     axios
-      .get(`https://api.jikan.moe/v4/top/manga?type=doujin&limit=24`)
+      .get(`https://api.jikan.moe/v4/top/manga?type=doujin&page=${currentPage}`)
       .then((response) => {
         const animes = response.data.data;
+        setPagination(response.data.pagination);
 
         // Map data to Anime components
         const animeCards = animes.map((anime) => (
@@ -313,15 +546,58 @@ export function TopDoujin({ isDarkMode, allowNSFW }) {
       .catch((error) => {
         console.error("Error fetching API data:", error);
       });
-  }, [isDarkMode, allowNSFW, sfwToggle]);
+  }, [isDarkMode, allowNSFW, sfwToggle, currentPage]);
+
+  const nextPage = () => {
+    if (pagination.has_next_page) {
+      setLoading(true);
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setLoading(true);
+      const prevPage = currentPage - 1;
+      setCurrentPage(prevPage);
+    }
+  };
 
   return (
     <>
       {loading ? (
-        <span className="loader"></span>
+        <div className="loadContainer">
+          <span className="loader"></span>
+        </div>
       ) : (
         // Render the component with a unique key to force re-render
-        <React.Fragment key={key}>{cards}</React.Fragment>
+        <div>
+          <div className="cards" key={key}>
+            {cards}
+          </div>
+          <div className="pagination">
+            <button
+              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              onClick={prevPage}
+              disabled={currentPage === 1}
+              style={{ borderRadius: "25px", marginRight: "10px" }}
+            >
+              Previous
+            </button>
+            <p style={{ marginBottom: "0" }}>
+              Page {currentPage} of {pagination.last_visible_page}
+            </p>
+            <button
+              className={`btn btn-${isDarkMode ? "info" : "dark"}`}
+              onClick={nextPage}
+              disabled={!pagination.has_next_page}
+              style={{ borderRadius: "25px", marginLeft: "10px" }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       )}
     </>
   );

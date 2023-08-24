@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Switch from "react-switch";
 import DarkModeToggle from "./DarkModeToggle";
 import toast, { Toaster } from "react-hot-toast";
@@ -26,19 +26,20 @@ function Navbar({ onToggle, onDarkModeToggle, isDarkMode }) {
   // eslint-disable-next-line
   const [checked, setChecked] = React.useState(sfwStatus == 1 ? true : false);
   const location = useLocation();
+  const navigate = useNavigate();
 
-  let url;
-
-  if (location.pathname === "/search" || location.pathname === "/") {
-    url = "/";
-  } else if (
-    location.pathname === "/mangasearch" ||
-    location.pathname === "/mangalookup"
-  ) {
-    url = "/mangalookup";
-  } else {
-    url = "/";
-  }
+  const landingPageRoute = () => {
+    if (location.pathname === "/search" || location.pathname === "/") {
+      navigate("/");
+    } else if (
+      location.pathname === "/mangasearch" ||
+      location.pathname === "/mangalookup"
+    ) {
+      navigate("/mangalookup");
+    } else {
+      navigate("/");
+    }
+  };
 
   const handleChange = () => {
     if (checked) {
@@ -63,7 +64,12 @@ function Navbar({ onToggle, onDarkModeToggle, isDarkMode }) {
     <nav className="navbar navbar-default" id="customNav">
       <div className="container-fluid">
         <div className="navbar-header">
-          <a className="navbar-brand" href={url} style={customStyles}>
+          <a
+            className="navbar-brand"
+            href="#/"
+            style={customStyles}
+            onClick={() => landingPageRoute()}
+          >
             AniLookup 🔍
           </a>
         </div>

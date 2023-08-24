@@ -44,6 +44,10 @@ function AnimeSearch({ onInputChange, isDarkMode, allowNSFW }) {
     }
   };
 
+  const mangaRoute = () => {
+    navigate("/mangalookup");
+  };
+
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
       handleSubmit();
@@ -76,7 +80,7 @@ function AnimeSearch({ onInputChange, isDarkMode, allowNSFW }) {
               Search
             </button>
             <a
-              href="/mangalookup"
+              href="#/"
               className="btn btn-secondary"
               style={{
                 width: "40%",
@@ -84,6 +88,7 @@ function AnimeSearch({ onInputChange, isDarkMode, allowNSFW }) {
                 borderRadius: "25px",
                 marginLeft: "5px",
               }}
+              onClick={() => mangaRoute()}
             >
               Manga Section
             </a>
@@ -173,7 +178,7 @@ function AnimeSearch({ onInputChange, isDarkMode, allowNSFW }) {
           </div>
         </ScrollContainer>
       </div>
-      <div className="container">
+      <div>
         <ul className="image-gallery">
           {selectedOption === "airing" ? (
             <TopAiring isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
@@ -189,6 +194,20 @@ function AnimeSearch({ onInputChange, isDarkMode, allowNSFW }) {
         </ul>
       </div>
       <Toaster position="top-left" />
+      <hr className="footer-separator"></hr>
+      <div className="text-center">
+        Powered by{" "}
+        <strong>
+          <a href="https://jikan.moe/">Jikan</a>
+        </strong>{" "}
+        REST API
+        <p>
+          Made by{" "}
+          <strong>
+            <a href="https://github.com/JarEXE">Jarome Eyken</a>
+          </strong>
+        </p>
+      </div>
     </div>
   );
 }

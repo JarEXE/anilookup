@@ -16,12 +16,12 @@ function YouTubeEmbed({ embedUrl }) {
       {embedUrl ? (
         <iframe
           width="100%" // You can adjust the width and height as needed
-          height="500"
-          src={embedUrl}
+          height="400"
+          src={`${embedUrl}?enablejsapi=1&fs=1`}
           frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen
-          title="Embedded YouTube Video"
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen="allowFullScreen"
+          title="Trailer"
         ></iframe>
       ) : (
         <p>{unavailableString}</p>
