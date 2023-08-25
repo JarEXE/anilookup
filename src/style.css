@@ -103,6 +103,10 @@
   transform: scale(1.05); /* Scale up to 1.1 times when hovered */
 }
 
+div.text-on-top {
+  text-align: center;
+}
+
 .fadeContainer {
   position: relative;
   overflow: hidden;
@@ -110,7 +114,7 @@
 
 .fadeContainer:before,
 .fadeContainer:after {
-  content: "\2190";
+  content: "";
   font-size: 1.2em;
   position: absolute;
   z-index: 1;
@@ -130,7 +134,7 @@
 }
 
 .fadeContainer:after {
-  content: "\2192";
+  content: "";
   right: 0; /* Position the right fade effect on the right side */
   background-image: linear-gradient(
     to right,
@@ -146,7 +150,7 @@
 
 .fadeContainerDark:before,
 .fadeContainerDark:after {
-  content: "\2190";
+  content: "";
   font-size: 1.2em;
   position: absolute;
   z-index: 1;
@@ -166,7 +170,7 @@
 }
 
 .fadeContainerDark:after {
-  content: "\2192";
+  content: "";
   right: 0; /* Position the right fade effect on the right side */
   background-image: linear-gradient(
     to right,
@@ -355,7 +359,7 @@
   object-fit: cover;
   max-width: 100%;
   min-width: 190px;
-  height: 250px;
+  height: 275px;
   vertical-align: middle;
   border-radius: 10px;
 }
@@ -468,7 +472,7 @@
 
 .synopsisDark {
   max-height: 100%;
-  overflow-y: auto; /* Hide overflowed content */
+  overflow-y: hidden; /* Hide overflowed content */
   padding: 0 10px;
 }
 
@@ -613,7 +617,7 @@ body html {
 
   .fadeContainer:before,
   .fadeContainer:after {
-    content: "\2190";
+    content: "";
     font-size: 1.2em;
     position: absolute;
     z-index: 1;
@@ -635,7 +639,7 @@ body html {
   }
 
   .fadeContainer:after {
-    content: "\2192";
+    content: "";
     right: 0; /* Position the right fade effect on the right side */
     background-image: linear-gradient(
       to right,
@@ -652,7 +656,7 @@ body html {
 
   .fadeContainerDark:before,
   .fadeContainerDark:after {
-    content: "\2190";
+    content: "";
     font-size: 1.2em;
     position: absolute;
     z-index: 1;
@@ -674,7 +678,7 @@ body html {
   }
 
   .fadeContainerDark:after {
-    content: "\2192";
+    content: "";
     right: 0; /* Position the right fade effect on the right side */
     background-image: linear-gradient(
       to right,

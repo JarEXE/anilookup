@@ -36,6 +36,7 @@ function Manga(props) {
           <img
             src={props.img}
             alt="anime cover"
+            loading="lazy"
             style={{
               marginBottom: "20px",
               height: "300px",

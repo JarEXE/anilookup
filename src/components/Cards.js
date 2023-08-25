@@ -1,9 +1,9 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../src/style.css";
-import Anime from "./Anime";
-import Manga from "./Manga";
+const Anime = React.lazy(() => import("./Anime"));
+const Manga = React.lazy(() => import("./Manga"));
 
 function Cards({ allowNSFW, isDarkMode }) {
   let oldSearch = sessionStorage.getItem("searchText");
@@ -111,7 +111,24 @@ function Cards({ allowNSFW, isDarkMode }) {
         </div>
       ) : (
         // Render the component with a unique key to force re-render
-        <React.Fragment key={key}>{cards}</React.Fragment>
+        <React.Fragment key={key}>
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: "80vh",
+                }}
+              >
+                <span className="loader"></span>
+              </div>
+            }
+          >
+            {cards}
+          </Suspense>
+        </React.Fragment>
       )}
     </div>
   );

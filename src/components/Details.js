@@ -10,6 +10,9 @@ import "../../src/style.css";
 import YouTubeEmbed from "./YoutubeEmbed";
 import Favicon from "./Favicon";
 import toast, { Toaster } from "react-hot-toast";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHandPointLeft } from "@fortawesome/free-solid-svg-icons";
+import { faHandPointRight } from "@fortawesome/free-solid-svg-icons";
 
 function Details({ isDarkMode }) {
   const [itemId, setItemId] = React.useState(sessionStorage.getItem("itemId"));
@@ -123,17 +126,43 @@ function Details({ isDarkMode }) {
     }
   }
 
+  const backgroundBlur = {
+    width: "100%",
+    backgroundImage: `url("${details.images.jpg.large_image_url}")`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    marginBottom: "20px",
+    boxShadow: "inset 0 0 0 2000px rgba(28, 28, 28, 0.75)",
+  };
+
+  console.log(backgroundBlur);
+
   return (
     <div className="row">
       {/* check if details object contains data first otherwise there will be a race condition resulting in errors out the ass. That is to say, this will only run if details has been set fully */}
       {Object.keys(details).length > 0 && !loading ? (
         <>
           <div className="col-md-12" style={{ marginBottom: "20px" }}>
-            <img
-              src={details.images.jpg.large_image_url}
-              alt="anime cover"
-              className="thumbnail"
-            />
+            <div style={backgroundBlur}>
+              <div
+                className="pseudo-blur"
+                style={{
+                  backdropFilter: "blur(2px)",
+                  minHeight: "600px",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <img
+                  id="thumbnail-img"
+                  src={details.images.jpg.large_image_url}
+                  alt="anime cover"
+                  className="thumbnail"
+                />
+              </div>
+            </div>
+
             <div className="col-md-12" style={{ marginBottom: "15px" }}>
               <div className="details-container">
                 <div className="text-container">
@@ -151,7 +180,9 @@ function Details({ isDarkMode }) {
                   <p>
                     <strong>
                       {typeof details.episodes !== "undefined"
-                        ? `${details.episodes} Episodes`
+                        ? details.episodes === null
+                          ? "? Episodes"
+                          : `${details.episodes} Episodes`
                         : `${
                             details.chapters === null ? "?" : details.chapters
                           } Chapters (${
@@ -367,6 +398,15 @@ function Details({ isDarkMode }) {
                     isDarkMode ? "fadeContainerDark" : "fadeContainer"
                   }`}
                 >
+                  {recommendations.length > 2 ? (
+                    <div class="text-on-top">
+                      <FontAwesomeIcon icon={faHandPointLeft} />
+                      <span style={{ marginLeft: "10px", marginRight: "10px" }}>
+                        Drag to scroll
+                      </span>
+                      <FontAwesomeIcon icon={faHandPointRight} />
+                    </div>
+                  ) : null}
                   <ScrollContainer className="recommendations">
                     {recommendations.map((item, index) => (
                       <div className="zoomed">
@@ -374,6 +414,7 @@ function Details({ isDarkMode }) {
                           key={index}
                           src={item.entry.images.jpg.image_url}
                           alt="loading cover..."
+                          loading="lazy"
                           onClick={() =>
                             newDetails(`/${itemType}/${item.entry.mal_id}`)
                           }
