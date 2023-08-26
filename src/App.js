@@ -10,8 +10,8 @@ import ScrollToBottomButton from "./components/ScrollToBottomButton";
 
 function App() {
   const sfwStatus = sessionStorage.getItem("sfw");
-  const darkStatus = JSON.parse(sessionStorage.getItem("darkMode"));
-  const [isDarkMode, setIsDarkMode] = React.useState(darkStatus);
+  //const darkStatus = JSON.parse(sessionStorage.getItem("darkMode"));
+  const [isDarkMode, setIsDarkMode] = React.useState(true);
   const [searchText, setSearchText] = React.useState("");
   const [allowNSFW, setAllowNSFW] = React.useState(
     // eslint-disable-next-line

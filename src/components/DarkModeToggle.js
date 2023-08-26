@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import Switch from "react-switch";
 
 function DarkModeToggle({ onDarkModeToggle }) {
-  const darkStatus = JSON.parse(sessionStorage.getItem("darkMode"));
-  const [isDarkMode, setIsDarkMode] = useState(darkStatus);
+  //const darkStatus = JSON.parse(sessionStorage.getItem("darkMode"));
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const toggleDarkMode = () => {
     setIsDarkMode((prev) => !prev);
