@@ -19,6 +19,7 @@ function Details({ isDarkMode }) {
   const [details, setDetails] = React.useState({});
   const [recommendations, setRecommendations] = React.useState({});
   const [loading, setLoading] = React.useState(false);
+  let streamingSitesSection;
 
   const notifyRequestRate = () =>
     toast("Too many requests! Please wait a moment then try again.", {
@@ -88,7 +89,7 @@ function Details({ isDarkMode }) {
 
   const getColor = (score) => {
     if (score >= 7.5) {
-      return "#00D100"; // Green for high scores
+      return "#00A300"; // Green for high scores
     } else if (score >= 5.0) {
       return "#FFA500"; // Yellow for moderate scores
     } else {
@@ -121,8 +122,10 @@ function Details({ isDarkMode }) {
       details.type === "Movie"
     ) {
       itemType = "anime";
+      streamingSitesSection = true;
     } else {
       itemType = "manga";
+      streamingSitesSection = false;
     }
   }
 
@@ -144,172 +147,182 @@ function Details({ isDarkMode }) {
         <>
           <div className="col-md-12" style={{ marginBottom: "20px" }}>
             <div style={backgroundBlur}>
-              <div
-                className="pseudo-blur"
-                style={{
-                  backdropFilter: "blur(2px)",
-                  minHeight: "600px",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <img
-                  id="thumbnail-img"
-                  src={details.images.jpg.large_image_url}
-                  alt="anime cover"
-                  className="thumbnail"
-                />
+              <div className="blur-container">
+                <div
+                  className={`${
+                    isDarkMode ? "pseudo-blur-dark" : "pseudo-blur"
+                  }`}
+                >
+                  <img
+                    id="thumbnail-img"
+                    src={details.images.jpg.large_image_url}
+                    alt="anime cover"
+                    className="thumbnail"
+                  />
+                  <div className="fulldetails-container">
+                    <div className="details-container">
+                      <div className="text-container">
+                        {details.title.length < 11 ? (
+                          <h1 style={{ fontWeight: "normal" }}>
+                            {details.title}
+                          </h1>
+                        ) : (
+                          <h3 style={{ fontWeight: "normal" }}>
+                            {details.title}
+                          </h3>
+                        )}
+                        <p style={{ color: "#999", marginBottom: "1px" }}>
+                          {details.title_english}
+                        </p>
+                        <p style={{ marginBottom: "1px", width: "auto" }}>
+                          <strong>
+                            {typeof details.aired !== "undefined"
+                              ? details.aired.string
+                              : details.published.string}
+                          </strong>
+                        </p>
+                        <p>
+                          <strong>
+                            {typeof details.episodes !== "undefined"
+                              ? details.episodes === null
+                                ? "? Episodes"
+                                : `${details.episodes} Episodes`
+                              : `${
+                                  details.chapters === null
+                                    ? "?"
+                                    : details.chapters
+                                } Chapters | ${
+                                  details.volumes === null
+                                    ? "?"
+                                    : details.volumes
+                                } Volume(s)`}
+                          </strong>
+                        </p>
+                      </div>
+                      <div className="gauge-container">
+                        <div className="gauge-wrapper">
+                          <AnimatedProgressProvider
+                            valueStart={0}
+                            valueEnd={details.score}
+                            duration={1.4}
+                            easingFunction={easeQuadIn}
+                          >
+                            {(value) => {
+                              return (
+                                <CircularProgressbar
+                                  value={value}
+                                  maxValue={10}
+                                  text={`${
+                                    details.score ? details.score : "-"
+                                  }`}
+                                  styles={buildStyles({
+                                    pathTransition: "none",
+                                    pathColor: getColor(details.score),
+                                  })}
+                                />
+                              );
+                            }}
+                          </AnimatedProgressProvider>
+                        </div>
+
+                        <div className="ranked-wrapper">
+                          <strong>Ranked #{details.rank || "-"}</strong>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="container-secondary">
+                      <div className="thumbnail-synopsis">
+                        {details.synopsis || "No synopsis available."}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+            <ul className={listGroupClass}>
+              <li className="list-group-item">
+                <strong>Japanese Title:</strong> {details.title_japanese || "-"}
+              </li>
+              <li className="list-group-item">
+                <strong>Synonyms:</strong>{" "}
+                {details.title_synonyms.map((x) => x.trim()).join(", ") || "-"}
+              </li>
+              <li className="list-group-item">
+                <strong>Genres:</strong>{" "}
+                {details.genres.map((x) => x.name).join(", ") || "-"}
+              </li>
+              <li className="list-group-item">
+                <strong>Themes:</strong>{" "}
+                {details.themes.map((x) => x.name).join(", ") || "-"}
+              </li>
+              <li className="list-group-item">
+                <strong>Type:</strong> {details.type || ""}
+              </li>
+              {typeof details.duration !== "undefined" ? (
+                <li className="list-group-item">
+                  <strong>Duration:</strong> {details.duration || "-"}
+                </li>
+              ) : null}
+              {typeof details.rating !== "undefined" ? (
+                <li className="list-group-item">
+                  <strong>Rating:</strong> {details.rating || "-"}
+                </li>
+              ) : null}
+              {typeof details.source !== "undefined" ? (
+                <li className="list-group-item">
+                  <strong>Source:</strong> {details.source || "-"}
+                </li>
+              ) : null}
 
-            <div className="col-md-12" style={{ marginBottom: "15px" }}>
-              <div className="details-container">
-                <div className="text-container">
-                  <h2>{details.title}</h2>
-                  <p style={{ color: "#999", marginBottom: "1px" }}>
-                    {details.title_english}
-                  </p>
-                  <p style={{ marginBottom: "1px", width: "auto" }}>
-                    <strong>
-                      {typeof details.aired !== "undefined"
-                        ? details.aired.string
-                        : details.published.string}
-                    </strong>
-                  </p>
-                  <p>
-                    <strong>
-                      {typeof details.episodes !== "undefined"
-                        ? details.episodes === null
-                          ? "? Episodes"
-                          : `${details.episodes} Episodes`
-                        : `${
-                            details.chapters === null ? "?" : details.chapters
-                          } Chapters (${
-                            details.volumes === null ? "?" : details.volumes
-                          } Volumes)`}
-                    </strong>
-                  </p>
-                </div>
+              <li className="list-group-item">
+                <strong>Status:</strong> {details.status || "-"}
+              </li>
+              {typeof details.producers !== "undefined" ? (
+                <li className="list-group-item">
+                  <strong>Producers:</strong>{" "}
+                  {details.producers.map((x) => x.name).join(", ") || "-"}
+                </li>
+              ) : (
+                <li className="list-group-item">
+                  <strong>Authors:</strong>{" "}
+                  {details.authors.map((x) => x.name).join(", ") || "-"}
+                </li>
+              )}
+              {typeof details.producers !== "undefined" ? (
+                <li className="list-group-item">
+                  <strong>Studios:</strong>{" "}
+                  {details.studios.map((studio) => (
+                    <a key={studio.mal_id} href={studio.url}>
+                      {studio.name}
+                    </a>
+                  ))}
+                </li>
+              ) : (
+                <li className="list-group-item">
+                  <strong>Serializations:</strong>{" "}
+                  {details.serializations.map((x) => x.name).join(", ") || "-"}
+                </li>
+              )}
 
-                <div className="gauge-container">
-                  <div className="gauge-wrapper">
-                    <AnimatedProgressProvider
-                      valueStart={0}
-                      valueEnd={details.score}
-                      duration={1.4}
-                      easingFunction={easeQuadIn}
-                    >
-                      {(value) => {
-                        return (
-                          <CircularProgressbar
-                            value={value}
-                            maxValue={10}
-                            text={`${details.score ? details.score : "-"}`}
-                            styles={buildStyles({
-                              pathTransition: "none",
-                              pathColor: getColor(details.score),
-                            })}
-                          />
-                        );
-                      }}
-                    </AnimatedProgressProvider>
-                  </div>
-
-                  <div className="ranked-wrapper">
-                    <strong>Ranked #{details.rank || "-"}</strong>
-                  </div>
-                </div>
-              </div>
-
-              <ul className={listGroupClass}>
-                <li className="list-group-item">
-                  <strong>Japanese Title:</strong>{" "}
-                  {details.title_japanese || "-"}
-                </li>
-                <li className="list-group-item">
-                  <strong>Synonyms:</strong>{" "}
-                  {details.title_synonyms.map((x) => x.trim()).join(", ") ||
-                    "-"}
-                </li>
-                <li className="list-group-item">
-                  <strong>Genres:</strong>{" "}
-                  {details.genres.map((x) => x.name).join(", ") || "-"}
-                </li>
-                <li className="list-group-item">
-                  <strong>Themes:</strong>{" "}
-                  {details.themes.map((x) => x.name).join(", ") || "-"}
-                </li>
-                <li className="list-group-item">
-                  <strong>Type:</strong> {details.type || ""}
-                </li>
-                {typeof details.duration !== "undefined" ? (
-                  <li className="list-group-item">
-                    <strong>Duration:</strong> {details.duration || "-"}
-                  </li>
-                ) : null}
-                {typeof details.rating !== "undefined" ? (
-                  <li className="list-group-item">
-                    <strong>Rating:</strong> {details.rating || "-"}
-                  </li>
-                ) : null}
-                {typeof details.source !== "undefined" ? (
-                  <li className="list-group-item">
-                    <strong>Source:</strong> {details.source || "-"}
-                  </li>
-                ) : null}
-
-                <li className="list-group-item">
-                  <strong>Status:</strong> {details.status || "-"}
-                </li>
-                {typeof details.producers !== "undefined" ? (
-                  <li className="list-group-item">
-                    <strong>Producers:</strong>{" "}
-                    {details.producers.map((x) => x.name).join(", ") || "-"}
-                  </li>
-                ) : (
-                  <li className="list-group-item">
-                    <strong>Authors:</strong>{" "}
-                    {details.authors.map((x) => x.name).join(", ") || "-"}
-                  </li>
-                )}
-                {typeof details.producers !== "undefined" ? (
-                  <li className="list-group-item">
-                    <strong>Studios:</strong>{" "}
-                    {details.studios.map((studio) => (
-                      <a key={studio.mal_id} href={studio.url}>
-                        {studio.name}
-                      </a>
-                    ))}
-                  </li>
-                ) : (
-                  <li className="list-group-item">
-                    <strong>Serializations:</strong>{" "}
-                    {details.serializations.map((x) => x.name).join(", ") ||
-                      "-"}
-                  </li>
-                )}
-
-                <li className="list-group-item">
-                  <strong>MAL:</strong>{" "}
-                  <a href={details.url || "-"} target="_blank" rel="noreferrer">
-                    View on MyAnimeList{""}
-                  </a>
-                  &nbsp;&nbsp;
-                  <img src={mal} width={"25px"} alt="myanimelist" />
-                </li>
-              </ul>
-            </div>
+              <li className="list-group-item">
+                <strong>MAL:</strong>{" "}
+                <a href={details.url || "-"} target="_blank" rel="noreferrer">
+                  View on MyAnimeList{""}
+                </a>
+                &nbsp;&nbsp;
+                <img src={mal} width={"25px"} alt="myanimelist" />
+              </li>
+            </ul>
           </div>
           <div className="row">
             <div style={{ margin: "5px" }} className="well">
-              <h3>Synopsis</h3>
+              {/* <h3>Synopsis</h3>
               {details.synopsis || "No synopsis available."}
               <br></br>
               <br></br>
               <h5>Background</h5>
               {details.background || "No background information available."}
-              <hr></hr>
+              <hr></hr> */}
               {typeof details.trailer !== "undefined" ? (
                 <>
                   <h5>Trailer</h5>
@@ -318,29 +331,33 @@ function Details({ isDarkMode }) {
                 </>
               ) : null}
 
-              <h5>Streaming Sites</h5>
-              {typeof details.streaming !== "undefined" &&
-              details.streaming.length > 0 ? (
+              {streamingSitesSection ? (
                 <>
-                  <ul style={{ listStyle: "none", padding: "0" }}>
-                    {details.streaming.map((item, index) => (
-                      <li
-                        key={index}
-                        style={{ display: "flex", alignItems: "center" }}
-                      >
-                        <Favicon url={item.url} />
-                        <a href={item.url}>{item.name}</a>
-                      </li>
-                    ))}
-                  </ul>
-                  <hr></hr>
+                  <h5>Streaming Sites</h5>
+                  {typeof details.streaming !== "undefined" &&
+                  details.streaming.length > 0 ? (
+                    <>
+                      <ul style={{ listStyle: "none", padding: "0" }}>
+                        {details.streaming.map((item, index) => (
+                          <li
+                            key={index}
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            <Favicon url={item.url} />
+                            <a href={item.url}>{item.name}</a>
+                          </li>
+                        ))}
+                      </ul>
+                      <hr />
+                    </>
+                  ) : (
+                    <div>
+                      No streaming sites available.
+                      <hr />
+                    </div>
+                  )}
                 </>
-              ) : (
-                <div>
-                  No streaming sites available.
-                  <hr></hr>
-                </div>
-              )}
+              ) : null}
 
               <h5>Related Works</h5>
               {typeof details.relations !== "undefined" &&
