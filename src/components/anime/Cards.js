@@ -1,9 +1,9 @@
 import React, { Suspense } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import "../../src/style.css";
+import "../../../src/style.css";
 const Anime = React.lazy(() => import("./Anime"));
-const Manga = React.lazy(() => import("./Manga"));
+const Manga = React.lazy(() => import("../manga/Manga"));
 
 function Cards({ allowNSFW, isDarkMode }) {
   let oldSearch = sessionStorage.getItem("searchText");

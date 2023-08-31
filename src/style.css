@@ -1,3 +1,45 @@
+/* .Collapsible__contentInner li {
+  list-style-type: none;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.Collapsible__contentInner p:last-child {
+  margin-bottom: 0;
+} */
+
+.Collapsible__trigger {
+  display: block;
+  font-weight: 400;
+  text-decoration: none;
+  position: relative;
+  border: 1px solid #343a40;
+  padding: 10px;
+  background: #0c0c0d;
+  color: white;
+  border-radius: 25px;
+}
+
+.Collapsible__trigger:hover {
+  background: #343a40;
+}
+
+.Collapsible__trigger:after {
+  content: "\25BC";
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  display: block;
+  transition: transform 300ms;
+}
+.Collapsible__trigger.is-open:after {
+  transform: rotateZ(180deg);
+}
+.Collapsible__trigger.is-disabled {
+  opacity: 0.5;
+  background-color: grey;
+}
+
 .dark {
   background-color: #282828;
   color: #ffffff; /* Your text color for better contrast */
@@ -53,6 +95,17 @@
   margin-bottom: 20px;
   border-radius: 10px;
   height: 450px;
+  width: 300px;
+  margin-bottom: 0;
+  box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.5);
+}
+
+.studio-thumbnail {
+  margin-left: 5%;
+  margin-right: 5%;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  max-height: 300px;
   width: 300px;
   margin-bottom: 0;
   box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.5);
@@ -356,7 +409,7 @@ div.text-on-top {
 }
 
 .recommendations > div {
-  flex-basis: 170px; /* width: 350px; */
+  flex-basis: 170px;
   position: relative;
   cursor: pointer;
 }
@@ -375,7 +428,13 @@ div.text-on-top {
 }
 
 .recommendations::-webkit-scrollbar {
-  display: none;
+  width: 4px; /* Adjust the width as needed */
+}
+
+/* Style the scrollbar thumb (optional) */
+.recommendations::-webkit-scrollbar-thumb {
+  background-color: #888; /* Change the color if needed */
+  border-radius: 4px; /* Add rounded corners to the thumb */
 }
 
 .loadContainer {
@@ -388,6 +447,7 @@ div.text-on-top {
 
 .image-gallery {
   padding-left: 0;
+  z-index: -999;
 }
 
 .image-gallery > div > div.cards {
@@ -397,6 +457,8 @@ div.text-on-top {
   justify-content: space-between;
   gap: 20px;
   padding-left: 0;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 .image-gallery > li {
@@ -416,6 +478,7 @@ div.text-on-top {
 
 /* hover */
 .image-gallery li:hover .overlay {
+  height: 275px;
   transform: scale(1);
 }
 
@@ -763,12 +826,22 @@ body html {
     height: 350px;
     width: 250px;
   }
+
+  .studio-thumbnail {
+    max-height: 250px;
+    max-width: 250px;
+  }
 }
 
 @media (max-width: 830px) {
   .thumbnail {
     height: 300px;
     width: 200px;
+  }
+
+  .studio-thumbnail {
+    max-height: 200px;
+    max-width: 200px;
   }
 }
 
@@ -846,6 +919,10 @@ body html {
 
   .thumbnail {
     margin-top: 10%;
+  }
+
+  .studio-thumbnail {
+    margin-top: 25%;
   }
 
   .gauge-container {

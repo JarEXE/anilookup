@@ -1,12 +1,14 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./style.css";
-import Cards from "./components/Cards";
-import AnimeSearch from "./components/AnimeSearch";
-import Navbar from "./components/Navbar";
-import MangaSearch from "./components/MangaSearch";
+import Cards from "./components/anime/Cards";
+import AnimeSearch from "./components/anime/AnimeSearch";
+import Navbar from "./components/plugins/Navbar";
+import MangaSearch from "./components/manga/MangaSearch";
 import Details from "./components/Details";
-import ScrollToBottomButton from "./components/ScrollToBottomButton";
+import ScrollToBottomButton from "./components/plugins/ScrollToBottomButton";
+import StudioDetails from "./components/studios/StudioDetails";
+import AuthorDetails from "./components/authors/AuthorDetails";
 
 function App() {
   const sfwStatus = sessionStorage.getItem("sfw");
@@ -105,7 +107,31 @@ function App() {
               path="/details"
               element={
                 <div>
-                  <Details isDarkMode={isDarkMode} />
+                  <Details isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
+                  <ScrollToBottomButton isDarkMode={isDarkMode} />
+                </div>
+              }
+            />
+            <Route
+              path="/studiodetails"
+              element={
+                <div>
+                  <StudioDetails
+                    isDarkMode={isDarkMode}
+                    allowNSFW={allowNSFW}
+                  />
+                  <ScrollToBottomButton isDarkMode={isDarkMode} />
+                </div>
+              }
+            />
+            <Route
+              path="/authordetails"
+              element={
+                <div>
+                  <AuthorDetails
+                    isDarkMode={isDarkMode}
+                    allowNSFW={allowNSFW}
+                  />
                   <ScrollToBottomButton isDarkMode={isDarkMode} />
                 </div>
               }

@@ -1,10 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import TopAiring from "./TopAnime";
-import { TopUpcoming } from "./TopAnime";
-import { TopSeries } from "./TopAnime";
-import { TopMovies } from "./TopAnime";
-import toast, { Toaster } from "react-hot-toast";
+import TopAnime from "./TopAnime";
+import toast from "react-hot-toast";
 import ScrollContainer from "react-indiana-drag-scroll";
 
 function AnimeSearch({ onInputChange, isDarkMode, allowNSFW }) {
@@ -180,20 +177,13 @@ function AnimeSearch({ onInputChange, isDarkMode, allowNSFW }) {
       </div>
       <div>
         <ul className="image-gallery">
-          {selectedOption === "airing" ? (
-            <TopAiring isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
-          ) : selectedOption === "upcoming" ? (
-            <TopUpcoming isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
-          ) : selectedOption === "series" ? (
-            <TopSeries isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
-          ) : selectedOption === "movies" ? (
-            <TopMovies isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
-          ) : (
-            <TopAiring isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
-          )}
+          <TopAnime
+            isDarkMode={isDarkMode}
+            allowNSFW={allowNSFW}
+            selectedOption={selectedOption}
+          />
         </ul>
       </div>
-      <Toaster position="top-left" />
       <hr className="footer-separator"></hr>
       <div className="text-center">
         Powered by{" "}

@@ -1,25 +1,29 @@
 import React from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import { useNavigate } from "react-router-dom";
-import AnimatedProgressProvider from "./AnimatedProgressProvider";
+import AnimatedProgressProvider from "./plugins/AnimatedProgressProvider";
 import { easeQuadIn } from "d3-ease";
-import ScrollContainer from "react-indiana-drag-scroll";
 import "react-circular-progressbar/dist/styles.css";
 import mal from "../images/mal.png";
 import "../../src/style.css";
-import YouTubeEmbed from "./YoutubeEmbed";
-import Favicon from "./Favicon";
-import toast, { Toaster } from "react-hot-toast";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHandPointLeft } from "@fortawesome/free-solid-svg-icons";
-import { faHandPointRight } from "@fortawesome/free-solid-svg-icons";
+import YouTubeEmbed from "./plugins/YoutubeEmbed";
+import Favicon from "./plugins/Favicon";
+import toast from "react-hot-toast";
 
 function Details({ isDarkMode }) {
-  const [itemId, setItemId] = React.useState(sessionStorage.getItem("itemId"));
+  const getAnimeOrMangaId = sessionStorage.getItem("itemId");
+
+  const [itemId, setItemId] = React.useState(getAnimeOrMangaId);
   const [details, setDetails] = React.useState({});
   const [recommendations, setRecommendations] = React.useState({});
   const [loading, setLoading] = React.useState(false);
-  let streamingSitesSection;
+  const [backgroundBlur, setBackgroundBlur] = React.useState({});
+  const [streamingSitesSection, setStreamingSitesSection] =
+    React.useState(null);
+  const [itemType, setItemType] = React.useState("");
+  const [authors, setAuthors] = React.useState(null);
+
+  let isMounted = true;
 
   const notifyRequestRate = () =>
     toast("Too many requests! Please wait a moment then try again.", {
@@ -31,8 +35,97 @@ function Details({ isDarkMode }) {
       },
     });
 
+  const notifyStudioFetchFailed = () => {
+    toast.error(
+      "Error attempting to retrieve studio information. Please reload and try again or contact developer if this problem persists.",
+      {
+        style: {
+          borderRadius: "10px",
+          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+          color: `${isDarkMode ? "#333" : "#fff"}`,
+        },
+      }
+    );
+  };
+
+  const notifyAuthorFetchFailed = () => {
+    toast.error(
+      "Error attempting to retrieve author information. Please reload and try again or contact developer if this problem persists.",
+      {
+        style: {
+          borderRadius: "10px",
+          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+          color: `${isDarkMode ? "#333" : "#fff"}`,
+        },
+      }
+    );
+  };
+
+  const notifyDetailsFetchFailed = () => {
+    toast.error(
+      "Error attempting to retrieve data. Please reload and try again or contact developer if this problem persists.",
+      {
+        style: {
+          borderRadius: "10px",
+          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+          color: `${isDarkMode ? "#333" : "#fff"}`,
+        },
+      }
+    );
+  };
+
+  // Define a function to fetch author details and positions
+  async function fetchAuthorDetailsAndPositions() {
+    let authorsArray = [];
+
+    for (const author of details.authors) {
+      try {
+        const authorsResponse = await fetch(
+          `https://api.jikan.moe/v4/people/${author.mal_id}/full`
+        );
+        const authorsData = await authorsResponse.json();
+
+        if (authorsData) {
+          const targetMalId = details.mal_id;
+          const mangaArray = authorsData.data.manga;
+
+          // Function to find the position that comes before the manga key by matching the target mal_id
+          function findPositionByMalId(targetMalId) {
+            for (let i = 0; i < mangaArray.length; i++) {
+              if (mangaArray[i].manga.mal_id === targetMalId) {
+                if (i > 0) {
+                  return mangaArray[i].position;
+                }
+                // If the first object matches, there's no position before it
+                return null;
+              }
+            }
+            // Return null if the target mal_id is not found
+            return null;
+          }
+
+          // Call the function to find the position
+          const position = findPositionByMalId(targetMalId);
+
+          if (position !== null) {
+            authorsArray.push({
+              authorId: authorsData.data.mal_id,
+              position: position,
+            });
+          } else {
+            console.log(`Manga ID ${targetMalId} not found in the array.`);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+        return;
+      }
+    }
+    // Set the authors array in the state
+    setAuthors(authorsArray);
+  }
+
   const navigate = useNavigate();
-  let isMounted = true;
 
   React.useEffect(() => {
     async function fetchData() {
@@ -68,6 +161,7 @@ function Details({ isDarkMode }) {
 
           setDetails(detailsData.data);
           setRecommendations(recommendationsData.data);
+
           setLoading(false);
         } catch (error) {
           console.log(error);
@@ -78,7 +172,9 @@ function Details({ isDarkMode }) {
       }
     }
 
-    fetchData();
+    if (typeof itemId !== "undefined" && itemId !== null) {
+      fetchData();
+    }
 
     // cleanup function to update the mounted flag
     return () => {
@@ -86,6 +182,36 @@ function Details({ isDarkMode }) {
       isMounted = false;
     };
   }, [itemId]);
+
+  React.useEffect(() => {
+    if (Object.keys(details).length > 0) {
+      setBackgroundBlur({
+        width: "100%",
+        backgroundImage: `url("${details.images.jpg.large_image_url}")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        marginBottom: "20px",
+        boxShadow: "inset 0 0 0 2000px rgba(28, 28, 28, 0.75)",
+      });
+
+      // anime or manga check
+      if (
+        details.type === "TV" ||
+        details.type === "Special" ||
+        details.type === "ONA" ||
+        details.type === "OVA" ||
+        details.type === "Movie"
+      ) {
+        setItemType("anime");
+        setStreamingSitesSection(true);
+      } else {
+        fetchAuthorDetailsAndPositions();
+        setItemType("manga");
+        setStreamingSitesSection(false);
+      }
+    }
+    // eslint-disable-next-line
+  }, [details]);
 
   const getColor = (score) => {
     if (score >= 7.5) {
@@ -97,9 +223,72 @@ function Details({ isDarkMode }) {
     }
   };
 
-  const newDetails = (navInfo) => {
-    sessionStorage.setItem("itemId", navInfo);
-    setItemId(sessionStorage.getItem("itemId"));
+  const newDetails = async (navInfo) => {
+    try {
+      await new Promise((resolve, reject) => {
+        sessionStorage.setItem("itemId", navInfo);
+
+        const storeItemId = sessionStorage.getItem("studioId");
+
+        if (storeItemId) {
+          setItemId(sessionStorage.getItem("itemId"));
+          resolve();
+        } else {
+          reject("Failed to get 'itemId' from sessionStorage");
+          notifyDetailsFetchFailed();
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const studioInfo = async (studioId, studioName) => {
+    try {
+      await new Promise((resolve, reject) => {
+        sessionStorage.setItem("studioId", studioId);
+
+        sessionStorage.setItem("studioName", studioName);
+
+        const storeStudioId = sessionStorage.getItem("studioId");
+        const storeStudioName = sessionStorage.getItem("studioName");
+
+        if (storeStudioId && storeStudioName) {
+          resolve();
+          navigate("/studiodetails");
+        } else {
+          reject("Failed to get 'studioId' from sessionStorage");
+          notifyStudioFetchFailed();
+        }
+      });
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+  };
+
+  const authorInfo = async (authorId, authorName) => {
+    try {
+      await new Promise((resolve, reject) => {
+        sessionStorage.setItem("authorId", authorId);
+
+        sessionStorage.setItem("authorName", authorName);
+
+        const storeAuthorId = sessionStorage.getItem("authorId");
+        const storeAuthorName = sessionStorage.getItem("authorName");
+
+        if (storeAuthorId && storeAuthorName) {
+          resolve();
+          navigate("/authordetails");
+        } else {
+          reject("Failed to get 'authorId' from sessionStorage");
+          notifyAuthorFetchFailed();
+        }
+      });
+    } catch (error) {
+      console.log(error);
+      return;
+    }
   };
 
   const landingPageRoute = () => {
@@ -109,40 +298,8 @@ function Details({ isDarkMode }) {
   // Apply 'dark-mode' class conditionally based on the darkMode state
   const listGroupClass = `list-group${isDarkMode ? " dark-mode" : ""}`;
 
-  let itemType;
-
-  if (typeof details.type === "undefined") {
-    return;
-  } else {
-    if (
-      details.type === "TV" ||
-      details.type === "Special" ||
-      details.type === "ONA" ||
-      details.type === "OVA" ||
-      details.type === "Movie"
-    ) {
-      itemType = "anime";
-      streamingSitesSection = true;
-    } else {
-      itemType = "manga";
-      streamingSitesSection = false;
-    }
-  }
-
-  const backgroundBlur = {
-    width: "100%",
-    backgroundImage: `url("${details.images.jpg.large_image_url}")`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    marginBottom: "20px",
-    boxShadow: "inset 0 0 0 2000px rgba(28, 28, 28, 0.75)",
-  };
-
-  console.log(backgroundBlur);
-
   return (
     <div className="row">
-      {/* check if details object contains data first otherwise there will be a race condition resulting in errors out the ass. That is to say, this will only run if details has been set fully */}
       {Object.keys(details).length > 0 && !loading ? (
         <>
           <div className="col-md-12" style={{ marginBottom: "20px" }}>
@@ -240,89 +397,101 @@ function Details({ isDarkMode }) {
               </div>
             </div>
             <ul className={listGroupClass}>
-              <li className="list-group-item">
+              <li key={1} className="list-group-item">
                 <strong>Japanese Title:</strong> {details.title_japanese || "-"}
               </li>
-              <li className="list-group-item">
+              <li key={2} className="list-group-item">
                 <strong>Synonyms:</strong>{" "}
                 {details.title_synonyms.map((x) => x.trim()).join(", ") || "-"}
               </li>
-              <li className="list-group-item">
+              <li key={3} className="list-group-item">
                 <strong>Genres:</strong>{" "}
                 {details.genres.map((x) => x.name).join(", ") || "-"}
               </li>
-              <li className="list-group-item">
+              <li key={4} className="list-group-item">
                 <strong>Themes:</strong>{" "}
                 {details.themes.map((x) => x.name).join(", ") || "-"}
               </li>
-              <li className="list-group-item">
+              <li key={5} className="list-group-item">
                 <strong>Type:</strong> {details.type || ""}
               </li>
               {typeof details.duration !== "undefined" ? (
-                <li className="list-group-item">
+                <li key={6} className="list-group-item">
                   <strong>Duration:</strong> {details.duration || "-"}
                 </li>
               ) : null}
               {typeof details.rating !== "undefined" ? (
-                <li className="list-group-item">
+                <li key={7} className="list-group-item">
                   <strong>Rating:</strong> {details.rating || "-"}
                 </li>
               ) : null}
               {typeof details.source !== "undefined" ? (
-                <li className="list-group-item">
+                <li key={8} className="list-group-item">
                   <strong>Source:</strong> {details.source || "-"}
                 </li>
               ) : null}
 
-              <li className="list-group-item">
+              <li key={9} className="list-group-item">
                 <strong>Status:</strong> {details.status || "-"}
               </li>
               {typeof details.producers !== "undefined" ? (
-                <li className="list-group-item">
+                <li key={10} className="list-group-item">
                   <strong>Producers:</strong>{" "}
                   {details.producers.map((x) => x.name).join(", ") || "-"}
                 </li>
               ) : (
-                <li className="list-group-item">
+                <li key={10} className="list-group-item">
                   <strong>Authors:</strong>{" "}
-                  {details.authors.map((x) => x.name).join(", ") || "-"}
+                  {details.authors.map((author) => (
+                    <React.Fragment key={author.mal_id}>
+                      {author > 0 && ", "}{" "}
+                      <a
+                        href="#/"
+                        rel="noopener noreferrer"
+                        onClick={() =>
+                          authorInfo(`${author.mal_id}`, `${author.name}`)
+                        }
+                      >
+                        {author.name}
+                      </a>
+                      {authors
+                        ? authors.map((person) =>
+                            person.authorId === author.mal_id
+                              ? ` (${person.position})`
+                              : null
+                          )
+                        : null}
+                    </React.Fragment>
+                  ))}
                 </li>
               )}
               {typeof details.producers !== "undefined" ? (
-                <li className="list-group-item">
+                <li key={11} className="list-group-item">
                   <strong>Studios:</strong>{" "}
                   {details.studios.map((studio) => (
-                    <a key={studio.mal_id} href={studio.url}>
+                    <a
+                      key={studio.mal_id}
+                      // eslint-disable-next-line
+                      href="#/"
+                      rel="noopener noreferrer"
+                      onClick={() =>
+                        studioInfo(`${studio.mal_id}`, `${studio.name}`)
+                      }
+                    >
                       {studio.name}
                     </a>
                   ))}
                 </li>
               ) : (
-                <li className="list-group-item">
+                <li key={11} className="list-group-item">
                   <strong>Serializations:</strong>{" "}
                   {details.serializations.map((x) => x.name).join(", ") || "-"}
                 </li>
               )}
-
-              <li className="list-group-item">
-                <strong>MAL:</strong>{" "}
-                <a href={details.url || "-"} target="_blank" rel="noreferrer">
-                  View on MyAnimeList{""}
-                </a>
-                &nbsp;&nbsp;
-                <img src={mal} width={"25px"} alt="myanimelist" />
-              </li>
             </ul>
           </div>
           <div className="row">
             <div style={{ margin: "5px" }} className="well">
-              {/* <h3>Synopsis</h3>
-              {details.synopsis || "No synopsis available."}
-              <br></br>
-              <br></br>
-              <h5>Background</h5>
-              {details.background || "No background information available."}
-              <hr></hr> */}
               {typeof details.trailer !== "undefined" ? (
                 <>
                   <h5>Trailer</h5>
@@ -415,16 +584,7 @@ function Details({ isDarkMode }) {
                     isDarkMode ? "fadeContainerDark" : "fadeContainer"
                   }`}
                 >
-                  {recommendations.length > 2 ? (
-                    <div class="text-on-top">
-                      <FontAwesomeIcon icon={faHandPointLeft} />
-                      <span style={{ marginLeft: "10px", marginRight: "10px" }}>
-                        Drag to scroll
-                      </span>
-                      <FontAwesomeIcon icon={faHandPointRight} />
-                    </div>
-                  ) : null}
-                  <ScrollContainer className="recommendations">
+                  <div className="recommendations">
                     {recommendations.map((item, index) => (
                       <div className="zoomed">
                         <img
@@ -446,17 +606,31 @@ function Details({ isDarkMode }) {
                         </div>
                       </div>
                     ))}
-                  </ScrollContainer>
+                  </div>
                 </div>
               ) : (
                 <div>No recommended works available.</div>
               )}
 
               <hr></hr>
-              <div style={{ marginTop: "-15px", color: "gray" }}>
+              <div
+                style={{
+                  marginTop: "-15px",
+                  color: "gray",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
                 <small>
                   <i>*Recommended works are based on MAL user votes.</i>
                 </small>
+                <div style={{ display: "flex", flexDirection: "row" }}>
+                  <img src={mal} width={"25px"} alt="myanimelist" />
+                  &nbsp;&nbsp;
+                  <a href={details.url || "-"} target="_blank" rel="noreferrer">
+                    View on MyAnimeList{""}
+                  </a>
+                </div>
               </div>
               <a
                 id="returnBtn"
@@ -470,7 +644,6 @@ function Details({ isDarkMode }) {
                 Return to Lookup Page
               </a>
             </div>
-            <Toaster position="top-left" />
           </div>
         </>
       ) : (

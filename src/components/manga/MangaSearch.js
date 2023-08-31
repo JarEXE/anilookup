@@ -1,12 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import TopPublishing from "./TopManga";
-import { TopManhwa } from "./TopManga";
-import { TopNovel } from "./TopManga";
-import { TopManga } from "./TopManga";
-import { TopManhua } from "./TopManga";
-import { TopDoujin } from "./TopManga";
-import toast, { Toaster } from "react-hot-toast";
+import TopManga from "./TopManga";
+import toast from "react-hot-toast";
 import ScrollContainer from "react-indiana-drag-scroll";
 
 function MangaSearch({ onInputChange, isDarkMode, allowNSFW }) {
@@ -226,24 +221,20 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW }) {
       </div>
       <div>
         <ul className="image-gallery">
-          {selectedOption === "publishing" ? (
-            <TopPublishing isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
-          ) : selectedOption === "manhwa" ? (
-            <TopManhwa isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
-          ) : selectedOption === "manga" ? (
-            <TopManga isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
-          ) : selectedOption === "novel" ? (
-            <TopNovel isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
-          ) : selectedOption === "manhua" ? (
-            <TopManhua isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
-          ) : selectedOption === "doujin" && allowNSFW === true ? (
-            <TopDoujin isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
+          {(selectedOption === "doujin" && allowNSFW === true) ||
+          ["publishing", "manhwa", "manga", "novel", "manhua"].includes(
+            selectedOption
+          ) ? (
+            <TopManga
+              isDarkMode={isDarkMode}
+              allowNSFW={allowNSFW}
+              selectedOption={selectedOption}
+            />
           ) : (
             setSelectedOption("publishing")
           )}
         </ul>
       </div>
-      <Toaster position="top-left" />
       <hr className="footer-separator"></hr>
       <div className="text-center">
         Powered by{" "}

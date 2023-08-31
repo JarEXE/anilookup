@@ -20,7 +20,11 @@ function LandingPageAnime(props) {
           style={{ maxWidth: "190px" }}
         />
       </LazyLoad>
-      <div className="overlay" onClick={() => showDetails(`${props.malid}`)}>
+      <div
+        className="overlay"
+        style={{ overflowY: "hidden" }}
+        onClick={() => showDetails(`${props.malid}`)}
+      >
         <span>{props.title}</span>
       </div>
     </li>
