@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 function Details({ isDarkMode }) {
   const getAnimeOrMangaId = sessionStorage.getItem("itemId");
 
-  const [itemId, setItemId] = React.useState(getAnimeOrMangaId);
+  const [itemId] = React.useState(getAnimeOrMangaId);
   const [details, setDetails] = React.useState({});
   const [recommendations, setRecommendations] = React.useState({});
   const [loading, setLoading] = React.useState(false);
@@ -185,17 +185,9 @@ function Details({ isDarkMode }) {
   };
 
   const newDetails = async (navInfo) => {
-    try {
-      sessionStorage.setItem("itemId", navInfo);
+    sessionStorage.setItem("itemId", navInfo);
 
-      const storeItemId = sessionStorage.getItem("studioId");
-
-      if (storeItemId) {
-        setItemId(sessionStorage.getItem("itemId"));
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    navigate(0);
   };
 
   const studioInfo = async (studioId, studioName) => {
