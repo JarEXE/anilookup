@@ -208,7 +208,6 @@ function Details({ isDarkMode }) {
       const storeStudioName = sessionStorage.getItem("studioName");
 
       if (storeStudioId && storeStudioName) {
-        resolve();
         navigate("/studiodetails");
       }
     } catch (error) {
@@ -227,7 +226,6 @@ function Details({ isDarkMode }) {
       const storeAuthorName = sessionStorage.getItem("authorName");
 
       if (storeAuthorId && storeAuthorName) {
-        resolve();
         navigate("/authordetails");
       }
     } catch (error) {
