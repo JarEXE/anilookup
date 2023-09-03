@@ -35,45 +35,6 @@ function Details({ isDarkMode }) {
       },
     });
 
-  const notifyStudioFetchFailed = () => {
-    toast.error(
-      "Error attempting to retrieve studio information. Please reload and try again or contact developer if this problem persists.",
-      {
-        style: {
-          borderRadius: "10px",
-          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-          color: `${isDarkMode ? "#333" : "#fff"}`,
-        },
-      }
-    );
-  };
-
-  const notifyAuthorFetchFailed = () => {
-    toast.error(
-      "Error attempting to retrieve author information. Please reload and try again or contact developer if this problem persists.",
-      {
-        style: {
-          borderRadius: "10px",
-          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-          color: `${isDarkMode ? "#333" : "#fff"}`,
-        },
-      }
-    );
-  };
-
-  const notifyDetailsFetchFailed = () => {
-    toast.error(
-      "Error attempting to retrieve data. Please reload and try again or contact developer if this problem persists.",
-      {
-        style: {
-          borderRadius: "10px",
-          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-          color: `${isDarkMode ? "#333" : "#fff"}`,
-        },
-      }
-    );
-  };
-
   // Define a function to fetch author details and positions
   async function fetchAuthorDetailsAndPositions() {
     let authorsArray = [];
@@ -225,19 +186,13 @@ function Details({ isDarkMode }) {
 
   const newDetails = async (navInfo) => {
     try {
-      await new Promise((resolve, reject) => {
-        sessionStorage.setItem("itemId", navInfo);
+      sessionStorage.setItem("itemId", navInfo);
 
-        const storeItemId = sessionStorage.getItem("studioId");
+      const storeItemId = sessionStorage.getItem("studioId");
 
-        if (storeItemId) {
-          setItemId(sessionStorage.getItem("itemId"));
-          resolve();
-        } else {
-          reject("Failed to get 'itemId' from sessionStorage");
-          notifyDetailsFetchFailed();
-        }
-      });
+      if (storeItemId) {
+        setItemId(sessionStorage.getItem("itemId"));
+      }
     } catch (error) {
       console.log(error);
     }
@@ -245,22 +200,17 @@ function Details({ isDarkMode }) {
 
   const studioInfo = async (studioId, studioName) => {
     try {
-      await new Promise((resolve, reject) => {
-        sessionStorage.setItem("studioId", studioId);
+      sessionStorage.setItem("studioId", studioId);
 
-        sessionStorage.setItem("studioName", studioName);
+      sessionStorage.setItem("studioName", studioName);
 
-        const storeStudioId = sessionStorage.getItem("studioId");
-        const storeStudioName = sessionStorage.getItem("studioName");
+      const storeStudioId = sessionStorage.getItem("studioId");
+      const storeStudioName = sessionStorage.getItem("studioName");
 
-        if (storeStudioId && storeStudioName) {
-          resolve();
-          navigate("/studiodetails");
-        } else {
-          reject("Failed to get 'studioId' from sessionStorage");
-          notifyStudioFetchFailed();
-        }
-      });
+      if (storeStudioId && storeStudioName) {
+        resolve();
+        navigate("/studiodetails");
+      }
     } catch (error) {
       console.log(error);
       return;
@@ -269,22 +219,17 @@ function Details({ isDarkMode }) {
 
   const authorInfo = async (authorId, authorName) => {
     try {
-      await new Promise((resolve, reject) => {
-        sessionStorage.setItem("authorId", authorId);
+      sessionStorage.setItem("authorId", authorId);
 
-        sessionStorage.setItem("authorName", authorName);
+      sessionStorage.setItem("authorName", authorName);
 
-        const storeAuthorId = sessionStorage.getItem("authorId");
-        const storeAuthorName = sessionStorage.getItem("authorName");
+      const storeAuthorId = sessionStorage.getItem("authorId");
+      const storeAuthorName = sessionStorage.getItem("authorName");
 
-        if (storeAuthorId && storeAuthorName) {
-          resolve();
-          navigate("/authordetails");
-        } else {
-          reject("Failed to get 'authorId' from sessionStorage");
-          notifyAuthorFetchFailed();
-        }
-      });
+      if (storeAuthorId && storeAuthorName) {
+        resolve();
+        navigate("/authordetails");
+      }
     } catch (error) {
       console.log(error);
       return;
