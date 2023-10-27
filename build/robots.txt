@@ -1,0 +1,5 @@
+Disallow: /login
+Disallow: /logout
+Disallow: /reset
+Disallow: /profile
+Disallow: /register

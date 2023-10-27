@@ -12,6 +12,31 @@ function DarkModeToggle({ onDarkModeToggle }) {
     setIsDarkMode((prev) => !prev);
     onDarkModeToggle(!isDarkMode); // Notify the parent component
     sessionStorage.setItem("darkMode", JSON.stringify(!isDarkMode));
+
+    // Get the dynamic color value based on dark mode state
+    const dynamicColor = isDarkMode ? "#282828" : "#ffffff";
+
+    // Update manifest.json properties dynamically
+    const manifest = {
+      name: "AniLookup",
+      short_name: "AniLookup",
+      start_url: "/",
+      display: "standalone",
+      background_color: dynamicColor,
+      theme_color: dynamicColor,
+    };
+
+    // Update the manifest.json file with the dynamic properties
+    const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], {
+      type: "application/json",
+    });
+    const manifestUrl = URL.createObjectURL(manifestBlob);
+
+    // Set the manifest URL in the document head
+    const manifestTag = document.createElement("link");
+    manifestTag.rel = "manifest";
+    manifestTag.href = manifestUrl;
+    document.head.appendChild(manifestTag);
   };
 
   return (
