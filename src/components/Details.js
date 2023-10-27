@@ -11,8 +11,10 @@ import Favicon from "./plugins/Favicon";
 import toast from "react-hot-toast";
 
 function Details({ isDarkMode }) {
+  const getKitsuCover = sessionStorage.getItem("kitsuCover");
   const getAnimeOrMangaId = sessionStorage.getItem("itemId");
 
+  const [kitsuCover] = React.useState(getKitsuCover);
   const [itemId] = React.useState(getAnimeOrMangaId);
   const [details, setDetails] = React.useState({});
   const [recommendations, setRecommendations] = React.useState({});
@@ -147,12 +149,24 @@ function Details({ isDarkMode }) {
   React.useEffect(() => {
     if (Object.keys(details).length > 0) {
       setBackgroundBlur({
-        width: "100%",
-        backgroundImage: `url("${details.images.jpg.large_image_url}")`,
+        backgroundImage: `url("${
+          kitsuCover.length > 0
+            ? kitsuCover
+            : details.images.jpg.large_image_url
+        }")`,
+        width: `${kitsuCover.length > 0 ? "100vw" : "100vw"}`,
+        marginLeft: `${
+          kitsuCover.length > 0 ? "calc(50% - 50vw)" : "calc(50% - 50vw)"
+        }`,
         backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundPosition: `${kitsuCover.length > 0 ? "" : "center"}`,
         marginBottom: "20px",
-        boxShadow: "inset 0 0 0 2000px rgba(28, 28, 28, 0.75)",
+        boxShadow: `${
+          kitsuCover.length > 0
+            ? "0px 0px 10px 5px rgba(0, 0, 0, 0.5)"
+            : " inset 0 0 0 2000px rgba(28, 28, 28, 0.75)"
+        }`,
+        filter: `${kitsuCover.length > 0 ? "" : "blur(5px)"}`,
       });
 
       // anime or manga check
@@ -161,7 +175,8 @@ function Details({ isDarkMode }) {
         details.type === "Special" ||
         details.type === "ONA" ||
         details.type === "OVA" ||
-        details.type === "Movie"
+        details.type === "Movie" ||
+        details.type === "Music"
       ) {
         setItemType("anime");
         setStreamingSitesSection(true);
@@ -184,10 +199,30 @@ function Details({ isDarkMode }) {
     }
   };
 
-  const newDetails = async (navInfo) => {
-    sessionStorage.setItem("itemId", navInfo);
+  const newDetails = async (navInfo, navTitle, itemType) => {
+    let kitsuData;
+    setLoading(true);
 
-    navigate(0);
+    await fetch(
+      `https://kitsu.io/api/edge/${itemType}?filter[text]=${navTitle}&page[limit]=1`
+    ).then(async (response) => {
+      kitsuData = await response.json();
+    });
+
+    if (kitsuData.data[0].attributes.coverImage != null) {
+      sessionStorage.setItem(
+        "kitsuCover",
+        `${kitsuData.data[0].attributes.coverImage.original}`
+      );
+
+      sessionStorage.setItem("itemId", navInfo);
+      navigate(0);
+    } else {
+      sessionStorage.setItem("kitsuCover", "");
+
+      sessionStorage.setItem("itemId", navInfo);
+      navigate(0);
+    }
   };
 
   const studioInfo = async (studioId, studioName) => {
@@ -232,101 +267,98 @@ function Details({ isDarkMode }) {
 
   // Apply 'dark-mode' class conditionally based on the darkMode state
   const listGroupClass = `list-group${isDarkMode ? " dark-mode" : ""}`;
+  const blurDetailsClass = `blur-details${isDarkMode ? " dark-mode" : ""}`;
 
   return (
     <div className="row">
       {Object.keys(details).length > 0 && !loading ? (
         <>
-          <div className="col-md-12" style={{ marginBottom: "20px" }}>
+          <div
+            className="col-md-12"
+            style={{
+              marginBottom: "20px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             <div style={backgroundBlur}>
               <div className="blur-container">
                 <div
                   className={`${
                     isDarkMode ? "pseudo-blur-dark" : "pseudo-blur"
                   }`}
-                >
-                  <img
-                    id="thumbnail-img"
-                    src={details.images.jpg.large_image_url}
-                    alt="anime cover"
-                    className="thumbnail"
-                  />
-                  <div className="fulldetails-container">
-                    <div className="details-container">
-                      <div className="text-container">
-                        {details.title.length < 11 ? (
-                          <h1 style={{ fontWeight: "normal" }}>
-                            {details.title}
-                          </h1>
-                        ) : (
-                          <h3 style={{ fontWeight: "normal" }}>
-                            {details.title}
-                          </h3>
-                        )}
-                        <p style={{ color: "#999", marginBottom: "1px" }}>
-                          {details.title_english}
-                        </p>
-                        <p style={{ marginBottom: "1px", width: "auto" }}>
-                          <strong>
-                            {typeof details.aired !== "undefined"
-                              ? details.aired.string
-                              : details.published.string}
-                          </strong>
-                        </p>
-                        <p>
-                          <strong>
-                            {typeof details.episodes !== "undefined"
-                              ? details.episodes === null
-                                ? "? Episodes"
-                                : `${details.episodes} Episodes`
-                              : `${
-                                  details.chapters === null
-                                    ? "?"
-                                    : details.chapters
-                                } Chapters | ${
-                                  details.volumes === null
-                                    ? "?"
-                                    : details.volumes
-                                } Volume(s)`}
-                          </strong>
-                        </p>
-                      </div>
-                      <div className="gauge-container">
-                        <div className="gauge-wrapper">
-                          <AnimatedProgressProvider
-                            valueStart={0}
-                            valueEnd={details.score}
-                            duration={1.4}
-                            easingFunction={easeQuadIn}
-                          >
-                            {(value) => {
-                              return (
-                                <CircularProgressbar
-                                  value={value}
-                                  maxValue={10}
-                                  text={`${
-                                    details.score ? details.score : "-"
-                                  }`}
-                                  styles={buildStyles({
-                                    pathTransition: "none",
-                                    pathColor: getColor(details.score),
-                                  })}
-                                />
-                              );
-                            }}
-                          </AnimatedProgressProvider>
-                        </div>
+                ></div>
+              </div>
+            </div>
+            <div className={blurDetailsClass}>
+              <img
+                id="thumbnail-img"
+                src={details.images.jpg.large_image_url}
+                alt="anime cover"
+                className="thumbnail"
+              />
+              <div className="fulldetails-container">
+                <div className="details-container">
+                  <div className="text-container">
+                    {details.title.length < 11 ? (
+                      <h1 style={{ fontWeight: "normal" }}>{details.title}</h1>
+                    ) : (
+                      <h3 style={{ fontWeight: "normal" }}>{details.title}</h3>
+                    )}
+                    <p>{details.title_english}</p>
+                    <p style={{ marginBottom: "1px", width: "auto" }}>
+                      <strong>
+                        {typeof details.aired !== "undefined"
+                          ? details.aired.string
+                          : details.published.string}
+                      </strong>
+                    </p>
+                    <p>
+                      <strong>
+                        {typeof details.episodes !== "undefined"
+                          ? details.episodes === null
+                            ? "? Episodes"
+                            : `${details.episodes} Episodes`
+                          : `${
+                              details.chapters === null ? "?" : details.chapters
+                            } Chapters | ${
+                              details.volumes === null ? "?" : details.volumes
+                            } Volume(s)`}
+                      </strong>
+                    </p>
+                  </div>
+                  <div className="gauge-container">
+                    <div className="gauge-wrapper">
+                      <AnimatedProgressProvider
+                        valueStart={0}
+                        valueEnd={details.score}
+                        duration={1.4}
+                        easingFunction={easeQuadIn}
+                      >
+                        {(value) => {
+                          return (
+                            <CircularProgressbar
+                              value={value}
+                              maxValue={10}
+                              text={`${details.score ? details.score : "-"}`}
+                              styles={buildStyles({
+                                pathTransition: "none",
+                                pathColor: getColor(details.score),
+                              })}
+                            />
+                          );
+                        }}
+                      </AnimatedProgressProvider>
+                    </div>
 
-                        <div className="ranked-wrapper">
-                          <strong>Ranked #{details.rank || "-"}</strong>
-                        </div>
-                      </div>
+                    <div className="ranked-wrapper">
+                      <strong>Ranked #{details.rank || "-"}</strong>
                     </div>
-                    <div className="container-secondary">
-                      <div className="thumbnail-synopsis">
-                        {details.synopsis || "No synopsis available."}
-                      </div>
-                    </div>
+                  </div>
+                </div>
+                <div className="container-secondary">
+                  <div className="thumbnail-synopsis">
+                    {details.synopsis || "No synopsis available."}
                   </div>
                 </div>
               </div>
@@ -413,7 +445,7 @@ function Details({ isDarkMode }) {
                         studioInfo(`${studio.mal_id}`, `${studio.name}`)
                       }
                     >
-                      {studio.name}
+                      {studio.name}{" "}
                     </a>
                   ))}
                 </li>
@@ -484,7 +516,9 @@ function Details({ isDarkMode }) {
                                     rel="noopener noreferrer"
                                     onClick={() =>
                                       newDetails(
-                                        `/${entry.type}/${entry.mal_id}`
+                                        `/${entry.type}/${entry.mal_id}`,
+                                        entry.name,
+                                        entry.type
                                       )
                                     }
                                   >
@@ -528,13 +562,21 @@ function Details({ isDarkMode }) {
                           alt="loading cover..."
                           loading="lazy"
                           onClick={() =>
-                            newDetails(`/${itemType}/${item.entry.mal_id}`)
+                            newDetails(
+                              `/${itemType}/${item.entry.mal_id}`,
+                              item.entry.title,
+                              itemType
+                            )
                           }
                         />
                         <div
                           className="overlay"
                           onClick={() =>
-                            newDetails(`/${itemType}/${item.entry.mal_id}`)
+                            newDetails(
+                              `/${itemType}/${item.entry.mal_id}`,
+                              item.entry.title,
+                              itemType
+                            )
                           }
                         >
                           <span>{item.entry.title}</span>

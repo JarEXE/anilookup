@@ -64,7 +64,8 @@ const TopAnime = ({ isDarkMode, allowNSFW, selectedOption }) => {
       .catch((error) => {
         console.error("Error fetching API data:", error);
       });
-  }, [isDarkMode, allowNSFW, sfwToggle, currentPage, selectedOption]);
+    // eslint-disable-next-line
+  }, [allowNSFW, sfwToggle, currentPage, selectedOption]);
 
   const notifyInvalidPage = () =>
     toast(`Invalid page! Max is ${pagination.last_visible_page}`, {

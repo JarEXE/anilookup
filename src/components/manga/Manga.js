@@ -1,7 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import LoadingOverlay from "react-loading-overlay-ts";
 
 function Manga(props) {
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isActive, setIsActive] = React.useState(false);
+  let kitsuData;
+
   const customStyles = {
     marginBottom: "10px",
     marginTop: "10px",
@@ -15,52 +20,98 @@ function Manga(props) {
   };
   const navigate = useNavigate();
 
-  const handleSubmit = () => {
-    sessionStorage.setItem("itemId", `/manga/${props.malid}`);
-    navigate(`/details`);
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    setIsActive(true);
+
+    await fetch(
+      `https://kitsu.io/api/edge/manga?filter[text]=${props.title}&page[limit]=1`
+    ).then(async (response) => {
+      kitsuData = await response.json();
+    });
+
+    if (kitsuData.data[0].attributes.coverImage != null) {
+      sessionStorage.setItem(
+        "kitsuCover",
+        `${kitsuData.data[0].attributes.coverImage.original}`
+      );
+      sessionStorage.setItem("itemId", `/manga/${props.malid}`);
+      setIsLoading(false);
+      setIsActive(false);
+      navigate(`/details`);
+    } else {
+      sessionStorage.setItem("kitsuCover", "");
+      sessionStorage.setItem("itemId", `/manga/${props.malid}`);
+      setIsLoading(false);
+      setIsActive(false);
+      navigate(`/details`);
+    }
   };
 
   return (
-    <div
-      className="col-md-3"
-      style={{
-        margin: "10px",
-        height: "800px",
-      }}
-    >
-      <div
-        style={customStyles}
-        className="well text-center zoomed-landing-page"
-      >
-        <div className="boxContainer">
-          <img
-            src={props.img}
-            alt="anime cover"
-            loading="lazy"
-            style={{
-              marginBottom: "20px",
-              height: "300px",
-              width: "200px",
-              borderRadius: "10px",
-            }}
-          />
-          <div className="summary-container">
-            <h5>{props.title}</h5>
-            <div
-              className={`${props.isDarkMode ? "synopsisDark" : "synopsis"}`}
-            >
-              <p>{props.synopsis}</p>
+    <>
+      {isLoading ? (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0, 0, 0, 0.75)",
+            zIndex: "999",
+          }}
+        >
+          <LoadingOverlay
+            active={isActive}
+            spinner={<span className="overlay_loader"></span>}
+          ></LoadingOverlay>
+        </div>
+      ) : (
+        <div
+          className="col-md-3"
+          style={{
+            margin: "10px",
+            height: "800px",
+          }}
+        >
+          <div
+            style={customStyles}
+            className="well text-center zoomed-landing-page"
+          >
+            <div className="boxContainer">
+              <img
+                src={props.img}
+                alt="anime cover"
+                loading="lazy"
+                style={{
+                  marginBottom: "20px",
+                  height: "300px",
+                  width: "200px",
+                  borderRadius: "10px",
+                }}
+              />
+              <div className="summary-container">
+                <h5>{props.title}</h5>
+                <div
+                  className={`${
+                    props.isDarkMode ? "synopsisDark" : "synopsis"
+                  }`}
+                >
+                  <p>{props.synopsis}</p>
+                </div>
+              </div>
             </div>
+            <button
+              onClick={handleSubmit}
+              className={`btn btn-${props.isDarkMode ? "info" : "dark"}`}
+            >
+              More details
+            </button>
           </div>
         </div>
-        <button
-          onClick={handleSubmit}
-          className={`btn btn-${props.isDarkMode ? "info" : "dark"}`}
-        >
-          More details
-        </button>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 

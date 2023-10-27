@@ -62,7 +62,8 @@ const TopManga = ({ isDarkMode, allowNSFW, selectedOption }) => {
       .catch((error) => {
         console.error("Error fetching API data:", error);
       });
-  }, [isDarkMode, allowNSFW, currentPage, selectedOption]);
+    // eslint-disable-next-line
+  }, [allowNSFW, currentPage, selectedOption]);
 
   const notifyInvalidPage = () =>
     toast(`Invalid page! Max is ${pagination.last_visible_page}`, {

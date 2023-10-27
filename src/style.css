@@ -1,13 +1,3 @@
-/* .Collapsible__contentInner li {
-  list-style-type: none;
-  margin-bottom: 10px;
-  font-size: 14px;
-  line-height: 20px;
-}
-.Collapsible__contentInner p:last-child {
-  margin-bottom: 0;
-} */
-
 .Collapsible__trigger {
   display: block;
   font-weight: 400;
@@ -38,6 +28,13 @@
 .Collapsible__trigger.is-disabled {
   opacity: 0.5;
   background-color: grey;
+}
+
+.App {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh; /* Cover the entire viewport height */
+  overflow: hidden; /* Hide horizontal overflow if needed */
 }
 
 .dark {
@@ -117,21 +114,21 @@
 
 .container-secondary {
   text-align: left;
-  max-width: 428.41px;
+  /* max-width: 428.41px; */
   max-height: 200px;
   position: relative;
-  margin-top: 10%;
+  /* margin-top: 10%; */
 }
 
 .fulldetails-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: left;
   text-align: center;
-  color: white;
   width: 100%;
+  margin-top: 20%;
   max-width: 425px;
-  max-height: 450px;
+  max-height: 285px;
   overflow-y: scroll;
 }
 
@@ -144,6 +141,10 @@
 .fulldetails-container::-webkit-scrollbar-thumb {
   background-color: #888; /* Change the color if needed */
   border-radius: 4px; /* Add rounded corners to the thumb */
+}
+
+._loading_overlay_spinner.css-50etie {
+  margin-top: 200%;
 }
 
 .loader {
@@ -161,6 +162,28 @@
   box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.3) inset;
 }
 .loader:after {
+  box-shadow: 0 2px 0 #0dcaf0 inset;
+  animation: rotate 2s linear infinite;
+}
+
+.overlay_loader {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+}
+
+.overlay_loader:before,
+.overlay_loader:after {
+  content: "";
+  border-radius: 50%;
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.3) inset;
+}
+.overlay_loader:after {
   box-shadow: 0 2px 0 #0dcaf0 inset;
   animation: rotate 2s linear infinite;
 }
@@ -197,46 +220,18 @@ div.text-on-top {
 }
 
 .pseudo-blur {
-  backdrop-filter: blur(1px);
-  min-height: 750px;
+  /* backdrop-filter: blur(1px); */
+  min-height: 550px;
   display: flex;
   flex-direction: row;
   align-items: center;
   position: relative;
   border: none;
-}
-
-.pseudo-blur::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 10;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  /* backdrop-filter: blur(1px); */
-  box-shadow: inset 0px 0px 10px 10px rgba(255, 255, 255, 1);
-  z-index: -1; /* Place the pseudo-element behind the content */
-}
-
-.pseudo-blur::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 10;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  /* backdrop-filter: blur(1px); */
-  box-shadow: inset 0px 0px 10px 10px rgba(255, 255, 255, 1);
-  z-index: -1; /* Place the pseudo-element behind the content */
 }
 
 .pseudo-blur-dark {
-  backdrop-filter: blur(1px);
-  min-height: 750px;
+  /* backdrop-filter: blur(1px); */
+  min-height: 550px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -244,32 +239,28 @@ div.text-on-top {
   border: none;
 }
 
-.pseudo-blur-dark::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 10;
-  right: 0;
-  bottom: 0;
+.blur-details {
   width: 100%;
-  height: 100%;
-  /* backdrop-filter: blur(1px); */
-  box-shadow: inset 0px 0px 20px 10px rgba(40, 40, 40, 1);
-  z-index: -1; /* Place the pseudo-element behind the content */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+  border: none;
+  color: #000;
+  margin-bottom: 15px;
+  margin-top: -20%;
 }
 
-.pseudo-blur-dark::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 10;
-  right: 0;
-  bottom: 0;
+.blur-details.dark-mode {
   width: 100%;
-  height: 100%;
-  /* backdrop-filter: blur(1px); */
-  box-shadow: inset 0px 0px 20px 10px rgba(40, 40, 40, 1);
-  z-index: -1; /* Place the pseudo-element behind the content */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+  border: none;
+  color: white;
+  margin-bottom: 15px;
+  margin-top: -20%;
 }
 
 .fadeContainer {
@@ -280,80 +271,6 @@ div.text-on-top {
 .fadeContainerDark {
   position: relative;
   overflow: hidden;
-}
-
-.fadeContainerInputToggles {
-  position: relative;
-  overflow: hidden;
-}
-
-.fadeContainerInputToggles:before,
-.fadeContainerInputToggles:after {
-  content: "";
-  font-size: 1.2em;
-  position: absolute;
-  z-index: 1;
-  top: 0; /* Keep 'top' to position the fades at the top */
-  pointer-events: none;
-  width: 2em; /* Change the width to control the width of the fade effect */
-  height: 100%; /* Set height to 100% to cover the entire container */
-  opacity: 1; /* Start with the fade effect visible */
-  transition: opacity 0.3s; /* Add a smooth transition for visibility changes */
-}
-
-.fadeContainerInputToggles:before {
-  left: 0; /* Position the left fade effect on the left side */
-  background-image: linear-gradient(
-    to left,
-    /* Create a horizontal gradient from right to left */ rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 1) 90%
-  );
-}
-
-.fadeContainerInputToggles:after {
-  content: "";
-  right: 0; /* Position the right fade effect on the right side */
-  background-image: linear-gradient(
-    to right,
-    /* Create a horizontal gradient from left to right */ rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 1) 90%
-  );
-}
-
-.fadeContainerInputTogglesDark {
-  position: relative;
-  overflow: hidden;
-}
-
-.fadeContainerInputTogglesDark:before,
-.fadeContainerInputTogglesDark:after {
-  content: "";
-  font-size: 1.2em;
-  position: absolute;
-  z-index: 1;
-  top: 0; /* Keep 'top' to position the fades at the top */
-  pointer-events: none;
-  width: 2em; /* Change the width to control the width of the fade effect */
-  height: 100%; /* Set height to 100% to cover the entire container */
-}
-
-.fadeContainerInputTogglesDark:before {
-  left: 0; /* Position the left fade effect on the left side */
-  background-image: linear-gradient(
-    to left,
-    /* Create a horizontal gradient from right to left */ rgba(255, 255, 255, 0),
-    #282828 90%
-  );
-}
-
-.fadeContainerInputTogglesDark:after {
-  content: "";
-  right: 0; /* Position the right fade effect on the right side */
-  background-image: linear-gradient(
-    to right,
-    /* Create a horizontal gradient from left to right */ rgba(255, 255, 255, 0),
-    #282828 90%
-  );
 }
 
 .inputToggles {
@@ -545,6 +462,7 @@ div.text-on-top {
   justify-content: center; /* Vertically center items */
   max-width: 120px;
   margin-right: 5%;
+  margin-left: 5%;
 }
 
 .gauge-wrapper {
@@ -661,10 +579,10 @@ div.text-on-top {
   padding: 20px;
 }
 
-body html {
+body {
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow-x: "hidden";
 }
 
 .btn-primary {
@@ -731,77 +649,9 @@ body html {
     overflow: hidden;
   }
 
-  .fadeContainer:before,
-  .fadeContainer:after {
-    content: "";
-    font-size: 1.2em;
-    position: absolute;
-    z-index: 1;
-    top: 0; /* Keep 'top' to position the fades at the top */
-    pointer-events: none;
-    width: 2em; /* Change the width to control the width of the fade effect */
-    height: 100%; /* Set height to 100% to cover the entire container */
-    opacity: 0;
-  }
-
-  .fadeContainer:before {
-    left: 0; /* Position the left fade effect on the left side */
-    background-image: linear-gradient(
-      to left,
-      /* Create a horizontal gradient from right to left */
-        rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 1) 90%
-    );
-  }
-
-  .fadeContainer:after {
-    content: "";
-    right: 0; /* Position the right fade effect on the right side */
-    background-image: linear-gradient(
-      to right,
-      /* Create a horizontal gradient from left to right */
-        rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 1) 90%
-    );
-  }
-
   .fadeContainerDark {
     position: relative;
     overflow: hidden;
-  }
-
-  .fadeContainerDark:before,
-  .fadeContainerDark:after {
-    content: "";
-    font-size: 1.2em;
-    position: absolute;
-    z-index: 1;
-    top: 0; /* Keep 'top' to position the fades at the top */
-    pointer-events: none;
-    width: 2em; /* Change the width to control the width of the fade effect */
-    height: 100%; /* Set height to 100% to cover the entire container */
-    opacity: 0;
-  }
-
-  .fadeContainerDark:before {
-    left: 0; /* Position the left fade effect on the left side */
-    background-image: linear-gradient(
-      to left,
-      /* Create a horizontal gradient from right to left */
-        rgba(255, 255, 255, 0),
-      #282828 90%
-    );
-  }
-
-  .fadeContainerDark:after {
-    content: "";
-    right: 0; /* Position the right fade effect on the right side */
-    background-image: linear-gradient(
-      to right,
-      /* Create a horizontal gradient from left to right */
-        rgba(255, 255, 255, 0),
-      #282828 90%
-    );
   }
 
   .separator {
@@ -845,108 +695,42 @@ body html {
   }
 }
 
-@media (max-width: 775px) {
-  .fulldetails-container {
-    max-width: 350px;
-  }
-}
-
-@media (max-width: 690px) {
-  .fulldetails-container {
-    max-width: 250px;
-  }
-}
-
-@media (max-width: 580px) {
+@media (max-width: 760px) {
   .blur-container {
-    max-height: 800px;
+    max-height: 210px;
   }
-
-  .pseudo-blur {
-    height: 800px;
-    display: flex;
+  .fulldetails-container {
+    max-width: 100%;
+  }
+  .thumbnail {
+    max-width: 150px;
+    max-height: 225px;
+  }
+  .blur-details {
     flex-direction: column;
-    align-items: center;
-    position: relative;
-    border: none;
   }
 
-  .pseudo-blur-dark {
-    min-height: 800px;
-    display: flex;
+  .blur-details.dark-mode {
     flex-direction: column;
-    align-items: center;
-    position: relative;
-    border: none;
   }
-
-  .pseudo-blur::before {
-    position: absolute;
-    height: 800px;
-  }
-
-  .pseudo-blur::after {
-    position: absolute;
-    height: 800px;
-  }
-
-  .pseudo-blur-dark::before {
-    position: absolute;
-    height: 800px;
-  }
-
-  .pseudo-blur-dark::after {
-    position: absolute;
-    height: 800px;
-  }
-
-  .thumbnail-synopsis {
-    max-height: 300px;
-  }
-
   .fulldetails-container {
     margin-top: 5%;
-    max-width: 450px;
-    max-height: 750px;
   }
 
-  .container-secondary {
-    margin-top: 0;
-    text-align: left;
-    max-width: 450px;
-    max-height: 200px;
-  }
-
-  .thumbnail {
-    margin-top: 10%;
-  }
-
-  .studio-thumbnail {
-    margin-top: 25%;
-  }
-
-  .gauge-container {
-    max-width: 70px;
+  .text-container {
+    max-width: none;
   }
 }
 
-@media (max-width: 550px) {
-  .fulldetails-container {
-    max-width: 370px;
-    max-height: 408.77px;
+@media (max-width: 480px) {
+  .navbar-brand {
+    display: none;
   }
 }
 
 @media (max-width: 464px) {
   .image-gallery > div > div.cards {
     justify-content: center;
-  }
-  .fulldetails-container {
-    max-width: 325px;
-    max-height: 375px;
-  }
-  .container-secondary {
-    max-height: 240px;
   }
 }
 
@@ -974,71 +758,15 @@ body html {
     font-size: smaller;
   }
 
-  .blur-container {
-    max-height: 600px;
-  }
-
-  .pseudo-blur::before {
-    position: absolute;
-    height: 605px;
-  }
-
-  .pseudo-blur::after {
-    position: absolute;
-    height: 605px;
-  }
-
-  .pseudo-blur-dark::before {
-    position: absolute;
-    height: 605px;
-  }
-
-  .pseudo-blur-dark::after {
-    position: absolute;
-    height: 605px;
-  }
-
-  .fulldetails-container {
-    width: 85%;
-    min-height: 245px;
-    overflow-y: scroll;
-  }
-
-  .container-secondary {
-    max-height: 95px;
-    margin-top: 0;
-  }
-  .thumbnail-synopsis {
-    max-height: 95px;
-  }
-
-  .gauge-container {
-    max-width: 60px;
-  }
-
-  .gauge-wrapper {
-    max-width: 90px;
+  .thumbnail {
+    max-width: 100px;
+    max-height: 150px;
   }
 }
 
 @media (max-width: 360px) {
   .inputToggles {
     justify-content: flex-start;
-  }
-  .thumbnail {
-    height: 250px;
-    width: 150px;
-  }
-  .gauge-container {
-    width: 50px;
-  }
-
-  .gauge-wrapper {
-    width: 50px;
-  }
-
-  .fulldetails-container {
-    min-height: 300px;
   }
 }
 
@@ -1072,11 +800,5 @@ body html {
   }
   .btn.pagination-prev {
     margin-right: 0;
-  }
-}
-
-@media (max-width: 320px) {
-  .thumbnail {
-    max-width: 250px;
   }
 }

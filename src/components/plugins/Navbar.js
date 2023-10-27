@@ -1,10 +1,26 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "../../firebase";
 import Switch from "react-switch";
 import DarkModeToggle from "./DarkModeToggle";
 import toast, { Toaster } from "react-hot-toast";
+import InfoIcon from "@mui/icons-material/Info";
+import ListIcon from "@mui/icons-material/ListRounded";
+import ExitIcon from "@mui/icons-material/ExitToApp";
+import ProfileIcon from "@mui/icons-material/Person2";
+import {
+  CircleMenu,
+  CircleMenuItem,
+  TooltipPlacement,
+} from "react-circular-menu";
 
-function Navbar({ onToggle, onDarkModeToggle, isDarkMode }) {
+function Navbar({
+  onToggle,
+  onDarkModeToggle,
+  isDarkMode,
+  handleBackgroundBlur,
+}) {
   const notifySafe = () =>
     toast.success("NSFW content disabled!", {
       style: {
@@ -25,6 +41,8 @@ function Navbar({ onToggle, onDarkModeToggle, isDarkMode }) {
   const sfwStatus = sessionStorage.getItem("sfw");
   // eslint-disable-next-line
   const [checked, setChecked] = React.useState(sfwStatus == 1 ? true : false);
+  const [user, setUser] = React.useState(null);
+  const [closeMenu, setCloseMenu] = React.useState(true);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -55,10 +73,92 @@ function Navbar({ onToggle, onDarkModeToggle, isDarkMode }) {
     }
   };
 
+  const handleMenuOpen = () => {
+    // menu is open
+    setCloseMenu(false);
+    handleBackgroundBlur(true);
+  };
+
+  const handleMenuClosed = async () => {
+    // menu is closed
+    setCloseMenu(true);
+    handleBackgroundBlur(false);
+  };
+
+  const loginRoute = () => {
+    navigate("/login");
+  };
+
+  const profileRoute = async () => {
+    // close the menu then redirect
+    await handleMenuClosed();
+    //navigate("/profile");
+
+    if (auth.currentUser !== null) {
+      navigate("/profile");
+    } else {
+      navigate("/");
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth)
+      .then(async () => {
+        // close the menu then redirect
+        await handleMenuClosed();
+        // Sign-out successful.
+        toast.success(`You have been logged out. Redirecting...`, {
+          style: {
+            borderRadius: "10px",
+            background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+            color: `${isDarkMode ? "#333" : "#fff"}`,
+          },
+        });
+
+        navigate("/");
+
+        // refresh page after 3 seconds
+        setTimeout(() => {
+          navigate(0);
+        }, 2500);
+      })
+      .catch((error) => {
+        console.log(error);
+        toast(
+          "Failed to log out! Please try again later or contact developer if this problem persists.",
+          {
+            icon: "⚠️",
+            style: {
+              borderRadius: "10px",
+              background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+              color: `${isDarkMode ? "#W333" : "#fff"}`,
+            },
+          }
+        );
+
+        navigate(0);
+      });
+  };
+
   const customStyles = {
     color: isDarkMode ? "white" : "black",
     fontSize: "24px",
   };
+
+  React.useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in, see docs for a list of available properties
+        // https://firebase.google.com/docs/reference/js/firebase.User
+        const uid = user.uid;
+        setUser(user);
+        console.log("uid", uid);
+      } else {
+        console.log(user);
+        console.log("user is logged out");
+      }
+    });
+  }, []);
 
   return (
     <nav className="navbar navbar-default" id="customNav">
@@ -73,22 +173,78 @@ function Navbar({ onToggle, onDarkModeToggle, isDarkMode }) {
             AniLookup 🔍
           </a>
         </div>
-        <div className="navbar-right">
-          <div className="toggle-container">
-            <DarkModeToggle onDarkModeToggle={onDarkModeToggle} />
-          </div>
+        <div style={{ display: "flex", flexDirection: "row" }}>
+          <div
+            className="toggle-container"
+            style={{ marginRight: "30px", marginTop: "8px" }}
+          >
+            <div className="toggle-container">
+              <DarkModeToggle onDarkModeToggle={onDarkModeToggle} />
+            </div>
 
-          <div className="toggle-container">
-            <span>🔞</span>
-            <Switch
-              onChange={handleChange}
-              checked={checked}
-              className="react-switch"
-              height={20}
-              width={46}
-            />
+            <div className="toggle-container">
+              <span>🔞</span>
+              <Switch
+                onChange={handleChange}
+                checked={checked}
+                className="react-switch"
+                height={20}
+                width={46}
+              />
+            </div>
           </div>
+          {user ? (
+            <CircleMenu
+              startAngle={180}
+              rotationAngle={-120}
+              itemSize={1}
+              radius={5}
+              open={closeMenu ? false : true}
+              rotationAngleInclusive={false}
+              onMenuToggle={(menuActive) =>
+                menuActive === true ? handleMenuOpen() : handleMenuClosed()
+              }
+            >
+              <CircleMenuItem
+                tooltip="Edit Profile"
+                tooltipPlacement={TooltipPlacement.Left}
+                onClick={() => profileRoute()}
+              >
+                <ProfileIcon />
+              </CircleMenuItem>
+              <CircleMenuItem
+                onClick={() => alert("Clicked the item")}
+                tooltip="Lists"
+                tooltipPlacement={TooltipPlacement.Left}
+              >
+                <ListIcon />
+              </CircleMenuItem>
+              <CircleMenuItem
+                onClick={() => handleLogout()}
+                tooltip="Logout"
+                tooltipPlacement={TooltipPlacement.Left}
+              >
+                <ExitIcon />
+              </CircleMenuItem>
+              <CircleMenuItem
+                onClick={() => alert("No info just yet :(")}
+                tooltip="Info"
+                tooltipPlacement={TooltipPlacement.Bottom}
+              >
+                <InfoIcon />
+              </CircleMenuItem>
+            </CircleMenu>
+          ) : (
+            <button
+              className="btn btn-secondary"
+              style={{ borderRadius: "25px" }}
+              onClick={loginRoute}
+            >
+              Login
+            </button>
+          )}
         </div>
+
         <Toaster position="top-left" />
       </div>
     </nav>

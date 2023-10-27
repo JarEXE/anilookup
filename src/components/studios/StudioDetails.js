@@ -13,7 +13,6 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
   const getStudioName = sessionStorage.getItem("studioName");
 
   const [loading, setLoading] = React.useState(false);
-  const [backgroundBlur, setBackgroundBlur] = React.useState({});
 
   const [studioId] = React.useState(getStudioId);
   const [studioName] = React.useState(getStudioName);
@@ -132,19 +131,6 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
     };
   }, [studioId]);
 
-  React.useEffect(() => {
-    if (studioDetails && Object.keys(studioDetails).length > 0) {
-      setBackgroundBlur({
-        width: "100%",
-        backgroundImage: `url("${studioDetails.images.jpg.image_url}")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        marginBottom: "20px",
-        boxShadow: "inset 0 0 0 2000px rgba(28, 28, 28, 0.75)",
-      });
-    }
-  }, [studioDetails]);
-
   const landingPageRoute = () => {
     navigate("/");
   };
@@ -155,8 +141,8 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
       {studioDetails && Object.keys(studioDetails).length > 0 && !loading ? (
         <>
           <div className="col-md-12" style={{ marginBottom: "20px" }}>
-            <div style={backgroundBlur}>
-              <div className="blur-container">
+            <div>
+              <div>
                 <div
                   className={`${
                     isDarkMode ? "pseudo-blur-dark" : "pseudo-blur"
@@ -168,7 +154,13 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
                     alt="studio cover"
                     className="studio-thumbnail"
                   />
-                  <div className="fulldetails-container">
+                  <div
+                    className="fulldetails-container"
+                    style={{
+                      marginTop: "5%",
+                      color: `${isDarkMode ? "white" : "black"}`,
+                    }}
+                  >
                     <div className="details-container">
                       <div className="text-container">
                         {studioName.length < 11 ? (
