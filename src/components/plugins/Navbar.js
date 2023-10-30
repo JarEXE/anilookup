@@ -339,6 +339,8 @@ function Navbar({
                 >
                   Login
                 </button>
+                <br />
+                <br />
               </>
             ) : null}
           </span>
