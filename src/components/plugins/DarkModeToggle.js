@@ -8,10 +8,19 @@ function DarkModeToggle({ onDarkModeToggle }) {
     darkStatus == null || typeof darkStatus === "undefined" ? true : darkStatus
   );
 
+  const themeColor = isDarkMode ? "#FFFFFF" : "#282828";
+
   const toggleDarkMode = () => {
+    console.log(themeColor);
     setIsDarkMode((prev) => !prev);
     onDarkModeToggle(!isDarkMode); // Notify the parent component
     sessionStorage.setItem("darkMode", JSON.stringify(!isDarkMode));
+
+    const metaThemeColor = document.querySelector("meta[name=theme-color]");
+
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute("content", themeColor);
+    }
   };
 
   return (

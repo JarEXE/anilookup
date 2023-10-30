@@ -233,6 +233,16 @@ function Navbar({
                     <a
                       className="nav-link"
                       href="#/"
+                      onClick={() => landingPageRoute()}
+                      style={{ color: `${isDarkMode ? "#fff" : "#282828"}` }}
+                    >
+                      Home
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a
+                      className="nav-link"
+                      href="#/"
                       onClick={() => profileRoute()}
                       style={{ color: `${isDarkMode ? "#fff" : "#282828"}` }}
                     >
@@ -332,9 +342,9 @@ function Navbar({
               </>
             ) : null}
           </span>
-          <Toaster position="top-left" />
         </div>
       </div>
+      <Toaster position="top-left" />
     </nav>
   );
 }

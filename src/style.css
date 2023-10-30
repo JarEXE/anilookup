@@ -605,6 +605,19 @@ body {
   }
 }
 
+@media (max-width: 480px) {
+  .image-gallery li img {
+    min-width: 145px;
+    max-width: 145px;
+    height: 215px;
+  }
+
+  .image-gallery li:hover .overlay {
+    height: 215px;
+    transform: scale(1);
+  }
+}
+
 /* for any screen less than 420px */
 @media (max-width: 420px) {
   body {

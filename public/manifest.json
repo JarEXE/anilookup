@@ -4,8 +4,6 @@
   "description": "Anime and Manga Info",
   "start_url": "https://anilookup.netlify.app",
   "scope": ".",
-  "background_color": "#282828",
-  "theme_color": "#282828",
   "display": "standalone",
   "orientation": "any",
   "dir": "ltr",
@@ -16,5 +14,8 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "splash_pages": {
+    "normal": "/magglass.png"
+  }
 }

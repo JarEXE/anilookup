@@ -17,6 +17,7 @@
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#282828" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <title>AniLookup</title>
     <link rel="manifest" href="../manifest.json" />
@@ -35,18 +36,5 @@
       integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
       crossorigin="anonymous"
     ></script>
-    <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-          .register("/sw.js", { scope: "/" })
-          .then(function (registration) {
-            console.log("Service worker registered");
-          });
-
-        navigator.serviceWorker.ready.then(function (registration) {
-          console.log("Service worker ready");
-        });
-      }
-    </script>
   </body>
 </html>

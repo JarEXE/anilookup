@@ -63,7 +63,6 @@ function LandingPageAnime(props) {
               alt="loading cover..."
               loading="lazy"
               onClick={() => showDetails(`${props.malid}`)}
-              style={{ maxWidth: "190px" }}
             />
           </LazyLoad>
           <div
