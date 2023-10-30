@@ -76,19 +76,17 @@ function AnimeSearch({ onInputChange, isDarkMode, allowNSFW }) {
             >
               Search
             </button>
-            <a
-              href="#/"
+            <button
               className="btn btn-secondary"
               style={{
                 width: "40%",
-                height: "38px",
                 borderRadius: "25px",
                 marginLeft: "5px",
               }}
               onClick={() => mangaRoute()}
             >
               Manga Section
-            </a>
+            </button>
           </div>
         </div>
         <hr className="separator"></hr>
