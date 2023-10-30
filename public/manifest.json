@@ -9,5 +9,12 @@
   "display": "standalone",
   "orientation": "any",
   "dir": "ltr",
-  "lang": "en"
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/magglass.png",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
