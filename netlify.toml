@@ -3,10 +3,12 @@ from = "*"
 to = "/index.html"
 status = 200
 
+[[redirects]]
 from = "robots.txt"
 to = "/robots.txt"
 status = 200
 
+[[redirects]]
 from = "manifest.json"
 to = "/manifest.json"
 status = 200
