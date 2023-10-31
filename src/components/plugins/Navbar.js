@@ -185,7 +185,13 @@ function Navbar({
           style={customStyles}
           onClick={() => landingPageRoute()}
         >
-          AniLookup 🔍
+          AniLookup{" "}
+          <img
+            alt="detective anya with magnifying glass"
+            src="anya.png"
+            width={40}
+            height={30}
+          />
         </a>
         <button
           class="navbar-toggler"

@@ -12,12 +12,12 @@
   "lang": "en",
   "icons": [
     {
-      "src": "/magglass.png",
+      "src": "/anya.png",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
   "splash_pages": {
-    "normal": "/magglass.png"
+    "normal": "/anya.png"
   }
 }

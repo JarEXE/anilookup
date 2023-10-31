@@ -614,7 +614,7 @@ body {
   }
 
   .image-gallery li:hover .overlay {
-    height: 215px;
+    height: 100%;
     transform: scale(1);
   }
 
@@ -641,7 +641,7 @@ body {
   }
 
   .cards li:hover .overlay {
-    height: 190px;
+    height: 100%;
     transform: scale(1);
   }
 }
