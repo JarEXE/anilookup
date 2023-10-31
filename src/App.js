@@ -22,7 +22,7 @@ function App() {
   const [user, setUser] = React.useState(null);
   // darkmode will be enabled by default for first time visits or first time users. subsequent toggles will remain upon refresh
   const [isDarkMode, setIsDarkMode] = React.useState(
-    darkStatus == null || typeof darkStatus === "undefined" ? true : darkStatus
+    darkStatus == null || typeof darkStatus === "undefined" ? false : darkStatus
   );
   const [backgroundBlurred, setBackgroundBlurred] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");

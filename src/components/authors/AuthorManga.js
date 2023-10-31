@@ -56,7 +56,7 @@ const AuthorManga = (props) => {
           ></LoadingOverlay>
         </div>
       ) : (
-        <li className="zoomed-landing-page">
+        <li id="authorMangaList" className="zoomed-landing-page">
           <LazyLoad>
             <div
               className="authorMangaDiv"

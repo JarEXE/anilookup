@@ -56,7 +56,7 @@ const AuthorAnime = (props) => {
           ></LoadingOverlay>
         </div>
       ) : (
-        <li className="zoomed-landing-page">
+        <li id="authorAnimeList" className="zoomed-landing-page">
           <LazyLoad>
             <div
               className="authorAnimeDiv"

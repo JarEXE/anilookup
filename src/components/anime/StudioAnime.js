@@ -57,7 +57,7 @@ const StudioAnime = (props) => {
           ></LoadingOverlay>
         </div>
       ) : (
-        <li className="zoomed-landing-page">
+        <li id="studioAnimeList" className="zoomed-landing-page">
           <LazyLoad>
             <div
               className="studioAnimeDiv"

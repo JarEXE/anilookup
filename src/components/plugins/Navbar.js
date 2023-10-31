@@ -191,6 +191,7 @@ function Navbar({
             src="anya.png"
             width={40}
             height={30}
+            style={{ borderRadius: "20px" }}
           />
         </a>
         <button

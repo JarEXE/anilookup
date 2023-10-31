@@ -644,6 +644,21 @@ body {
     height: 100%;
     transform: scale(1);
   }
+
+  #authorAnimeList:hover .overlay {
+    height: 190px;
+    transform: scale(1);
+  }
+
+  #authorMangaList:hover .overlay {
+    height: 190px;
+    transform: scale(1);
+  }
+
+  #studioAnimeList:hover .overlay {
+    height: 190px;
+    transform: scale(1);
+  }
 }
 
 /* for any screen less than 420px */
