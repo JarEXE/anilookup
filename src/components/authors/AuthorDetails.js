@@ -179,6 +179,7 @@ function AuthorDetails({ isDarkMode }) {
                             marginTop: "-15px",
                           }}
                         >
+                          <br />
                           <small>
                             <i>Given Name: {authorDetails.given_name || "-"}</i>
                           </small>
@@ -187,6 +188,7 @@ function AuthorDetails({ isDarkMode }) {
                               Family Name: {authorDetails.family_name || "-"}
                             </i>
                           </small>
+                          <br />
                         </div>
 
                         <p style={{ marginBottom: "1px", width: "auto" }}>

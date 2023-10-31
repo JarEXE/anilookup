@@ -179,6 +179,7 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
                               : `Established: ?`}
                           </strong>
                         </p>
+                        <br />
                       </div>
                     </div>
                     <div className="container-secondary">

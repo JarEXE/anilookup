@@ -59,10 +59,11 @@ const AuthorAnime = (props) => {
         <li className="zoomed-landing-page">
           <LazyLoad>
             <div
+              className="authorAnimeDiv"
               style={{
                 display: "flex",
                 flexDirection: "column",
-                maxWidth: "190px",
+                width: "190px",
               }}
             >
               <img
@@ -70,9 +71,9 @@ const AuthorAnime = (props) => {
                 alt="loading cover..."
                 loading="lazy"
                 onClick={() => showDetails(`${props.malid}`)}
-                style={{ maxWidth: "190px" }}
+                style={{ width: "190px" }}
               />
-              <p>
+              <p className="authorAnimeRole">
                 Role: <strong>{props.role || "-"}</strong>
               </p>
             </div>

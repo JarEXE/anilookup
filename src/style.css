@@ -477,6 +477,7 @@ div.text-on-top {
   height: 300px;
   overflow: hidden;
   position: relative;
+  max-width: 200px;
 }
 
 .synopsis {
@@ -614,6 +615,33 @@ body {
 
   .image-gallery li:hover .overlay {
     height: 215px;
+    transform: scale(1);
+  }
+
+  .authorMangaDiv {
+    min-width: 145px;
+    max-width: 145px;
+    height: 210px;
+  }
+
+  .authorAnimeDiv {
+    min-width: 145px;
+    max-width: 145px;
+    height: 235px;
+  }
+
+  .studioAnimeDiv {
+    min-width: 145px;
+    max-width: 145px;
+  }
+
+  .cards li div div img {
+    min-height: 190px;
+    height: 190px;
+  }
+
+  .cards li:hover .overlay {
+    height: 190px;
     transform: scale(1);
   }
 }

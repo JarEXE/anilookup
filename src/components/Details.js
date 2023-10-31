@@ -41,49 +41,52 @@ function Details({ isDarkMode }) {
   async function fetchAuthorDetailsAndPositions() {
     let authorsArray = [];
 
-    for (const author of details.authors) {
-      try {
-        const authorsResponse = await fetch(
-          `https://api.jikan.moe/v4/people/${author.mal_id}/full`
-        );
-        const authorsData = await authorsResponse.json();
+    if (typeof details.authors !== "undefined") {
+      for (const author of details.authors) {
+        try {
+          const authorsResponse = await fetch(
+            `https://api.jikan.moe/v4/people/${author.mal_id}/full`
+          );
+          const authorsData = await authorsResponse.json();
 
-        if (authorsData) {
-          const targetMalId = details.mal_id;
-          const mangaArray = authorsData.data.manga;
+          if (authorsData) {
+            const targetMalId = details.mal_id;
+            const mangaArray = authorsData.data.manga;
 
-          // Function to find the position that comes before the manga key by matching the target mal_id
-          function findPositionByMalId(targetMalId) {
-            for (let i = 0; i < mangaArray.length; i++) {
-              if (mangaArray[i].manga.mal_id === targetMalId) {
-                if (i > 0) {
-                  return mangaArray[i].position;
+            // Function to find the position that comes before the manga key by matching the target mal_id
+            function findPositionByMalId(targetMalId) {
+              for (let i = 0; i < mangaArray.length; i++) {
+                if (mangaArray[i].manga.mal_id === targetMalId) {
+                  if (i > 0) {
+                    return mangaArray[i].position;
+                  }
+                  // If the first object matches, there's no position before it
+                  return null;
                 }
-                // If the first object matches, there's no position before it
-                return null;
               }
+              // Return null if the target mal_id is not found
+              return null;
             }
-            // Return null if the target mal_id is not found
-            return null;
-          }
 
-          // Call the function to find the position
-          const position = findPositionByMalId(targetMalId);
+            // Call the function to find the position
+            const position = findPositionByMalId(targetMalId);
 
-          if (position !== null) {
-            authorsArray.push({
-              authorId: authorsData.data.mal_id,
-              position: position,
-            });
-          } else {
-            console.log(`Manga ID ${targetMalId} not found in the array.`);
+            if (position !== null) {
+              authorsArray.push({
+                authorId: authorsData.data.mal_id,
+                position: position,
+              });
+            } else {
+              console.log(`Manga ID ${targetMalId} not found in the array.`);
+            }
           }
+        } catch (error) {
+          console.log(error);
+          return;
         }
-      } catch (error) {
-        console.log(error);
-        return;
       }
     }
+
     // Set the authors array in the state
     setAuthors(authorsArray);
   }
@@ -406,7 +409,7 @@ function Details({ isDarkMode }) {
                   <strong>Producers:</strong>{" "}
                   {details.producers.map((x) => x.name).join(", ") || "-"}
                 </li>
-              ) : (
+              ) : typeof details.authors !== "undefined" ? (
                 <li key={10} className="list-group-item">
                   <strong>Authors:</strong>{" "}
                   {details.authors.map((author) => (
@@ -431,7 +434,7 @@ function Details({ isDarkMode }) {
                     </React.Fragment>
                   ))}
                 </li>
-              )}
+              ) : null}
               {typeof details.producers !== "undefined" ? (
                 <li key={11} className="list-group-item">
                   <strong>Studios:</strong>{" "}

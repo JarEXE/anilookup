@@ -59,7 +59,10 @@ const StudioAnime = (props) => {
       ) : (
         <li className="zoomed-landing-page">
           <LazyLoad>
-            <div style={{ display: "flex", flexDirection: "column" }}>
+            <div
+              className="studioAnimeDiv"
+              style={{ display: "flex", flexDirection: "column" }}
+            >
               <img
                 src={props.img}
                 alt="loading cover..."

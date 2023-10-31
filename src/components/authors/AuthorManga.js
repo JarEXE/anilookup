@@ -59,10 +59,11 @@ const AuthorManga = (props) => {
         <li className="zoomed-landing-page">
           <LazyLoad>
             <div
+              className="authorMangaDiv"
               style={{
                 display: "flex",
                 flexDirection: "column",
-                maxWidth: "190px",
+                width: "190px",
               }}
             >
               <img
@@ -70,7 +71,7 @@ const AuthorManga = (props) => {
                 alt="loading cover..."
                 loading="lazy"
                 onClick={() => showDetails(`${props.malid}`)}
-                style={{ maxWidth: "190px" }}
+                style={{ width: "190px" }}
               />
               <p>
                 Role: <strong>{props.role || "-"}</strong>
