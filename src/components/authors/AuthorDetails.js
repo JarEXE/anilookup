@@ -147,68 +147,60 @@ function AuthorDetails({ isDarkMode }) {
       {authorDetails && Object.keys(authorDetails).length > 0 && !loading ? (
         <>
           <div className="col-md-12" style={{ marginBottom: "20px" }}>
-            <div>
-              <div>
-                <div
-                  className={`${
-                    isDarkMode ? "pseudo-blur-dark" : "pseudo-blur"
-                  }`}
-                >
-                  <img
-                    id="thumbnail-img"
-                    src={authorDetails.images.jpg.image_url}
-                    alt="author cover"
-                    className="thumbnail"
-                  />
-                  <div
-                    className="fulldetails-container"
-                    style={{ color: `${isDarkMode ? "white" : "black"}` }}
-                  >
-                    <div className="details-container">
-                      <div className="text-container">
-                        {authorName.length < 11 ? (
-                          <h1 style={{ fontWeight: "normal" }}>{authorName}</h1>
-                        ) : (
-                          <h3 style={{ fontWeight: "normal" }}>{authorName}</h3>
-                        )}
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            color: "gray",
-                            marginTop: "-15px",
-                          }}
-                        >
-                          <br />
-                          <small>
-                            <i>Given Name: {authorDetails.given_name || "-"}</i>
-                          </small>
-                          <small>
-                            <i>
-                              Family Name: {authorDetails.family_name || "-"}
-                            </i>
-                          </small>
-                          <br />
-                        </div>
+            <div
+              className={`${isDarkMode ? "pseudo-blur-dark" : "pseudo-blur"}`}
+            >
+              <img
+                id="thumbnail-img"
+                src={authorDetails.images.jpg.image_url}
+                alt="author cover"
+                className="thumbnail"
+              />
+              <div
+                className="fulldetails-container"
+                style={{ color: `${isDarkMode ? "white" : "black"}` }}
+              >
+                <div className="details-container">
+                  <div className="text-container">
+                    {authorName.length < 11 ? (
+                      <h1 style={{ fontWeight: "normal" }}>{authorName}</h1>
+                    ) : (
+                      <h3 style={{ fontWeight: "normal" }}>{authorName}</h3>
+                    )}
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        color: "gray",
+                        marginTop: "-15px",
+                      }}
+                    >
+                      <br />
+                      <small>
+                        <i>Given Name: {authorDetails.given_name || "-"}</i>
+                      </small>
+                      <small>
+                        <i>Family Name: {authorDetails.family_name || "-"}</i>
+                      </small>
+                      <br />
+                    </div>
 
-                        <p style={{ marginBottom: "1px", width: "auto" }}>
-                          <strong>
-                            {typeof authorDetails.birthday !== "undefined" &&
-                            authorDetails.birthday !== null
-                              ? `Birthday: ${dateFormat(
-                                  authorDetails.birthday,
-                                  "fullDate"
-                                )}`
-                              : `Birthday: ?`}
-                          </strong>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="container-secondary">
-                      <div className="thumbnail-synopsis">
-                        {authorDetails.about || "No information available."}
-                      </div>
-                    </div>
+                    <p style={{ marginBottom: "1px", width: "auto" }}>
+                      <strong>
+                        {typeof authorDetails.birthday !== "undefined" &&
+                        authorDetails.birthday !== null
+                          ? `Birthday: ${dateFormat(
+                              authorDetails.birthday,
+                              "fullDate"
+                            )}`
+                          : `Birthday: ?`}
+                      </strong>
+                    </p>
+                  </div>
+                </div>
+                <div className="container-secondary">
+                  <div className="thumbnail-synopsis">
+                    {authorDetails.about || "No information available."}
                   </div>
                 </div>
               </div>

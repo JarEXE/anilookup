@@ -288,7 +288,9 @@ function Details({ isDarkMode }) {
               <div className="blur-container">
                 <div
                   className={`${
-                    isDarkMode ? "pseudo-blur-dark" : "pseudo-blur"
+                    isDarkMode
+                      ? "pseudo-blur-banner-dark"
+                      : "pseudo-blur-banner"
                   }`}
                 ></div>
               </div>

@@ -141,52 +141,46 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
       {studioDetails && Object.keys(studioDetails).length > 0 && !loading ? (
         <>
           <div className="col-md-12" style={{ marginBottom: "20px" }}>
-            <div>
-              <div>
-                <div
-                  className={`${
-                    isDarkMode ? "pseudo-blur-dark" : "pseudo-blur"
-                  }`}
-                >
-                  <img
-                    id="thumbnail-img"
-                    src={studioDetails.images.jpg.image_url}
-                    alt="studio cover"
-                    className="studio-thumbnail"
-                  />
-                  <div
-                    className="fulldetails-container"
-                    style={{
-                      marginTop: "5%",
-                      color: `${isDarkMode ? "white" : "black"}`,
-                    }}
-                  >
-                    <div className="details-container">
-                      <div className="text-container">
-                        {studioName.length < 11 ? (
-                          <h1 style={{ fontWeight: "normal" }}>{studioName}</h1>
-                        ) : (
-                          <h3 style={{ fontWeight: "normal" }}>{studioName}</h3>
-                        )}
-                        <p style={{ marginBottom: "1px", width: "auto" }}>
-                          <strong>
-                            {typeof studioDetails.established !== "undefined" &&
-                            studioDetails.established !== null
-                              ? `Established: ${dateFormat(
-                                  studioDetails.established,
-                                  "fullDate"
-                                )}`
-                              : `Established: ?`}
-                          </strong>
-                        </p>
-                        <br />
-                      </div>
-                    </div>
-                    <div className="container-secondary">
-                      <div className="thumbnail-synopsis">
-                        {studioDetails.about || "No information available."}
-                      </div>
-                    </div>
+            <div
+              className={`${isDarkMode ? "pseudo-blur-dark" : "pseudo-blur"}`}
+            >
+              <img
+                id="thumbnail-img"
+                src={studioDetails.images.jpg.image_url}
+                alt="studio cover"
+                className="studio-thumbnail"
+              />
+              <div
+                className="fulldetails-container"
+                style={{
+                  marginTop: "5%",
+                  color: `${isDarkMode ? "white" : "black"}`,
+                }}
+              >
+                <div className="details-container">
+                  <div className="text-container">
+                    {studioName.length < 11 ? (
+                      <h1 style={{ fontWeight: "normal" }}>{studioName}</h1>
+                    ) : (
+                      <h3 style={{ fontWeight: "normal" }}>{studioName}</h3>
+                    )}
+                    <p style={{ marginBottom: "1px", width: "auto" }}>
+                      <strong>
+                        {typeof studioDetails.established !== "undefined" &&
+                        studioDetails.established !== null
+                          ? `Established: ${dateFormat(
+                              studioDetails.established,
+                              "fullDate"
+                            )}`
+                          : `Established: ?`}
+                      </strong>
+                    </p>
+                    <br />
+                  </div>
+                </div>
+                <div className="container-secondary">
+                  <div className="thumbnail-synopsis">
+                    {studioDetails.about || "No information available."}
                   </div>
                 </div>
               </div>
