@@ -189,8 +189,8 @@ function Navbar({
           <img
             alt="detective anya with magnifying glass"
             src="anya.png"
-            width={40}
-            height={30}
+            width={35}
+            height={35}
             style={{ borderRadius: "20px" }}
           />
         </a>
