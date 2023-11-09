@@ -547,11 +547,12 @@ const AllManga = ({ isDarkMode, selectedOption, sortBy }) => {
           "kitsuCover",
           `${item.attributes.coverImage.original}`
         );
-        sessionStorage.setItem("itemId", `${mangaId}`);
+        console.log(mangaId);
+        sessionStorage.setItem("itemId", mangaId);
         setIsActive(false);
       } else {
         sessionStorage.setItem("kitsuCover", "");
-        sessionStorage.setItem("itemId", `${mangaId}`);
+        sessionStorage.setItem("itemId", mangaId);
         setIsActive(false);
       }
 

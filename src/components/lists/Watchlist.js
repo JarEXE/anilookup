@@ -554,15 +554,18 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
     );
 
     if (matchingItem) {
+      console.log(matchingItem);
       const coverImage = matchingItem.attributes.coverImage
         ? matchingItem.attributes.coverImage.original
         : "";
       sessionStorage.setItem("kitsuCover", coverImage);
-      sessionStorage.setItem("itemId", `/anime/${animeId}`);
+      sessionStorage.setItem("itemId", animeId);
+      setIsActive(false);
       navigate("/details");
     } else {
       sessionStorage.setItem("kitsuCover", "");
-      sessionStorage.setItem("itemId", `/anime/${animeId}`);
+      sessionStorage.setItem("itemId", animeId);
+      setIsActive(false);
       navigate("/details");
     }
   };
