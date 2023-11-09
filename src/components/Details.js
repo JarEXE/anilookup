@@ -220,7 +220,13 @@ function Details({ isDarkMode }) {
 
     kitsuData.data.map((item) => {
       if (itemType === "anime") {
-        if (item.attributes.canonicalTitle === navTitle) {
+        if (
+          item.attributes.canonicalTitle === navTitle ||
+          item.attributes.abbreviatedTitles.includes(navTitle) ||
+          item.attributes.titles.en === navTitle ||
+          item.attributes.titles.en_jp === navTitle ||
+          item.attributes.titles.ja_jp === navTitle
+        ) {
           if (item.attributes.coverImage != null) {
             sessionStorage.setItem(
               "kitsuCover",
@@ -229,6 +235,14 @@ function Details({ isDarkMode }) {
             sessionStorage.setItem("itemId", navInfo);
           } else {
             sessionStorage.setItem("kitsuCover", "");
+            sessionStorage.setItem("itemId", navInfo);
+          }
+        } else {
+          if (kitsuData.data[0].attributes.coverImage != null) {
+            sessionStorage.setItem(
+              "kitsuCover",
+              `${kitsuData.data[0].attributes.coverImage.original}`
+            );
             sessionStorage.setItem("itemId", navInfo);
           }
         }

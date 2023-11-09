@@ -41,6 +41,16 @@ const AuthorAnime = (props) => {
           setIsLoading(false);
           setIsActive(false);
         }
+      } else {
+        if (kitsuData.data[0].attributes.coverImage != null) {
+          sessionStorage.setItem(
+            "kitsuCover",
+            `${kitsuData.data[0].attributes.coverImage.original}`
+          );
+          sessionStorage.setItem("itemId", `/anime/${animeId}`);
+          setIsLoading(false);
+          setIsActive(false);
+        }
       }
       return navigate("/details");
     });
