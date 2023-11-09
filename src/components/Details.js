@@ -209,6 +209,7 @@ function Details({ isDarkMode }) {
   const newDetails = async (navInfo, navTitle, itemType) => {
     let kitsuData;
     setLoading(true);
+    console.log(itemType);
 
     await fetch(
       `https://kitsu.io/api/edge/${itemType}?filter[text]=${navTitle}&page[limit]=${
@@ -259,7 +260,7 @@ function Details({ isDarkMode }) {
         }
       }
 
-      return navigate(0);
+      return navigate("/details");
     });
   };
 

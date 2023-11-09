@@ -18,8 +18,6 @@ function LandingPageAnime(props) {
       `https://kitsu.io/api/edge/anime?filter[text]=${props.title}&page[limit]=5`
     ).then(async (response) => {
       kitsuData = await response.json();
-      console.log(kitsuData);
-      console.log(props.title);
     });
 
     kitsuData.data.map((item) => {
