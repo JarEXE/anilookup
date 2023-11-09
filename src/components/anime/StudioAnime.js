@@ -21,7 +21,13 @@ const StudioAnime = (props) => {
     });
 
     kitsuData.data.map((item) => {
-      if (item.attributes.canonicalTitle === props.title) {
+      if (
+        item.attributes.canonicalTitle === props.title ||
+        item.attributes.abbreviatedTitles.includes(props.title) ||
+        item.attributes.titles.en === props.title ||
+        item.attributes.titles.en_jp === props.title ||
+        item.attributes.titles.ja_jp === props.title
+      ) {
         if (item.attributes.coverImage != null) {
           sessionStorage.setItem(
             "kitsuCover",

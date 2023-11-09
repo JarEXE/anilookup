@@ -545,7 +545,13 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
     });
 
     kitsuData.data.map((item) => {
-      if (item.attributes.canonicalTitle === animeTitle) {
+      if (
+        item.attributes.canonicalTitle === animeTitle ||
+        item.attributes.abbreviatedTitles.includes(animeTitle) ||
+        item.attributes.titles.en === animeTitle ||
+        item.attributes.titles.en_jp === animeTitle ||
+        item.attributes.titles.ja_jp === animeTitle
+      ) {
         if (item.attributes.coverImage != null) {
           sessionStorage.setItem(
             "kitsuCover",

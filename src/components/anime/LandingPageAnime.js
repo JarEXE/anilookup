@@ -10,6 +10,7 @@ function LandingPageAnime(props) {
   let kitsuData;
 
   const showDetails = async (animeId) => {
+    console.log("running fetch");
     setIsLoading(true);
     setIsActive(true);
 
@@ -17,10 +18,18 @@ function LandingPageAnime(props) {
       `https://kitsu.io/api/edge/anime?filter[text]=${props.title}&page[limit]=5`
     ).then(async (response) => {
       kitsuData = await response.json();
+      console.log(kitsuData);
+      console.log(props.title);
     });
 
     kitsuData.data.map((item) => {
-      if (item.attributes.canonicalTitle === props.title) {
+      if (
+        item.attributes.canonicalTitle === props.title ||
+        item.attributes.abbreviatedTitles.includes(props.title) ||
+        item.attributes.titles.en === props.title ||
+        item.attributes.titles.en_jp === props.title ||
+        item.attributes.titles.ja_jp === props.title
+      ) {
         if (item.attributes.coverImage != null) {
           sessionStorage.setItem(
             "kitsuCover",
