@@ -219,6 +219,7 @@ function Details({ isDarkMode }) {
       kitsuData = await response.json();
     });
 
+    //eslint-disable-next-line
     kitsuData.data.map((item) => {
       if (itemType === "anime") {
         if (
@@ -234,9 +235,11 @@ function Details({ isDarkMode }) {
               `${item.attributes.coverImage.original}`
             );
             sessionStorage.setItem("itemId", navInfo);
+            window.location.href = "/details";
           } else {
             sessionStorage.setItem("kitsuCover", "");
             sessionStorage.setItem("itemId", navInfo);
+            window.location.href = "/details";
           }
         } else {
           if (kitsuData.data[0].attributes.coverImage != null) {
@@ -245,6 +248,7 @@ function Details({ isDarkMode }) {
               `${kitsuData.data[0].attributes.coverImage.original}`
             );
             sessionStorage.setItem("itemId", navInfo);
+            window.location.href = "/details";
           }
         }
       } else {
@@ -254,13 +258,15 @@ function Details({ isDarkMode }) {
             `${item.attributes.coverImage.original}`
           );
           sessionStorage.setItem("itemId", navInfo);
+          window.location.href = "/details";
         } else {
           sessionStorage.setItem("kitsuCover", "");
           sessionStorage.setItem("itemId", navInfo);
+          window.location.href = "/details";
         }
       }
 
-      return navigate("/details");
+      setLoading(false);
     });
   };
 
