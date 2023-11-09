@@ -293,6 +293,15 @@ div.text-on-top {
   overflow: hidden;
 }
 
+.animeListsToggles {
+  display: flex;
+  overflow-x: auto;
+  align-items: center;
+  max-width: 900px;
+  position: relative;
+  justify-content: center;
+}
+
 .inputToggles {
   display: flex;
   overflow-x: auto;

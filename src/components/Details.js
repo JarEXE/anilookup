@@ -9,6 +9,8 @@ import "../../src/style.css";
 import YouTubeEmbed from "./plugins/YoutubeEmbed";
 import Favicon from "./plugins/Favicon";
 import toast from "react-hot-toast";
+import ListAddButton from "./plugins/ListAddButton";
+import dateFormat from "dateformat";
 
 function Details({ isDarkMode }) {
   const getKitsuCover = sessionStorage.getItem("kitsuCover");
@@ -57,7 +59,7 @@ function Details({ isDarkMode }) {
             function findPositionByMalId(targetMalId) {
               for (let i = 0; i < mangaArray.length; i++) {
                 if (mangaArray[i].manga.mal_id === targetMalId) {
-                  if (i > 0) {
+                  if (i > -1) {
                     return mangaArray[i].position;
                   }
                   // If the first object matches, there's no position before it
@@ -140,6 +142,8 @@ function Details({ isDarkMode }) {
 
     if (typeof itemId !== "undefined" && itemId !== null) {
       fetchData();
+    } else {
+      navigate("/");
     }
 
     // cleanup function to update the mounted flag
@@ -184,8 +188,8 @@ function Details({ isDarkMode }) {
         setItemType("anime");
         setStreamingSitesSection(true);
       } else {
-        fetchAuthorDetailsAndPositions();
         setItemType("manga");
+        fetchAuthorDetailsAndPositions();
         setStreamingSitesSection(false);
       }
     }
@@ -207,25 +211,42 @@ function Details({ isDarkMode }) {
     setLoading(true);
 
     await fetch(
-      `https://kitsu.io/api/edge/${itemType}?filter[text]=${navTitle}&page[limit]=1`
+      `https://kitsu.io/api/edge/${itemType}?filter[text]=${navTitle}&page[limit]=${
+        itemType === "anime" ? "5" : "1"
+      }`
     ).then(async (response) => {
       kitsuData = await response.json();
     });
 
-    if (kitsuData.data[0].attributes.coverImage != null) {
-      sessionStorage.setItem(
-        "kitsuCover",
-        `${kitsuData.data[0].attributes.coverImage.original}`
-      );
+    kitsuData.data.map((item) => {
+      if (itemType === "anime") {
+        if (item.attributes.canonicalTitle === navTitle) {
+          if (item.attributes.coverImage != null) {
+            sessionStorage.setItem(
+              "kitsuCover",
+              `${item.attributes.coverImage.original}`
+            );
+            sessionStorage.setItem("itemId", navInfo);
+          } else {
+            sessionStorage.setItem("kitsuCover", "");
+            sessionStorage.setItem("itemId", navInfo);
+          }
+        }
+      } else {
+        if (item.attributes.coverImage != null) {
+          sessionStorage.setItem(
+            "kitsuCover",
+            `${item.attributes.coverImage.original}`
+          );
+          sessionStorage.setItem("itemId", navInfo);
+        } else {
+          sessionStorage.setItem("kitsuCover", "");
+          sessionStorage.setItem("itemId", navInfo);
+        }
+      }
 
-      sessionStorage.setItem("itemId", navInfo);
-      navigate(0);
-    } else {
-      sessionStorage.setItem("kitsuCover", "");
-
-      sessionStorage.setItem("itemId", navInfo);
-      navigate(0);
-    }
+      return navigate(0);
+    });
   };
 
   const studioInfo = async (studioId, studioName) => {
@@ -331,6 +352,22 @@ function Details({ isDarkMode }) {
                             } Volume(s)`}
                       </strong>
                     </p>
+                    <ListAddButton
+                      isDarkMode={isDarkMode}
+                      itemType={itemType}
+                      itemId={itemId}
+                      title={details.title}
+                      type={details.type}
+                      image={details.images.jpg.image_url}
+                      released={
+                        details.aired
+                          ? details.aired.from
+                          : details.published
+                          ? details.published.from
+                          : "?"
+                      }
+                      date={dateFormat(new Date(), "isoDateTime")}
+                    />
                   </div>
                   <div className="gauge-container">
                     <div className="gauge-wrapper">

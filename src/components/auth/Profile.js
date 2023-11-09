@@ -1,5 +1,4 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import {
   updateProfile,
   updatePassword,
@@ -10,10 +9,11 @@ import { auth } from "../../firebase";
 import toast from "react-hot-toast";
 import Collapsible from "react-collapsible";
 import { Alert } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Profile = ({ isDarkMode, user }) => {
   const navigate = useNavigate();
-
+  const [loading, setLoading] = React.useState(true);
   const [username, setUsername] = React.useState("");
   const [usernameLength, setusernameLength] = React.useState(false);
   const [usernameEmpty, setUsernameEmpty] = React.useState(false);
@@ -102,6 +102,20 @@ const Profile = ({ isDarkMode, user }) => {
   };
 
   React.useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUsername(user.displayName);
+        setLoading(false);
+      } else {
+        navigate("/login");
+      }
+    });
+
+    // Clean up the subscription when the component unmounts
+    return () => unsubscribe();
+  }, [navigate]);
+
+  React.useEffect(() => {
     setUsernameEmpty(false);
     setusernameLength(false);
     setShowProfileUpdateWarning(false);
@@ -122,206 +136,186 @@ const Profile = ({ isDarkMode, user }) => {
     setShowProfileUpdateWarning(false);
   }, [password]);
 
-  React.useEffect(() => {
-    setUsername(auth.currentUser.displayName);
-  }, []);
-
-  const homeRoute = () => {
-    setTimeout(() => {
-      navigate("/");
-    }, 2000);
-  };
-
   const inputError = {
     border: `2px solid ${isDarkMode ? "#ffc107" : "red"}`,
   };
 
-  return (
-    <>
-      {user ? (
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "80vh",
+        }}
+      >
+        <span className="loader"></span>
+      </div>
+    );
+  } else {
+    return (
+      <div
+        className="container"
+        style={{
+          marginTop: "10%",
+          maxWidth: "900px",
+        }}
+      >
+        {showFailedProfileUpdateWarning ? (
+          <Alert className="mb-2" variant="filled" severity="error">
+            Profile update failed! Please try again or submit an issue on github
+            if this problem persists.
+          </Alert>
+        ) : null}
         <div
-          className="container"
-          style={{
-            position: "relative",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            maxWidth: "900px",
-          }}
+          className={`card text-bg-${isDarkMode ? "secondary" : "light"}`}
+          style={{ boxShadow: "0px 0px 10px 5px rgba(0, 0, 0, 0.5)" }}
         >
-          {showFailedProfileUpdateWarning ? (
-            <Alert className="mb-2" variant="filled" severity="error">
-              Profile update failed! Please try again or submit an issue on
-              github if this problem persists.
-            </Alert>
-          ) : null}
-          <div
-            className={`card text-bg-${isDarkMode ? "secondary" : "light"}`}
-            style={{ boxShadow: "0px 0px 10px 5px rgba(0, 0, 0, 0.5)" }}
-          >
-            <div className="card-header">Edit Profile</div>
-            <div className="card-body">
+          <div className="card-header">Edit Profile</div>
+          <div className="card-body">
+            <div className="mb-3">
+              <label htmlFor="email-address" className="form-label">
+                Email address
+              </label>
+              <input
+                className="form-control"
+                type="email"
+                label="Email address"
+                value={auth.currentUser.email}
+                placeholder="Email address"
+                readOnly
+                disabled
+              />
+            </div>
+            <form>
               <div className="mb-3">
-                <label htmlFor="email-address" className="form-label">
-                  Email address
+                <label htmlFor="username" className="form-label">
+                  Username
                 </label>
                 <input
                   className="form-control"
-                  type="email"
-                  label="Email address"
-                  value={auth.currentUser.email}
-                  placeholder="Email address"
-                  readOnly
-                  disabled
+                  type="text"
+                  label="Username"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  required={true}
+                  placeholder="Username"
+                  style={usernameEmpty || usernameLength ? inputError : null}
                 />
+                {usernameEmpty ? (
+                  <div className="error-message">
+                    <small
+                      style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                    >
+                      Username cannot be empty!
+                    </small>
+                  </div>
+                ) : usernameLength ? (
+                  <div className="error-message">
+                    <small
+                      style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                    >
+                      Username must be between 3 and 15 characters!
+                    </small>
+                  </div>
+                ) : null}
               </div>
-              <form>
-                <div className="mb-3">
-                  <label htmlFor="username" className="form-label">
-                    Username
+
+              <Collapsible
+                trigger={`🔑 Change Password`}
+                className="mb-3"
+                onOpening={allowPasswordChange}
+                onClose={disallowPasswordChange}
+              >
+                <div className="mb-3 mt-2">
+                  <label htmlFor="currentpassword" className="form-label">
+                    Current Password
                   </label>
                   <input
                     className="form-control"
-                    type="text"
-                    label="Username"
-                    value={username}
-                    onChange={(event) => setUsername(event.target.value)}
-                    required={true}
-                    placeholder="Username"
-                    style={usernameEmpty || usernameLength ? inputError : null}
+                    type="password"
+                    label="Current Password"
+                    value={currentPassword}
+                    onChange={(event) => setCurrentPassword(event.target.value)}
+                    required={isRequired}
+                    placeholder="Current Password"
                   />
-                  {usernameEmpty ? (
+                </div>
+
+                <div className="mb-3 mt-2">
+                  <label htmlFor="password" className="form-label">
+                    New Password
+                  </label>
+                  <input
+                    className="form-control"
+                    type="password"
+                    label="New Password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    required={isRequired}
+                    placeholder="New Password"
+                    style={
+                      passwordEmpty || passwordTooShort ? inputError : null
+                    }
+                  />
+                  {passwordEmpty ? (
                     <div className="error-message">
                       <small
                         style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
                       >
-                        Username cannot be empty!
+                        Password Cannot be empty!
                       </small>
                     </div>
-                  ) : usernameLength ? (
+                  ) : passwordTooShort ? (
                     <div className="error-message">
                       <small
                         style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
                       >
-                        Username must be between 3 and 15 characters!
+                        Password cannot be less than 6 characters!
                       </small>
                     </div>
                   ) : null}
                 </div>
 
-                <Collapsible
-                  trigger={`🔑 Change Password`}
-                  className="mb-3"
-                  onOpening={allowPasswordChange}
-                  onClose={disallowPasswordChange}
-                >
-                  <div className="mb-3 mt-2">
-                    <label htmlFor="currentpassword" className="form-label">
-                      Current Password
-                    </label>
-                    <input
-                      className="form-control"
-                      type="password"
-                      label="Current Password"
-                      value={currentPassword}
-                      onChange={(event) =>
-                        setCurrentPassword(event.target.value)
-                      }
-                      required={isRequired}
-                      placeholder="Current Password"
-                    />
-                  </div>
+                <div className="mb-3">
+                  <label htmlFor="passwordconfirm" className="form-label">
+                    Confirm New Password
+                  </label>
+                  <input
+                    className="form-control"
+                    type="password"
+                    label="Confirm New password"
+                    value={passwordConfirm}
+                    onChange={(event) => setPasswordConfirm(event.target.value)}
+                    required={isRequired}
+                    placeholder="Confirm New Password"
+                    style={passwordMismatch ? inputError : null}
+                  />
+                  {passwordMismatch && (
+                    <div className="error-message">
+                      <small
+                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                      >
+                        Passwords do not match!
+                      </small>
+                    </div>
+                  )}
+                </div>
+              </Collapsible>
 
-                  <div className="mb-3 mt-2">
-                    <label htmlFor="password" className="form-label">
-                      New Password
-                    </label>
-                    <input
-                      className="form-control"
-                      type="password"
-                      label="New Password"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      required={isRequired}
-                      placeholder="New Password"
-                      style={
-                        passwordEmpty || passwordTooShort ? inputError : null
-                      }
-                    />
-                    {passwordEmpty ? (
-                      <div className="error-message">
-                        <small
-                          style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
-                        >
-                          Password Cannot be empty!
-                        </small>
-                      </div>
-                    ) : passwordTooShort ? (
-                      <div className="error-message">
-                        <small
-                          style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
-                        >
-                          Password cannot be less than 6 characters!
-                        </small>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="passwordconfirm" className="form-label">
-                      Confirm New Password
-                    </label>
-                    <input
-                      className="form-control"
-                      type="password"
-                      label="Confirm New password"
-                      value={passwordConfirm}
-                      onChange={(event) =>
-                        setPasswordConfirm(event.target.value)
-                      }
-                      required={isRequired}
-                      placeholder="Confirm New Password"
-                      style={passwordMismatch ? inputError : null}
-                    />
-                    {passwordMismatch && (
-                      <div className="error-message">
-                        <small
-                          style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
-                        >
-                          Passwords do not match!
-                        </small>
-                      </div>
-                    )}
-                  </div>
-                </Collapsible>
-
-                <button
-                  className="btn btn-success"
-                  type="submit"
-                  onClick={onSubmit}
-                >
-                  Save
-                </button>
-              </form>
-            </div>
+              <button
+                className="btn btn-success"
+                type="submit"
+                onClick={onSubmit}
+              >
+                Save
+              </button>
+            </form>
           </div>
         </div>
-      ) : (
-        <>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: "80vh",
-            }}
-          >
-            <span className="loader"></span>
-          </div>
-          {homeRoute()}
-        </>
-      )}
-    </>
-  );
+      </div>
+    );
+  }
 };
 export default Profile;

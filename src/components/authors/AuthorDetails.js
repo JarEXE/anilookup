@@ -121,6 +121,8 @@ function AuthorDetails({ isDarkMode }) {
 
     if (typeof authorId !== "undefined" && authorId !== null) {
       fetchAuthorData();
+    } else {
+      navigate("/");
     }
     // cleanup function to update the mounted flag
     return () => {

@@ -123,6 +123,8 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
 
     if (typeof studioId !== "undefined" && studioId !== null) {
       fetchStudioData();
+    } else {
+      navigate("/");
     }
     // cleanup function to update the mounted flag
     return () => {

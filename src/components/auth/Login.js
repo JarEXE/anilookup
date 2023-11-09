@@ -96,10 +96,7 @@ const Login = ({ isDarkMode, user }) => {
       <div
         className="container"
         style={{
-          position: "relative",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
+          marginTop: "10%",
           maxWidth: "900px",
         }}
       >

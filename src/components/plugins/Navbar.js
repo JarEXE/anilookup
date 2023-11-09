@@ -98,7 +98,17 @@ function Navbar({
     if (auth.currentUser !== null) {
       navigate("/profile");
     } else {
-      navigate("/");
+      navigate("/login");
+    }
+  };
+
+  const listsRoute = async () => {
+    await handleMenuClosed();
+
+    if (auth.currentUser !== null) {
+      navigate("/lists");
+    } else {
+      navigate("/login");
     }
   };
 
@@ -177,8 +187,8 @@ function Navbar({
   }, []); // Empty dependency array ensures the effect runs once after the initial render
 
   return (
-    <nav class="navbar navbar-expand-lg">
-      <div class="container-fluid">
+    <nav className="navbar navbar-expand-lg">
+      <div className="container-fluid">
         <a
           className="navbar-brand"
           href="#/"
@@ -195,7 +205,7 @@ function Navbar({
           />
         </a>
         <button
-          class="navbar-toggler"
+          className="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarText"
@@ -207,11 +217,11 @@ function Navbar({
             borderColor: `${isDarkMode ? "#0dcaf0" : "#282828"}`,
           }}
         >
-          <span class="navbar-toggler-icon"></span>
+          <span className="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarText">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
+        <div className="collapse navbar-collapse" id="navbarText">
+          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+            <li className="nav-item">
               <div
                 className="toggle-container"
                 style={{ marginRight: "30px", marginTop: "8px" }}
@@ -260,7 +270,7 @@ function Navbar({
                     <a
                       className="nav-link"
                       href="#/"
-                      onClick={() => alert("Feature coming soon!")}
+                      onClick={() => listsRoute()}
                       style={{ color: `${isDarkMode ? "#fff" : "#282828"}` }}
                     >
                       Lists
@@ -292,7 +302,7 @@ function Navbar({
               ) : null}
             </>
           </ul>
-          <span class="navbar-text">
+          <span className="navbar-text">
             {user && screenWidth > 991 ? (
               <div className="mobile-width">
                 <CircleMenu
@@ -314,7 +324,7 @@ function Navbar({
                     <ProfileIcon />
                   </CircleMenuItem>
                   <CircleMenuItem
-                    onClick={() => alert("Feature coming soon!")}
+                    onClick={() => listsRoute()}
                     tooltip="Lists"
                     tooltipPlacement={TooltipPlacement.Left}
                   >
@@ -353,7 +363,7 @@ function Navbar({
           </span>
         </div>
       </div>
-      <Toaster position="top-left" />
+      <Toaster position="bottom-right" />
     </nav>
   );
 }

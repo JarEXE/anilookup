@@ -15,6 +15,8 @@ import Details from "./components/Details";
 import ScrollToBottomButton from "./components/plugins/ScrollToBottomButton";
 import StudioDetails from "./components/studios/StudioDetails";
 import AuthorDetails from "./components/authors/AuthorDetails";
+import Lists from "./components/lists/Lists";
+import ErrorPage from "./components/ErrorPage";
 
 function App() {
   const sfwStatus = sessionStorage.getItem("sfw");
@@ -73,7 +75,6 @@ function App() {
         setUser(user);
         console.log("uid", uid);
       } else {
-        console.log(user);
         console.log("user is logged out");
       }
     });
@@ -133,11 +134,7 @@ function App() {
             />
             <Route
               path="/profile"
-              element={
-                <div>
-                  <Profile isDarkMode={isDarkMode} user={user} />
-                </div>
-              }
+              element={<Profile isDarkMode={isDarkMode} user={user} />}
             />
             <Route
               exact
@@ -183,7 +180,11 @@ function App() {
               path="/details"
               element={
                 <div>
-                  <Details isDarkMode={isDarkMode} allowNSFW={allowNSFW} />
+                  <Details
+                    isDarkMode={isDarkMode}
+                    allowNSFW={allowNSFW}
+                    user={user}
+                  />
                   <ScrollToBottomButton isDarkMode={isDarkMode} />
                 </div>
               }
@@ -212,6 +213,16 @@ function App() {
                 </div>
               }
             />
+            <Route
+              path="/lists"
+              element={
+                <div>
+                  <Lists isDarkMode={isDarkMode} user={user} />
+                  <ScrollToBottomButton isDarkMode={isDarkMode} />
+                </div>
+              }
+            />
+            <Route path="*" element={<ErrorPage isDarkMode={isDarkMode} />} />
           </Routes>
         </div>
       </div>

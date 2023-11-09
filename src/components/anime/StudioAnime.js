@@ -15,27 +15,30 @@ const StudioAnime = (props) => {
     setIsActive(true);
 
     await fetch(
-      `https://kitsu.io/api/edge/anime?filter[text]=${props.title}&page[limit]=1`
+      `https://kitsu.io/api/edge/anime?filter[text]=${props.title}&page[limit]=5`
     ).then(async (response) => {
       kitsuData = await response.json();
     });
 
-    if (kitsuData.data[0].attributes.coverImage != null) {
-      sessionStorage.setItem(
-        "kitsuCover",
-        `${kitsuData.data[0].attributes.coverImage.original}`
-      );
-      sessionStorage.setItem("itemId", `/anime/${animeId}`);
-      setIsLoading(false);
-      setIsActive(false);
-      navigate(`/details`);
-    } else {
-      sessionStorage.setItem("kitsuCover", "");
-      sessionStorage.setItem("itemId", `/anime/${animeId}`);
-      setIsLoading(false);
-      setIsActive(false);
-      navigate(`/details`);
-    }
+    kitsuData.data.map((item) => {
+      if (item.attributes.canonicalTitle === props.title) {
+        if (item.attributes.coverImage != null) {
+          sessionStorage.setItem(
+            "kitsuCover",
+            `${item.attributes.coverImage.original}`
+          );
+          sessionStorage.setItem("itemId", `/anime/${animeId}`);
+          setIsLoading(false);
+          setIsActive(false);
+        } else {
+          sessionStorage.setItem("kitsuCover", "");
+          sessionStorage.setItem("itemId", `/anime/${animeId}`);
+          setIsLoading(false);
+          setIsActive(false);
+        }
+      }
+      return navigate("/details");
+    });
   };
   return (
     <>
