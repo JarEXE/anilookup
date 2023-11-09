@@ -30,41 +30,27 @@ function Anime(props) {
       kitsuData = await response.json();
     });
 
-    kitsuData.data.map((item) => {
-      if (
+    const matchingItem = kitsuData.data.find(
+      (item) =>
         item.attributes.canonicalTitle === props.title ||
         item.attributes.abbreviatedTitles.includes(props.title) ||
         item.attributes.titles.en === props.title ||
         item.attributes.titles.en_jp === props.title ||
         item.attributes.titles.ja_jp === props.title
-      ) {
-        if (item.attributes.coverImage != null) {
-          sessionStorage.setItem(
-            "kitsuCover",
-            `${item.attributes.coverImage.original}`
-          );
-          sessionStorage.setItem("itemId", `/anime/${props.malid}`);
-          setIsLoading(false);
-          setIsActive(false);
-        } else {
-          sessionStorage.setItem("kitsuCover", "");
-          sessionStorage.setItem("itemId", `/anime/${props.malid}`);
-          setIsLoading(false);
-          setIsActive(false);
-        }
-      } else {
-        if (kitsuData.data[0].attributes.coverImage != null) {
-          sessionStorage.setItem(
-            "kitsuCover",
-            `${kitsuData.data[0].attributes.coverImage.original}`
-          );
-          sessionStorage.setItem("itemId", `/anime/${props.malid}`);
-          setIsLoading(false);
-          setIsActive(false);
-        }
-      }
-      return navigate("/details");
-    });
+    );
+
+    if (matchingItem) {
+      const coverImage = matchingItem.attributes.coverImage
+        ? matchingItem.attributes.coverImage.original
+        : "";
+      sessionStorage.setItem("kitsuCover", coverImage);
+      sessionStorage.setItem("itemId", `/anime/${props.malid}`);
+      navigate("/details");
+    } else {
+      sessionStorage.setItem("kitsuCover", "");
+      sessionStorage.setItem("itemId", `/anime/${props.malid}`);
+      navigate("/details");
+    }
   };
 
   return (

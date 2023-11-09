@@ -544,29 +544,27 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
       kitsuData = await response.json();
     });
 
-    kitsuData.data.map((item) => {
-      if (
+    const matchingItem = kitsuData.data.find(
+      (item) =>
         item.attributes.canonicalTitle === animeTitle ||
         item.attributes.abbreviatedTitles.includes(animeTitle) ||
         item.attributes.titles.en === animeTitle ||
         item.attributes.titles.en_jp === animeTitle ||
         item.attributes.titles.ja_jp === animeTitle
-      ) {
-        if (item.attributes.coverImage != null) {
-          sessionStorage.setItem(
-            "kitsuCover",
-            `${item.attributes.coverImage.original}`
-          );
-          sessionStorage.setItem("itemId", `${animeId}`);
-          setIsActive(false);
-        } else {
-          sessionStorage.setItem("kitsuCover", "");
-          sessionStorage.setItem("itemId", `${animeId}`);
-          setIsActive(false);
-        }
-      }
-      return navigate("/details");
-    });
+    );
+
+    if (matchingItem) {
+      const coverImage = matchingItem.attributes.coverImage
+        ? matchingItem.attributes.coverImage.original
+        : "";
+      sessionStorage.setItem("kitsuCover", coverImage);
+      sessionStorage.setItem("itemId", `/anime/${animeId}`);
+      navigate("/details");
+    } else {
+      sessionStorage.setItem("kitsuCover", "");
+      sessionStorage.setItem("itemId", `/anime/${animeId}`);
+      navigate("/details");
+    }
   };
 
   return (
