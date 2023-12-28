@@ -190,6 +190,13 @@ const AllManga = ({ isDarkMode, selectedOption, sortBy }) => {
         currentId
       );
 
+      const mangalistitemsRef = collection(
+        db,
+        "users",
+        auth.currentUser.uid,
+        "mangalistitems"
+      );
+
       const newData = {
         currentList: event.target.id,
         itemId: `/manga/${currentId}`,
@@ -226,6 +233,27 @@ const AllManga = ({ isDarkMode, selectedOption, sortBy }) => {
             },
           });
         }
+
+        // update sessionstorage
+        try {
+          const querySnapshot = await getDocs(mangalistitemsRef);
+          let dataList = [];
+
+          querySnapshot.forEach((doc) => {
+            // doc.data() is an object representing the document
+            dataList.push({
+              id: doc.id,
+              ...doc.data(),
+            });
+          });
+          sessionStorage.setItem("mangaListItems", JSON.stringify(dataList));
+        } catch (error) {
+          console.error(
+            "Error getting documents from mangalistitems collection:",
+            error
+          );
+          return [];
+        }
       } catch (error) {
         console.error("Error updating document: ", error);
         toast.error(`Something went wrong!`, {
@@ -252,6 +280,13 @@ const AllManga = ({ isDarkMode, selectedOption, sortBy }) => {
       currentId
     );
 
+    const mangalistitemsRef = collection(
+      db,
+      "users",
+      auth.currentUser.uid,
+      "mangalistitems"
+    );
+
     try {
       await deleteDoc(itemDocRef);
       setActiveList(null);
@@ -263,6 +298,26 @@ const AllManga = ({ isDarkMode, selectedOption, sortBy }) => {
           color: `${isDarkMode ? "#333" : "#fff"}`,
         },
       });
+      // update sessionstorage
+      try {
+        const querySnapshot = await getDocs(mangalistitemsRef);
+        let dataList = [];
+
+        querySnapshot.forEach((doc) => {
+          // doc.data() is an object representing the document
+          dataList.push({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+        sessionStorage.setItem("mangaListItems", JSON.stringify(dataList));
+      } catch (error) {
+        console.error(
+          "Error getting documents from mangalistitems collection:",
+          error
+        );
+        return [];
+      }
     } catch (error) {
       console.error("Error deleting document: ", error);
       setItemRemoved(false);

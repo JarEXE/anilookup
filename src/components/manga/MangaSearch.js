@@ -3,8 +3,20 @@ import { useNavigate } from "react-router-dom";
 import TopManga from "./TopManga";
 import toast from "react-hot-toast";
 import ScrollContainer from "react-indiana-drag-scroll";
+import { onAuthStateChanged } from "firebase/auth";
+import { getDocs, collection } from "firebase/firestore";
+import { auth, db } from "../../firebase";
+import {
+  faCircleCheck,
+  faEye,
+  faCircleXmark,
+  faHand,
+  faClock,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Mangafreak from "../plugins/MangaFreakService";
 
-function MangaSearch({ onInputChange, isDarkMode, allowNSFW }) {
+function MangaSearch({ onInputChange, isDarkMode, allowNSFW, user }) {
   const notifyBadSearch = () =>
     toast.error("Input cannot be empty!", {
       style: {
@@ -16,6 +28,18 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW }) {
   const [searchText, setSearchText] = React.useState("");
   // Initialize state to manage the selected radio button
   const [selectedOption, setSelectedOption] = React.useState("publishing");
+
+  const [listStatus, setListStatus] = React.useState(
+    JSON.parse(sessionStorage.getItem("mangaListItems"))
+  );
+
+  const [listUpdated, setListUpdated] = React.useState(false);
+
+  const [readingListLength, setReadingListLength] = React.useState(null);
+  const [holdListLength, setHoldListLength] = React.useState(null);
+  const [plannedListLength, setPlannedListLength] = React.useState(null);
+  const [droppedListLength, setDroppedListLength] = React.useState(null);
+  const [completedListLength, setCompletedListLength] = React.useState(null);
 
   const navigate = useNavigate();
 
@@ -49,6 +73,68 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW }) {
   const animeRoute = () => {
     navigate("/");
   };
+
+  React.useEffect(() => {
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const mangalistitemsRef = collection(
+          db,
+          "users",
+          user.uid,
+          "mangalistitems"
+        );
+
+        try {
+          const querySnapshot = await getDocs(mangalistitemsRef);
+          let dataList = [];
+
+          querySnapshot.forEach((doc) => {
+            // doc.data() is an object representing the document
+            dataList.push({
+              id: doc.id,
+              ...doc.data(),
+            });
+          });
+          sessionStorage.setItem("mangaListItems", JSON.stringify(dataList));
+
+          setReadingListLength(
+            dataList.filter((item) => item["currentList"] === "reading").length
+          );
+          setHoldListLength(
+            dataList.filter((item) => item["currentList"] === "onhold").length
+          );
+          setPlannedListLength(
+            dataList.filter((item) => item["currentList"] === "planned").length
+          );
+          setDroppedListLength(
+            dataList.filter((item) => item["currentList"] === "dropped").length
+          );
+          setCompletedListLength(
+            dataList.filter((item) => item["currentList"] === "completed")
+              .length
+          );
+          setListUpdated(true);
+        } catch (error) {
+          console.error(
+            "Error getting documents from mangalistitems collection:",
+            error
+          );
+          return [];
+        }
+      } else {
+        console.log("user is logged out");
+      }
+    });
+    const mangafreak = new Mangafreak();
+    mangafreak
+      .getMangaData({ slug: "jujutsu" })
+      .then((data) => console.log(data));
+  }, [user]);
+
+  // Update the listStatus state when setting mangaListItems in sessionStorage
+  React.useEffect(() => {
+    setListStatus(JSON.parse(sessionStorage.getItem("mangaListItems")));
+  }, [listUpdated]);
 
   return (
     <div>
@@ -86,6 +172,82 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW }) {
             >
               Anime Section
             </button>
+          </div>
+        </div>
+        <hr></hr>
+        <div className="text-center mb-2">
+          <p className="lead">Your Manga Stats</p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div
+            className="mb-2"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <FontAwesomeIcon
+              icon={faEye}
+              style={{ color: "blueviolet", marginRight: "2%" }}
+            />{" "}
+            Reading: {readingListLength}
+          </div>
+          <div
+            className="mb-2"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <FontAwesomeIcon
+              icon={faHand}
+              style={{ color: "orange", marginRight: "2%" }}
+            />{" "}
+            On-Hold: {holdListLength}
+          </div>
+          <div
+            className="mb-2"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <FontAwesomeIcon
+              icon={faClock}
+              style={{ color: "gray", marginRight: "2%" }}
+            />{" "}
+            Plan to Read: {plannedListLength}
+          </div>
+          <div
+            className="mb-2"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <FontAwesomeIcon
+              icon={faCircleXmark}
+              style={{ color: "red", marginRight: "2%" }}
+            />{" "}
+            Dropped: {droppedListLength}
+          </div>
+          <div
+            className="mb-4"
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <FontAwesomeIcon
+              icon={faCircleCheck}
+              style={{ color: "green", marginRight: "2%" }}
+            />{" "}
+            Completed: {completedListLength}
           </div>
         </div>
         <hr className="separator"></hr>
@@ -227,6 +389,7 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW }) {
               isDarkMode={isDarkMode}
               allowNSFW={allowNSFW}
               selectedOption={selectedOption}
+              listStatus={listStatus}
             />
           ) : (
             setSelectedOption("publishing")

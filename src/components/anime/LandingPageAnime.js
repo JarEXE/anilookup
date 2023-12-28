@@ -2,6 +2,14 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import LazyLoad from "react-lazyload";
 import LoadingOverlay from "react-loading-overlay-ts";
+import {
+  faCircleCheck,
+  faEye,
+  faCircleXmark,
+  faHand,
+  faClock,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function LandingPageAnime(props) {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -10,7 +18,6 @@ function LandingPageAnime(props) {
   let kitsuData;
 
   const showDetails = async (animeId) => {
-    console.log("running fetch");
     setIsLoading(true);
     setIsActive(true);
 
@@ -40,6 +47,103 @@ function LandingPageAnime(props) {
       sessionStorage.setItem("kitsuCover", "");
       sessionStorage.setItem("itemId", `/anime/${animeId}`);
       navigate("/details");
+    }
+  };
+
+  const getStatusIcon = () => {
+    switch (props.currentList) {
+      case "watching":
+        return (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              zIndex: 1,
+              width: "25%",
+              background: "rgba(255, 255, 255, 0.9)",
+              padding: "5px",
+              borderTopLeftRadius: "10px",
+              textAlign: "center",
+            }}
+          >
+            <FontAwesomeIcon icon={faEye} style={{ color: "blueviolet" }} />
+          </div>
+        );
+      case "onhold":
+        return (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              zIndex: 1,
+              width: "25%",
+              background: "rgba(255, 255, 255, 0.9)",
+              padding: "5px",
+              borderTopLeftRadius: "10px",
+              textAlign: "center",
+            }}
+          >
+            <FontAwesomeIcon icon={faHand} style={{ color: "orange" }} />
+          </div>
+        );
+      case "planned":
+        return (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              zIndex: 1,
+              width: "25%",
+              background: "rgba(255, 255, 255, 0.9)",
+              padding: "5px",
+              borderTopLeftRadius: "10px",
+              textAlign: "center",
+            }}
+          >
+            <FontAwesomeIcon icon={faClock} style={{ color: "gray" }} />
+          </div>
+        );
+      case "dropped":
+        return (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              zIndex: 1,
+              width: "25%",
+              background: "rgba(255, 255, 255, 0.9)",
+              padding: "5px",
+              borderTopLeftRadius: "10px",
+              textAlign: "center",
+            }}
+          >
+            <FontAwesomeIcon icon={faCircleXmark} style={{ color: "red" }} />
+          </div>
+        );
+      case "completed":
+        return (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              zIndex: 1,
+              width: "25%",
+              background: "rgba(255, 255, 255, 0.9)",
+              padding: "5px",
+              borderTopLeftRadius: "10px",
+              textAlign: "center",
+            }}
+          >
+            <FontAwesomeIcon icon={faCircleCheck} style={{ color: "green" }} />
+          </div>
+        );
+      default:
+        return null;
     }
   };
   return (
@@ -72,6 +176,7 @@ function LandingPageAnime(props) {
               style={{ width: "190px" }}
             />
           </LazyLoad>
+          {getStatusIcon()}
           <div
             className="overlay"
             style={{ overflowY: "hidden" }}

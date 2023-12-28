@@ -35,7 +35,6 @@ const Login = ({ isDarkMode, user }) => {
               color: `${isDarkMode ? "#333" : "#fff"}`,
             },
           });
-          navigate("/");
         })
         .catch((error) => {
           const errorMessage = error.message;

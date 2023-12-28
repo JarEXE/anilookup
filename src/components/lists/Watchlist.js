@@ -193,6 +193,13 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
         currentId
       );
 
+      const animelistitemsRef = collection(
+        db,
+        "users",
+        auth.currentUser.uid,
+        "animelistitems"
+      );
+
       const newData = {
         currentList: event.target.id,
         itemId: `/anime/${currentId}`,
@@ -229,6 +236,26 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
             },
           });
         }
+        // update sessionstorage
+        try {
+          const querySnapshot = await getDocs(animelistitemsRef);
+          let dataList = [];
+
+          querySnapshot.forEach((doc) => {
+            // doc.data() is an object representing the document
+            dataList.push({
+              id: doc.id,
+              ...doc.data(),
+            });
+          });
+          sessionStorage.setItem("animelistitems", JSON.stringify(dataList));
+        } catch (error) {
+          console.error(
+            "Error getting documents from animelistitems collection:",
+            error
+          );
+          return [];
+        }
       } catch (error) {
         console.error("Error updating document: ", error);
         toast.error(`Something went wrong!`, {
@@ -255,6 +282,13 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
       currentId
     );
 
+    const animelistitemsRef = collection(
+      db,
+      "users",
+      auth.currentUser.uid,
+      "animelistitems"
+    );
+
     try {
       await deleteDoc(itemDocRef);
       setActiveList(null);
@@ -266,6 +300,27 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
           color: `${isDarkMode ? "#333" : "#fff"}`,
         },
       });
+
+      // update sessionstorage
+      try {
+        const querySnapshot = await getDocs(animelistitemsRef);
+        let dataList = [];
+
+        querySnapshot.forEach((doc) => {
+          // doc.data() is an object representing the document
+          dataList.push({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+        sessionStorage.setItem("animelistitems", JSON.stringify(dataList));
+      } catch (error) {
+        console.error(
+          "Error getting documents from animelistitems collection:",
+          error
+        );
+        return [];
+      }
     } catch (error) {
       console.error("Error deleting document: ", error);
       setItemRemoved(false);
@@ -554,7 +609,6 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
     );
 
     if (matchingItem) {
-      console.log(matchingItem);
       const coverImage = matchingItem.attributes.coverImage
         ? matchingItem.attributes.coverImage.original
         : "";

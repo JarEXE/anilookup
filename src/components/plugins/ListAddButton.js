@@ -5,7 +5,15 @@ import MenuItem from "@mui/material/MenuItem";
 import { Add } from "@mui/icons-material";
 import { Edit } from "@mui/icons-material";
 import { Check } from "@mui/icons-material";
-import { doc, updateDoc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import {
+  doc,
+  collection,
+  updateDoc,
+  getDoc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+} from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -75,6 +83,13 @@ const ListAddButton = ({
         itemId.substring(7)
       );
 
+      const listitemsRef = collection(
+        db,
+        "users",
+        auth.currentUser.uid,
+        `${itemType === "anime" ? "animelistitems" : "mangalistitems"}`
+      );
+
       const newData = {
         currentList: event.target.id,
         itemId: itemId,
@@ -111,6 +126,30 @@ const ListAddButton = ({
             },
           });
         }
+
+        // update sessionstorage
+        try {
+          const querySnapshot = await getDocs(listitemsRef);
+          let dataList = [];
+
+          querySnapshot.forEach((doc) => {
+            // doc.data() is an object representing the document
+            dataList.push({
+              id: doc.id,
+              ...doc.data(),
+            });
+          });
+          sessionStorage.setItem(
+            `${itemType === "anime" ? "animelistitems" : "mangalistitems"}`,
+            JSON.stringify(dataList)
+          );
+        } catch (error) {
+          console.error(
+            "Error getting documents from listitems collection:",
+            error
+          );
+          return [];
+        }
       } catch (error) {
         console.error("Error updating document: ", error);
         toast.error(`Something went wrong!`, {
@@ -137,6 +176,13 @@ const ListAddButton = ({
       itemId.substring(7)
     );
 
+    const listitemsRef = collection(
+      db,
+      "users",
+      auth.currentUser.uid,
+      `${itemType === "anime" ? "animelistitems" : "mangalistitems"}`
+    );
+
     try {
       await deleteDoc(itemDocRef);
       setItemData(false);
@@ -148,6 +194,29 @@ const ListAddButton = ({
           color: `${isDarkMode ? "#333" : "#fff"}`,
         },
       });
+
+      // update sessionstorage
+      try {
+        const querySnapshot = await getDocs(listitemsRef);
+        let dataList = [];
+
+        querySnapshot.forEach((doc) => {
+          dataList.push({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+        sessionStorage.setItem(
+          `${itemType === "anime" ? "animelistitems" : "mangalistitems"}`,
+          JSON.stringify(dataList)
+        );
+      } catch (error) {
+        console.error(
+          "Error getting documents from listitems collection:",
+          error
+        );
+        return [];
+      }
     } catch (error) {
       console.error("Error updating document: ", error);
       toast.error(`Something went wrong!`, {

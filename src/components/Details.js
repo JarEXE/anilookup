@@ -11,6 +11,9 @@ import Favicon from "./plugins/Favicon";
 import toast from "react-hot-toast";
 import ListAddButton from "./plugins/ListAddButton";
 import dateFormat from "dateformat";
+import { Button } from "@mui/material";
+import { Book } from "@mui/icons-material";
+import axios from "axios";
 
 function Details({ isDarkMode }) {
   const getKitsuCover = sessionStorage.getItem("kitsuCover");
@@ -40,7 +43,7 @@ function Details({ isDarkMode }) {
     });
 
   // Define a function to fetch author details and positions
-  async function fetchAuthorDetailsAndPositions() {
+  const fetchAuthorDetailsAndPositions = async () => {
     let authorsArray = [];
 
     if (typeof details.authors !== "undefined") {
@@ -91,7 +94,41 @@ function Details({ isDarkMode }) {
 
     // Set the authors array in the state
     setAuthors(authorsArray);
-  }
+  };
+
+  const fetchMangaChapters = async () => {
+    const baseUrl = "https://api.mangadex.org";
+    const languages = ["en"];
+    let mangadexData;
+    let mangadexMangaId;
+
+    await fetch(
+      `https://api.mangadex.org/manga?title=${details.title}&limit=5`
+    ).then(async (response) => {
+      mangadexData = await response.json();
+    });
+
+    const matchingItem = mangadexData.data.find(
+      (item) =>
+        item.attributes.title.en === details.title ||
+        item.attributes.altTitles.en === details.title ||
+        item.attributes.altTitles.ja === details.title
+    );
+
+    if (matchingItem) {
+      mangadexMangaId = matchingItem.id;
+    }
+
+    const resp = await axios({
+      method: "GET",
+      url: `${baseUrl}/manga/${mangadexMangaId}/feed`,
+      params: {
+        translatedLanguage: languages,
+      },
+    });
+
+    console.log(resp.data.data.map((chapter) => chapter.id));
+  };
 
   const navigate = useNavigate();
 
@@ -191,6 +228,7 @@ function Details({ isDarkMode }) {
         setItemType("manga");
         fetchAuthorDetailsAndPositions();
         setStreamingSitesSection(false);
+        fetchMangaChapters();
       }
     }
     // eslint-disable-next-line
@@ -361,22 +399,40 @@ function Details({ isDarkMode }) {
                             } Volume(s)`}
                       </strong>
                     </p>
-                    <ListAddButton
-                      isDarkMode={isDarkMode}
-                      itemType={itemType}
-                      itemId={itemId}
-                      title={details.title}
-                      type={details.type}
-                      image={details.images.jpg.image_url}
-                      released={
-                        details.aired
-                          ? details.aired.from
-                          : details.published
-                          ? details.published.from
-                          : "?"
-                      }
-                      date={dateFormat(new Date(), "isoDateTime")}
-                    />
+                    <div style={{ display: "flex", flexDirection: "row" }}>
+                      <ListAddButton
+                        isDarkMode={isDarkMode}
+                        itemType={itemType}
+                        itemId={itemId}
+                        title={details.title}
+                        type={details.type}
+                        image={details.images.jpg.image_url}
+                        released={
+                          details.aired
+                            ? details.aired.from
+                            : details.published
+                            ? details.published.from
+                            : "?"
+                        }
+                        date={dateFormat(new Date(), "isoDateTime")}
+                      />
+                      {itemType === "manga" ? (
+                        <div style={{ marginLeft: "5%" }}>
+                          <Button
+                            style={{
+                              backgroundColor: `${
+                                isDarkMode ? "#0dcaf0" : "#212529"
+                              }`,
+                              color: "#FFF",
+                              textTransform: "none",
+                            }}
+                          >
+                            <Book />
+                            &nbsp;Read
+                          </Button>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                   <div className="gauge-container">
                     <div className="gauge-wrapper">

@@ -3,7 +3,8 @@ import LandingPageManga from "./LandingPageManga.js";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const TopManga = ({ isDarkMode, allowNSFW, selectedOption }) => {
+const TopManga = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
+  let sfwToggle = sessionStorage.getItem("sfw");
   // State to hold the key for re-rendering
   const [key, setKey] = React.useState(0);
   const [cards, setCards] = React.useState(null);
@@ -43,27 +44,44 @@ const TopManga = ({ isDarkMode, allowNSFW, selectedOption }) => {
         const animes = response.data.data;
         setPagination(response.data.pagination);
 
-        // Map data to Anime components
-        const animeCards = animes.map((anime) => (
-          <LandingPageManga
-            key={anime.mal_id}
-            img={anime.images.jpg.large_image_url}
-            title={anime.title}
-            //synopsis={anime.synopsis}
-            isDarkMode={isDarkMode}
-            malid={anime.mal_id}
-          />
-        ));
+        if (animes) {
+          // Map data to Anime components
+          const animeCards = animes.map((anime) => {
+            let listIndex;
 
-        // Set cards and mark loading as false
-        setCards(animeCards);
-        setLoading(false);
+            if (listStatus !== null) {
+              listIndex = listStatus.findIndex(
+                (list) => parseInt(list.id) === anime.mal_id
+              );
+            }
+
+            return (
+              <LandingPageManga
+                key={anime.mal_id}
+                img={anime.images.jpg.large_image_url}
+                title={anime.title}
+                //synopsis={anime.synopsis}
+                isDarkMode={isDarkMode}
+                malid={anime.mal_id}
+                currentList={
+                  listIndex > -1 ? listStatus[listIndex].currentList : null
+                }
+              />
+            );
+          });
+          // Set cards and mark loading as false
+          setCards(animeCards);
+          setLoading(false);
+        } else {
+          setLoading(false);
+          return null;
+        }
       })
       .catch((error) => {
         console.error("Error fetching API data:", error);
       });
     // eslint-disable-next-line
-  }, [allowNSFW, currentPage, selectedOption]);
+  }, [allowNSFW, sfwToggle, currentPage, selectedOption, listStatus]);
 
   const notifyInvalidPage = () =>
     toast(`Invalid page! Max is ${pagination.last_visible_page}`, {

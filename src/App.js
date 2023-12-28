@@ -67,13 +67,9 @@ function App() {
   };
 
   React.useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // User is signed in, see docs for a list of available properties
-        // https://firebase.google.com/docs/reference/js/firebase.User
-        const uid = user.uid;
         setUser(user);
-        console.log("uid", uid);
       } else {
         console.log("user is logged out");
       }
@@ -103,6 +99,7 @@ function App() {
                     onInputChange={handleChange}
                     isDarkMode={isDarkMode}
                     allowNSFW={allowNSFW}
+                    user={user}
                   />
                   <ScrollToBottomButton isDarkMode={isDarkMode} />
                 </div>

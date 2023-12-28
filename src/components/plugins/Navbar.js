@@ -126,6 +126,7 @@ function Navbar({
           },
         });
 
+        sessionStorage.removeItem("animeListItems");
         navigate("/");
 
         // refresh page after 3 seconds
@@ -159,11 +160,7 @@ function Navbar({
   React.useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        // User is signed in, see docs for a list of available properties
-        // https://firebase.google.com/docs/reference/js/firebase.User
-        const uid = user.uid;
         setUser(user);
-        console.log("uid", uid);
       } else {
         console.log(user);
         console.log("user is logged out");
