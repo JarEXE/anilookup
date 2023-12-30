@@ -20,22 +20,32 @@ const MangaChapterList = (props) => {
     setLoading(true);
     const baseUrl = "https://api.mangadex.org";
 
-    const resp = await axios({
-      method: "GET",
-      url: `${baseUrl}/at-home/server/${chapterID}`,
-    });
+    try {
+      const response = await fetch("/.netlify/functions/chapterimages-proxy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: baseUrl,
+          chapterID: chapterID,
+        }),
+      });
 
-    const host = resp.data.baseUrl;
-    const chapterHash = resp.data.chapter.hash;
-    const data = resp.data.chapter.data;
-    //const dataSaver = resp.data.chapter.dataSaver;
+      if (!response.ok) {
+        throw new Error("Failed to fetch chapter images");
+      }
 
-    const imageUrls = data.map((entry, index) => {
-      return `${host}/data/${chapterHash}/${entry}`;
-    });
+      const data = await response.json();
+      console.log(data);
 
-    setChapterImages(imageUrls);
-    setLoading(false);
+      setChapterImages(data);
+      setLoading(false);
+    } catch (error) {
+      console.log("Invalid URL:", error);
+      alert("Error: Cannot show this chapter.");
+      return null;
+    }
   };
 
   const emptyChapterImages = () => {
