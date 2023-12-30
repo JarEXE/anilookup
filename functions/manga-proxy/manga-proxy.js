@@ -22,8 +22,6 @@ const handler = async function (event, context) {
       params: filters,
     });
 
-    console.log(`Response: ${response}`);
-
     if (response.status !== 200) {
       return {
         statusCode: response.status,
@@ -32,8 +30,6 @@ const handler = async function (event, context) {
     }
 
     const mangaID = response.data.data[0].id;
-
-    console.log(`Your manga ID is ${mangaID}`);
 
     return {
       statusCode: 200,
