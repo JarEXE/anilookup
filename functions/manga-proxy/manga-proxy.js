@@ -4,10 +4,6 @@ const handler = async function (event, context) {
   try {
     const { url, title } = JSON.parse(event.body);
 
-    console.log(`URL is ${url}`);
-    console.log(typeof url);
-    console.log(typeof JSON.stringify(url));
-
     const filters = {
       contentRating: ["safe", "suggestive", "erotica", "pornographic"],
       title: title,
@@ -28,7 +24,7 @@ const handler = async function (event, context) {
 
     console.log(`Response: ${response}`);
 
-    if (!response.ok) {
+    if (response.status !== 200) {
       return {
         statusCode: response.status,
         body: JSON.stringify({ error: "Failed to fetch mangaID" }),
