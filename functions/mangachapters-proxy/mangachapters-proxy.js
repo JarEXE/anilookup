@@ -2,12 +2,7 @@ const axios = require("axios");
 
 const handler = async function (event, context) {
   try {
-    console.log(`Event is ${JSON.stringify(event)}`);
-    const { url, mangaID } = JSON.parse(event.body);
-
-    console.log(`Event body is: ${event.body}`);
-    console.log(`URL is ${url}`);
-    console.log(`Title is ${mangaID}`);
+    const { url, mangaID, mangaImage, mangaTitle } = JSON.parse(event.body);
 
     const languages = ["en"];
 
@@ -55,8 +50,8 @@ const handler = async function (event, context) {
     });
 
     const mangaDexChapters = {
-      mangaImage: details.images.jpg.large_image_url,
-      mangaTitle: details.title,
+      mangaImage: mangaImage,
+      mangaTitle: mangaTitle,
       chapters: chapters,
     };
 

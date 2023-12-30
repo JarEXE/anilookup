@@ -140,6 +140,8 @@ function Details({ isDarkMode }) {
         body: JSON.stringify({
           url: baseUrl,
           mangaID: mangaDexMangaID,
+          mangaImage: details.images.jpg.large_image_url,
+          mangaTitle: details.title,
         }),
       });
 
