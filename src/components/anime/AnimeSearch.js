@@ -171,83 +171,86 @@ function AnimeSearch({ onInputChange, isDarkMode, allowNSFW, user }) {
             </button>
           </div>
         </div>
-        <hr></hr>
-        <div className="text-center mb-2">
-          <p className="lead">Your Anime Stats</p>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div
-            className="mb-2"
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <FontAwesomeIcon
-              icon={faEye}
-              style={{ color: "blueviolet", marginRight: "2%" }}
-            />{" "}
-            Watching: {watchListLength}
-          </div>
-          <div
-            className="mb-2"
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <FontAwesomeIcon
-              icon={faHand}
-              style={{ color: "orange", marginRight: "2%" }}
-            />{" "}
-            On-Hold: {holdListLength}
-          </div>
-          <div
-            className="mb-2"
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <FontAwesomeIcon
-              icon={faClock}
-              style={{ color: "gray", marginRight: "2%" }}
-            />{" "}
-            Plan to Watch: {plannedListLength}
-          </div>
-          <div
-            className="mb-2"
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <FontAwesomeIcon
-              icon={faCircleXmark}
-              style={{ color: "red", marginRight: "2%" }}
-            />{" "}
-            Dropped: {droppedListLength}
-          </div>
-          <div
-            className="mb-4"
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <FontAwesomeIcon
-              icon={faCircleCheck}
-              style={{ color: "green", marginRight: "2%" }}
-            />{" "}
-            Completed: {completedListLength}
-          </div>
-        </div>
-
+        {user ? (
+          <>
+            <hr></hr>
+            <div className="text-center mb-2">
+              <p className="lead">Your Anime Stats</p>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div
+                className="mb-2"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faEye}
+                  style={{ color: "blueviolet", marginRight: "2%" }}
+                />{" "}
+                Watching: {watchListLength}
+              </div>
+              <div
+                className="mb-2"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faHand}
+                  style={{ color: "orange", marginRight: "2%" }}
+                />{" "}
+                On-Hold: {holdListLength}
+              </div>
+              <div
+                className="mb-2"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faClock}
+                  style={{ color: "gray", marginRight: "2%" }}
+                />{" "}
+                Plan to Watch: {plannedListLength}
+              </div>
+              <div
+                className="mb-2"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faCircleXmark}
+                  style={{ color: "red", marginRight: "2%" }}
+                />{" "}
+                Dropped: {droppedListLength}
+              </div>
+              <div
+                className="mb-4"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faCircleCheck}
+                  style={{ color: "green", marginRight: "2%" }}
+                />{" "}
+                Completed: {completedListLength}
+              </div>
+            </div>
+          </>
+        ) : null}
         <hr className="separator"></hr>
         <div className="container text-center mt-4">
           <p className="lead">Top</p>

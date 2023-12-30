@@ -31,6 +31,8 @@ const handler = async function (event, context) {
 
     const mangaID = response.data.data[0].id;
 
+    console.log(`Your manga ID is ${mangaID}`);
+
     return {
       statusCode: 200,
       body: JSON.stringify(mangaID),

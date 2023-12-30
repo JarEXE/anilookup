@@ -117,6 +117,8 @@ function Details({ isDarkMode }) {
       }
 
       const data = await response.json();
+      console.log(typeof data);
+      console.log(data);
 
       setMangaDexMangaID(data);
     } catch (error) {
