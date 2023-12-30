@@ -22,6 +22,9 @@ const handler = async function (event, context) {
       "Cache-Control": "public, max-age=604800, immutable",
     };
 
+    console.log(response.data);
+    console.log(response);
+
     return {
       statusCode: 200,
       body: response.data.toString("base64"),

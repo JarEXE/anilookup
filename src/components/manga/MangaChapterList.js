@@ -55,7 +55,7 @@ const MangaChapterList = (props) => {
         <div style={{ display: "flex", flexDirection: "column" }}>
           {chapterImages.map((image) => (
             <img
-              src={`/chapter-images-proxy?url=${encodeURIComponent(image)}`}
+              src={`/chapter-images-proxy?url=${encodeURIComponent(image.url)}`}
               alt="manga chapter"
               style={{ maxWidth: "900px", marginBottom: "2%" }}
             />
