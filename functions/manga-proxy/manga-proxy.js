@@ -1,10 +1,12 @@
-const fetch = require("node-fetch");
 const axios = require("axios");
 
 const handler = async function (event, context) {
   try {
-    const { url } = JSON.parse(event.body.url);
-    const title = event.body.title;
+    const { url, title } = event.body;
+
+    console.log(event.body);
+    console.log(url);
+    console.log(title);
 
     const filters = {
       contentRating: ["safe", "suggestive", "erotica", "pornographic"],
@@ -17,16 +19,12 @@ const handler = async function (event, context) {
         body: JSON.stringify({ error: "Missing URL" }),
       };
     }
-    const parsedURL = new URL(url);
 
     const response = await axios({
       method: "GET",
-      url: `${parsedURL}/manga`,
+      url: `${url}/manga`,
       params: filters,
     });
-
-    console.log(parsedURL);
-    console.log(response.url);
 
     if (!response.ok) {
       return {
@@ -35,6 +33,7 @@ const handler = async function (event, context) {
       };
     }
 
+    console.log(response.data.data);
     const mangaID = response.data.data[0].id;
 
     return {
