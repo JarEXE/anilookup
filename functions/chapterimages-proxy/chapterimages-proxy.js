@@ -34,9 +34,32 @@ const handler = async function (event, context) {
       };
     }
 
+    if (!imageUrls) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing image URL" }),
+      };
+    }
+
+    const resp = await axios({
+      method: "GET",
+      url: imageUrls[0],
+      responseType: "arraybuffer",
+    });
+
+    const headers = {
+      "Content-Type": resp.headers["content-type"],
+      "Cache-Control": "public, max-age=604800, immutable",
+    };
+
+    console.log(resp.data);
+    console.log(resp);
+
     return {
       statusCode: 200,
-      body: JSON.stringify(imageUrls),
+      body: resp.data.toString("base64"),
+      isBase64Encoded: true,
+      headers,
     };
   } catch (error) {
     console.error("Error handling request:", error);
