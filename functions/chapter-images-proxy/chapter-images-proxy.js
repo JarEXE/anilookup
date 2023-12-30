@@ -1,6 +1,7 @@
 const axios = require("axios");
 
 const handler = async function (event, context) {
+  console.log("function running");
   try {
     const { imageUrl } = JSON.parse(event.body);
 

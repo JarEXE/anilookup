@@ -36,7 +36,8 @@ const MangaChapterList = (props) => {
 
       const data = await response.json();
 
-      setChapterImages(data);
+      setChapterImages(JSON.stringify(data));
+      console.log(chapterImages);
       setLoading(false);
     } catch (error) {
       console.log("Invalid URL:", error);
@@ -55,7 +56,9 @@ const MangaChapterList = (props) => {
         <div style={{ display: "flex", flexDirection: "column" }}>
           {chapterImages.map((image) => (
             <img
-              src={`/chapter-images-proxy?url=${encodeURIComponent(image.url)}`}
+              src={`/.netlify/functions/chapter-images-proxy?url=${encodeURIComponent(
+                image
+              )}`}
               alt="manga chapter"
               style={{ maxWidth: "900px", marginBottom: "2%" }}
             />
