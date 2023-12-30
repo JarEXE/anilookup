@@ -153,7 +153,7 @@ function Details({ isDarkMode }) {
 
       const data = await response.json();
 
-      sessionStorage.setItem("mangachapters", data);
+      sessionStorage.setItem("mangachapters", JSON.stringify(data));
     } catch (error) {
       console.log("Invalid URL:", error);
       return null;
