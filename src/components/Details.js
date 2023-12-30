@@ -13,7 +13,6 @@ import ListAddButton from "./plugins/ListAddButton";
 import dateFormat from "dateformat";
 import { Button } from "@mui/material";
 import { Book } from "@mui/icons-material";
-import axios from "axios";
 
 function Details({ isDarkMode }) {
   const getKitsuCover = sessionStorage.getItem("kitsuCover");
