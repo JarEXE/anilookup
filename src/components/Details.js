@@ -104,8 +104,8 @@ function Details({ isDarkMode }) {
       const response = await fetch("/.netlify/functions/manga-proxy", {
         method: "POST",
         body: {
-          url: `${baseUrl}`,
-          title: title,
+          url: JSON.stringify(baseUrl),
+          title: JSON.stringify(title),
         },
       });
 

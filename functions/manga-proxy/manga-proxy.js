@@ -2,11 +2,13 @@ const axios = require("axios");
 
 const handler = async function (event, context) {
   try {
-    const { url, title } = event.body;
+    console.log(`Event is ${event}`);
 
-    console.log(event.body);
-    console.log(url);
-    console.log(title);
+    const { url, title } = JSON.parse(event.body);
+
+    console.log(`Event body is: ${event.body}`);
+    console.log(`URL is ${url}`);
+    console.log(`Title is ${title}`);
 
     const filters = {
       contentRating: ["safe", "suggestive", "erotica", "pornographic"],
