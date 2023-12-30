@@ -67,7 +67,7 @@ const MangaChapterList = (props) => {
             <img
               key={index}
               src={image}
-              alt={`Chapter Image ${index + 1}`}
+              alt={`manga chapter ${index + 1}`}
               style={{ maxWidth: "900px", marginBottom: "2%" }}
             />
           ))}
