@@ -100,19 +100,27 @@ function Details({ isDarkMode }) {
   const getMangaIdByName = async (title) => {
     const baseUrl = "https://api.mangadex.org";
 
-    const filters = {
-      contentRating: ["safe", "suggestive", "erotica", "pornographic"],
-      title: title,
-    };
+    try {
+      const response = await fetch("/.netlify/functions/manga-proxy", {
+        method: "POST",
+        body: {
+          url: JSON.stringify({ baseUrl }),
+          title: title,
+        },
+      });
 
-    const resp = await axios({
-      method: "GET",
-      url: `${baseUrl}/manga`,
-      params: filters,
-    });
+      if (!response.ok) {
+        throw new Error("Failed to fetch Manga ID");
+      }
 
-    console.log(resp.data.data[0].id);
-    setMangaDexMangaID(resp.data.data[0].id);
+      const data = await response.json();
+
+      console.log(data);
+      setMangaDexMangaID(data);
+    } catch (error) {
+      console.log("Invalid URL:", error);
+      return null;
+    }
   };
 
   const getMangaChapters = async () => {
