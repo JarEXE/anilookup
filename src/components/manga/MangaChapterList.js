@@ -36,7 +36,6 @@ const MangaChapterList = (props) => {
       }
 
       const data = await response.json();
-      console.log(data);
 
       setChapterImages(data);
       setLoading(false);
@@ -56,13 +55,11 @@ const MangaChapterList = (props) => {
       {chapterImages.length > 0 && !loading ? (
         <div style={{ display: "flex", flexDirection: "column" }}>
           {chapterImages.map((image) => (
-            <LazyLoad>
-              <img
-                src={`/chapter-images-proxy?url=${encodeURIComponent(image)}`}
-                alt="manga chapter"
-                style={{ maxWidth: "900px", marginBottom: "2%" }}
-              />
-            </LazyLoad>
+            <img
+              src={`/chapter-images-proxy?url=${encodeURIComponent(image)}`}
+              alt="manga chapter"
+              style={{ maxWidth: "900px", marginBottom: "2%" }}
+            />
           ))}
           <button
             className={`${
