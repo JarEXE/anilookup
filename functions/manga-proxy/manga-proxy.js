@@ -2,13 +2,7 @@ const axios = require("axios");
 
 const handler = async function (event, context) {
   try {
-    console.log(`Event is ${JSON.stringify(event)}`);
-
     const { url, title } = JSON.parse(event.body);
-
-    console.log(`Event body is: ${event.body}`);
-    console.log(`URL is ${url}`);
-    console.log(`Title is ${title}`);
 
     const filters = {
       contentRating: ["safe", "suggestive", "erotica", "pornographic"],
@@ -35,7 +29,6 @@ const handler = async function (event, context) {
       };
     }
 
-    console.log(response.data.data);
     const mangaID = response.data.data[0].id;
 
     return {

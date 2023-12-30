@@ -29,6 +29,7 @@ function Details({ isDarkMode }) {
     React.useState(null);
   const [itemType, setItemType] = React.useState("");
   const [authors, setAuthors] = React.useState(null);
+  const [loadingChapters, setLoadingChapters] = React.useState(false);
   const [mangaDexMangaID, setMangaDexMangaID] = React.useState(null);
 
   let isMounted = true;
@@ -118,7 +119,6 @@ function Details({ isDarkMode }) {
 
       const data = await response.json();
 
-      console.log(data);
       setMangaDexMangaID(data);
     } catch (error) {
       console.log("Invalid URL:", error);
@@ -127,46 +127,44 @@ function Details({ isDarkMode }) {
   };
 
   const getMangaChapters = async () => {
+    setLoadingChapters(true);
     const baseUrl = "https://api.mangadex.org";
-    const languages = ["en"];
 
-    const filters = {
-      contentRating: ["safe", "suggestive", "erotica", "pornographic"],
-      translatedLanguage: languages,
-      limit: 500,
-      order: {
-        chapter: "desc",
-      },
-      includes: ["manga", "scanlation_group"],
-      includeExternalUrl: 0,
-    };
+    try {
+      const response = await fetch("/.netlify/functions/mangachapters-proxy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: baseUrl,
+          mangaID: mangaDexMangaID,
+        }),
+      });
 
-    const resp = await axios({
-      method: "GET",
-      url: `${baseUrl}/manga/${mangaDexMangaID}/feed`,
-      params: filters,
-    });
+      if (!response.ok) {
+        throw new Error("Failed to fetch Manga Chapters");
+      }
 
-    const chapters = resp.data.data.map((chapter) => {
-      return {
-        id: chapter.id,
-        title: chapter.attributes.title,
-        chapter: chapter.attributes.chapter,
-        volume: chapter.attributes.volume,
-        pages: chapter.attributes.pages,
-        published: chapter.attributes.publishAt,
-        scanlationGroup: chapter.relationships[0].attributes.name,
-      };
-    });
+      const data = await response.json();
 
-    const mangaDexChapters = {
-      mangaImage: details.images.jpg.large_image_url,
-      mangaTitle: details.title,
-      chapters: chapters,
-    };
+      sessionStorage.setItem("mangachapters", data);
+    } catch (error) {
+      console.log("Invalid URL:", error);
+      return null;
+    }
 
-    sessionStorage.setItem("mangachapters", JSON.stringify(mangaDexChapters));
-    window.location.href = "/read";
+    if (
+      sessionStorage.getItem("mangachapters") !== "" ||
+      sessionStorage.getItem("mangachapters") !== null
+    ) {
+      setLoadingChapters(false);
+      window.location.href = "/read";
+    } else {
+      setLoadingChapters(false);
+      alert("Failed to fetch manga chapters!");
+      return;
+    }
   };
 
   const navigate = useNavigate();
@@ -469,6 +467,24 @@ function Details({ isDarkMode }) {
                           >
                             <Book />
                             &nbsp;Read
+                          </Button>
+                        </div>
+                      ) : loadingChapters ? (
+                        <div style={{ marginLeft: "5%" }}>
+                          <Button
+                            style={{
+                              backgroundColor: `${
+                                isDarkMode ? "#0dcaf0" : "#212529"
+                              }`,
+                              color: "#FFF",
+                              textTransform: "none",
+                            }}
+                          >
+                            <span
+                              className="spinner-border spinner-border-sm"
+                              role="status"
+                              aria-hidden="true"
+                            ></span>
                           </Button>
                         </div>
                       ) : null}
