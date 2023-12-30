@@ -32,9 +32,38 @@ const handler = async function (event, context) {
       };
     }
 
+    // Fetch images in parallel
+    const imageRequests = imageUrls.map(async (imageUrl) => {
+      const response = await axios({
+        method: "GET",
+        url: imageUrl,
+        responseType: "arraybuffer",
+      });
+
+      return {
+        data: response.data.toString("base64"),
+        contentType: response.headers["content-type"],
+      };
+    });
+
+    const imageResponses = await Promise.all(imageRequests);
+
+    const headers = {
+      "Access-Control-Allow-Origin": "*", // Adjust this to match your React app's domain
+      "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
+      "Access-Control-Allow-Headers": "Content-Type",
+    };
+
+    // Prepare the response for multiple images
+    const responseData = imageResponses.map(({ data, contentType }) => ({
+      data,
+      contentType,
+    }));
+
     return {
       statusCode: 200,
-      body: JSON.stringify(imageUrls),
+      body: JSON.stringify(responseData),
+      headers,
     };
   } catch (error) {
     console.error("Error handling request:", error);

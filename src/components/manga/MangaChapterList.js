@@ -58,7 +58,7 @@ const MangaChapterList = (props) => {
           {chapterImages.map((image) => (
             <LazyLoad>
               <img
-                src={image}
+                src={`/chapter-images-proxy?url=${encodeURIComponent(image)}`}
                 alt="manga chapter"
                 style={{ maxWidth: "900px", marginBottom: "2%" }}
               />
