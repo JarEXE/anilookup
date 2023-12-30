@@ -563,6 +563,32 @@ div.text-on-top {
   height: 400px;
 }
 
+.chapters-button-dark {
+  position: fixed;
+  bottom: 20px;
+  right: 80px;
+  background-color: #0dcaf0;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.chapters-button {
+  position: fixed;
+  bottom: 20px;
+  right: 80px;
+  background-color: #212529;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
 .scroll-button-dark {
   position: fixed;
   bottom: 20px;

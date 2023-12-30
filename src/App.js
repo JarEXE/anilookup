@@ -15,6 +15,7 @@ import Details from "./components/Details";
 import ScrollToBottomButton from "./components/plugins/ScrollToBottomButton";
 import StudioDetails from "./components/studios/StudioDetails";
 import AuthorDetails from "./components/authors/AuthorDetails";
+import MangaChapterList from "./components/manga/MangaChapterList";
 import Lists from "./components/lists/Lists";
 import ErrorPage from "./components/ErrorPage";
 
@@ -168,6 +169,19 @@ function App() {
                     searchText={searchText}
                     allowNSFW={allowNSFW}
                     isDarkMode={isDarkMode}
+                  />
+                  <ScrollToBottomButton isDarkMode={isDarkMode} />
+                </div>
+              }
+            />
+            <Route
+              path="/read"
+              element={
+                <div>
+                  <MangaChapterList
+                    isDarkMode={isDarkMode}
+                    allowNSFW={allowNSFW}
+                    user={user}
                   />
                   <ScrollToBottomButton isDarkMode={isDarkMode} />
                 </div>

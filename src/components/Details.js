@@ -29,6 +29,7 @@ function Details({ isDarkMode }) {
     React.useState(null);
   const [itemType, setItemType] = React.useState("");
   const [authors, setAuthors] = React.useState(null);
+  const [mangaDexMangaID, setMangaDexMangaID] = React.useState(null);
 
   let isMounted = true;
 
@@ -96,38 +97,65 @@ function Details({ isDarkMode }) {
     setAuthors(authorsArray);
   };
 
-  const fetchMangaChapters = async () => {
+  const getMangaIdByName = async (title) => {
     const baseUrl = "https://api.mangadex.org";
-    const languages = ["en"];
-    let mangadexData;
-    let mangadexMangaId;
 
-    await fetch(
-      `https://api.mangadex.org/manga?title=${details.title}&limit=5`
-    ).then(async (response) => {
-      mangadexData = await response.json();
-    });
-
-    const matchingItem = mangadexData.data.find(
-      (item) =>
-        item.attributes.title.en === details.title ||
-        item.attributes.altTitles.en === details.title ||
-        item.attributes.altTitles.ja === details.title
-    );
-
-    if (matchingItem) {
-      mangadexMangaId = matchingItem.id;
-    }
+    const filters = {
+      contentRating: ["safe", "suggestive", "erotica", "pornographic"],
+      title: title,
+    };
 
     const resp = await axios({
       method: "GET",
-      url: `${baseUrl}/manga/${mangadexMangaId}/feed`,
-      params: {
-        translatedLanguage: languages,
-      },
+      url: `${baseUrl}/manga`,
+      params: filters,
     });
 
-    console.log(resp.data.data.map((chapter) => chapter.id));
+    console.log(resp.data.data[0].id);
+    setMangaDexMangaID(resp.data.data[0].id);
+  };
+
+  const getMangaChapters = async () => {
+    const baseUrl = "https://api.mangadex.org";
+    const languages = ["en"];
+
+    const filters = {
+      contentRating: ["safe", "suggestive", "erotica", "pornographic"],
+      translatedLanguage: languages,
+      limit: 500,
+      order: {
+        chapter: "desc",
+      },
+      includes: ["manga", "scanlation_group"],
+      includeExternalUrl: 0,
+    };
+
+    const resp = await axios({
+      method: "GET",
+      url: `${baseUrl}/manga/${mangaDexMangaID}/feed`,
+      params: filters,
+    });
+
+    const chapters = resp.data.data.map((chapter) => {
+      return {
+        id: chapter.id,
+        title: chapter.attributes.title,
+        chapter: chapter.attributes.chapter,
+        volume: chapter.attributes.volume,
+        pages: chapter.attributes.pages,
+        published: chapter.attributes.publishAt,
+        scanlationGroup: chapter.relationships[0].attributes.name,
+      };
+    });
+
+    const mangaDexChapters = {
+      mangaImage: details.images.jpg.large_image_url,
+      mangaTitle: details.title,
+      chapters: chapters,
+    };
+
+    sessionStorage.setItem("mangachapters", JSON.stringify(mangaDexChapters));
+    window.location.href = "/read";
   };
 
   const navigate = useNavigate();
@@ -228,7 +256,7 @@ function Details({ isDarkMode }) {
         setItemType("manga");
         fetchAuthorDetailsAndPositions();
         setStreamingSitesSection(false);
-        fetchMangaChapters();
+        getMangaIdByName(details.title);
       }
     }
     // eslint-disable-next-line
@@ -416,7 +444,7 @@ function Details({ isDarkMode }) {
                         }
                         date={dateFormat(new Date(), "isoDateTime")}
                       />
-                      {itemType === "manga" ? (
+                      {itemType === "manga" && mangaDexMangaID !== null ? (
                         <div style={{ marginLeft: "5%" }}>
                           <Button
                             style={{
@@ -426,6 +454,7 @@ function Details({ isDarkMode }) {
                               color: "#FFF",
                               textTransform: "none",
                             }}
+                            onClick={getMangaChapters}
                           >
                             <Book />
                             &nbsp;Read

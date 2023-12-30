@@ -14,7 +14,6 @@ import {
   faClock,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Mangafreak from "../plugins/MangaFreakService";
 
 function MangaSearch({ onInputChange, isDarkMode, allowNSFW, user }) {
   const notifyBadSearch = () =>
@@ -125,10 +124,6 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW, user }) {
         console.log("user is logged out");
       }
     });
-    const mangafreak = new Mangafreak();
-    mangafreak
-      .getMangaData({ slug: "jujutsu" })
-      .then((data) => console.log(data));
   }, [user]);
 
   // Update the listStatus state when setting mangaListItems in sessionStorage
