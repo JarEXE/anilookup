@@ -106,10 +106,10 @@ function Details({ isDarkMode }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: {
+        body: JSON.stringify({
           url: baseUrl,
           title: title,
-        },
+        }),
       });
 
       if (!response.ok) {
