@@ -25,8 +25,6 @@ const handler = async function (event, context) {
       return `${host}/data/${chapterHash}/${entry}`;
     });
 
-    console.log(imageUrls);
-
     if (response.status !== 200) {
       return {
         statusCode: response.status,
