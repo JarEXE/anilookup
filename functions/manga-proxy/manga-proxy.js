@@ -2,7 +2,7 @@ const axios = require("axios");
 
 const handler = async function (event, context) {
   try {
-    console.log(`Event is ${event}`);
+    console.log(`Event is ${JSON.stringify(event)}`);
 
     const { url, title } = JSON.parse(event.body);
 
@@ -31,7 +31,7 @@ const handler = async function (event, context) {
     if (!response.ok) {
       return {
         statusCode: response.status,
-        body: JSON.stringify({ error: "Failed to fetch favicon" }),
+        body: JSON.stringify({ error: "Failed to fetch mangaID" }),
       };
     }
 
