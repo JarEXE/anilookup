@@ -25,6 +25,8 @@ const handler = async function (event, context) {
       return `${host}/data/${chapterHash}/${entry}`;
     });
 
+    console.log(`Image URLs: ${imageUrls}`);
+
     if (response.status !== 200) {
       return {
         statusCode: response.status,
@@ -35,29 +37,40 @@ const handler = async function (event, context) {
     if (!imageUrls) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: "Missing image URL" }),
+        body: JSON.stringify({ error: "Invalid or missing image URLs" }),
       };
     }
 
-    const resp = await axios({
-      method: "GET",
-      url: imageUrls[0],
-      responseType: "arraybuffer",
+    // Fetch images in parallel
+    const imageRequests = imageUrls.map(async (imageUrl) => {
+      const response = await axios({
+        method: "GET",
+        url: imageUrl,
+        responseType: "arraybuffer",
+      });
+
+      return {
+        contentType: response.headers["content-type"],
+        data: response.data,
+      };
     });
 
-    const headers = {
-      "Content-Type": resp.headers["content-type"],
-      "Cache-Control": "public, max-age=604800, immutable",
-    };
+    const imageResponses = await Promise.all(imageRequests);
 
-    console.log(resp.data);
-    console.log(resp);
+    console.log(`imageresponses: ${imageResponses}`);
+
+    // Prepare the response for multiple images
+    const responseData = imageResponses.map(({ contentType, data }) => ({
+      contentType,
+      data,
+    }));
+
+    console.log(responseData);
+    console.log(JSON.stringify(responseData));
 
     return {
       statusCode: 200,
-      body: resp.data.toString("base64"),
-      isBase64Encoded: true,
-      headers,
+      body: JSON.stringify(responseData),
     };
   } catch (error) {
     console.error("Error handling request:", error);
