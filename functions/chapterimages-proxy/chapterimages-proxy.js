@@ -57,7 +57,7 @@ const handler = async function (event, context) {
 
     const imageResponses = await Promise.all(imageRequests);
 
-    console.log(`imageresponses: ${imageResponses}`);
+    console.log(`imageresponses: ${JSON.stringify(imageResponses)}`);
 
     // Prepare the response for multiple images
     const responseData = imageResponses.map(({ contentType, data }) => ({
@@ -65,12 +65,22 @@ const handler = async function (event, context) {
       data,
     }));
 
-    console.log(responseData);
-    console.log(JSON.stringify(responseData));
+    const convertedImages = responseData.map((image) => {
+      const imageData = image.data;
+      const contentType = image.contentType;
+
+      const dataUrl = `data:${contentType};base64,${imageData.toString(
+        "base64"
+      )}`;
+      return dataUrl;
+    });
+
+    console.log(`Original response data: ${responseData}`);
+    console.log(`Converted image data urls: ${convertedImages}`);
 
     return {
       statusCode: 200,
-      body: JSON.stringify(responseData),
+      body: JSON.stringify(convertedImages),
     };
   } catch (error) {
     console.error("Error handling request:", error);

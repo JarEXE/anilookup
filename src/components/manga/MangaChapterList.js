@@ -36,7 +36,7 @@ const MangaChapterList = (props) => {
 
       const data = await response.json();
 
-      console.log(data);
+      console.log(`Client side data response: ${data}`);
 
       setChapterImages(data);
       setLoading(false);
