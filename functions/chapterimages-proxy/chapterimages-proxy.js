@@ -55,21 +55,27 @@ const handler = async function (event, context) {
 
     const imageResponses = await Promise.all(imageRequests);
 
-    // Prepare the response for multiple images
-    // const responseData = imageResponses.map(({ contentType, data }) => ({
-    //   contentType,
-    //   data,
-    // }));
+    // const convertedImages = imageResponses.map((image) => {
+    //   console.log(`Current image data: ${image.data}`);
+    //   const imageData = image.data;
+    //   const contentType = image.contentType;
+
+    //   const dataUrl = `data:${contentType};base64,${imageData.toString(
+    //     "base64"
+    //   )}`;
+
+    //   console.log(`Current data URL: ${dataUrl}`);
+    //   return dataUrl;
+    // });
 
     const convertedImages = imageResponses.map((image) => {
-      console.log(`Current image data: ${image.data}`);
-      const imageData = image.data;
+      const imageData =
+        image.data instanceof Buffer
+          ? image.data.toString("base64")
+          : Buffer.from(image.data).toString("base64");
       const contentType = image.contentType;
 
-      const dataUrl = `data:${contentType};base64,${imageData.toString(
-        "base64"
-      )}`;
-      console.log(`Current data URL: ${dataUrl}`);
+      const dataUrl = `data:${contentType};base64,${imageData}`;
       return dataUrl;
     });
 
