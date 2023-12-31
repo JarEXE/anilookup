@@ -36,17 +36,9 @@ const MangaChapterList = (props) => {
 
       const data = await response.json();
 
-      // Convert binary data to Base64-encoded string
-      const base64Data = btoa(
-        String.fromCharCode(...new Uint8Array(data[0].data))
-      );
+      console.log(data);
 
-      // Create a Data URL
-      const dataUrl = `data:${data[0].contentType};base64,${base64Data}`;
-
-      // Set the Data URL to state
-      setChapterImages([...chapterImages, dataUrl]);
-      console.log(chapterImages);
+      setChapterImages(data);
       setLoading(false);
     } catch (error) {
       console.log("Invalid URL:", error);
@@ -63,11 +55,10 @@ const MangaChapterList = (props) => {
     <Box sx={{ width: "100%" }}>
       {chapterImages.length > 0 && !loading ? (
         <div style={{ display: "flex", flexDirection: "column" }}>
-          {chapterImages.map((image, index) => (
+          {chapterImages.map((image) => (
             <img
-              key={index}
               src={image}
-              alt={`manga chapter ${index + 1}`}
+              alt="manga chapter"
               style={{ maxWidth: "900px", marginBottom: "2%" }}
             />
           ))}
