@@ -143,6 +143,7 @@ function App() {
                     onInputChange={handleChange}
                     isDarkMode={isDarkMode}
                     allowNSFW={allowNSFW}
+                    user={user}
                   />
                   <ScrollToBottomButton isDarkMode={isDarkMode} />
                 </div>
