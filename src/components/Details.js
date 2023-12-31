@@ -98,6 +98,7 @@ function Details({ isDarkMode }) {
   };
 
   const getMangaIdByName = async (title) => {
+    setLoadingChapters(true);
     const baseUrl = "https://api.mangadex.org";
 
     try {
@@ -121,8 +122,10 @@ function Details({ isDarkMode }) {
       console.log(data);
 
       setMangaDexMangaID(data);
+      setLoadingChapters(false);
     } catch (error) {
       console.log("Invalid URL:", error);
+      setLoadingChapters(false);
       return null;
     }
   };
@@ -458,7 +461,9 @@ function Details({ isDarkMode }) {
                         }
                         date={dateFormat(new Date(), "isoDateTime")}
                       />
-                      {itemType === "manga" && mangaDexMangaID !== null ? (
+                      {itemType === "manga" &&
+                      mangaDexMangaID !== null &&
+                      !loadingChapters ? (
                         <div style={{ marginLeft: "5%" }}>
                           <Button
                             style={{
