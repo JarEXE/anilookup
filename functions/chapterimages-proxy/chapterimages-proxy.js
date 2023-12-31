@@ -62,12 +62,14 @@ const handler = async function (event, context) {
     // }));
 
     const convertedImages = imageResponses.map((image) => {
+      console.log(`Current image data: ${image.data}`);
       const imageData = image.data;
       const contentType = image.contentType;
 
       const dataUrl = `data:${contentType};base64,${imageData.toString(
         "base64"
       )}`;
+      console.log(`Current data URL: ${dataUrl}`);
       return dataUrl;
     });
 
