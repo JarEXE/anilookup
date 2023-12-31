@@ -25,8 +25,6 @@ const handler = async function (event, context) {
       return `${host}/data/${chapterHash}/${entry}`;
     });
 
-    console.log(`Image URLs: ${imageUrls}`);
-
     if (response.status !== 200) {
       return {
         statusCode: response.status,
@@ -57,15 +55,13 @@ const handler = async function (event, context) {
 
     const imageResponses = await Promise.all(imageRequests);
 
-    console.log(`imageresponses: ${JSON.stringify(imageResponses)}`);
-
     // Prepare the response for multiple images
-    const responseData = imageResponses.map(({ contentType, data }) => ({
-      contentType,
-      data,
-    }));
+    // const responseData = imageResponses.map(({ contentType, data }) => ({
+    //   contentType,
+    //   data,
+    // }));
 
-    const convertedImages = responseData.map((image) => {
+    const convertedImages = imageResponses.map((image) => {
       const imageData = image.data;
       const contentType = image.contentType;
 
@@ -75,7 +71,7 @@ const handler = async function (event, context) {
       return dataUrl;
     });
 
-    console.log(`Original response data: ${responseData}`);
+    console.log(`Original response data: ${imageResponses}`);
     console.log(`Converted image data urls: ${convertedImages}`);
 
     return {
