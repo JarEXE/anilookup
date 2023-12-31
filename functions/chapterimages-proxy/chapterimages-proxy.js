@@ -18,11 +18,11 @@ const handler = async function (event, context) {
 
     const host = response.data.baseUrl;
     const chapterHash = response.data.chapter.hash;
-    const data = response.data.chapter.data;
-    //const dataSaver = response.data.chapter.dataSaver;
+    //const data = response.data.chapter.data;
+    const dataSaver = response.data.chapter.dataSaver;
 
-    const imageUrls = data.map((entry, index) => {
-      return `${host}/data/${chapterHash}/${entry}`;
+    const imageUrls = dataSaver.map((entry, index) => {
+      return `${host}/data-saver/${chapterHash}/${entry}`;
     });
 
     if (response.status !== 200) {
@@ -79,7 +79,7 @@ const handler = async function (event, context) {
       return dataUrl;
     });
 
-    console.log(`Original response data: ${imageResponses}`);
+    console.log(`Original response data: ${JSON.stringify(imageResponses)}`);
     console.log(`Converted image data urls: ${convertedImages}`);
 
     return {
