@@ -38,23 +38,45 @@ One of my future goals is to research and learn about HTML website scraping, so 
 
 ![landing page anime](https://imgur.com/WyffISd.png)
 
+<hr></hr>
+
 ![landing page manga](https://imgur.com/kN3gtAy.png)
+
+<hr></hr>
 
 ![landing page anime dark](https://imgur.com/5dHjDDh.png)
 
+<hr></hr>
+
 ![anime watch list](https://imgur.com/ETEgALv.png)
+
+<hr></hr>
 
 ![manga read list](https://imgur.com/EvJP2Od.png)
 
+<hr></hr>
+
 ![manga reader light](https://imgur.com/ECq0kQ2.png)
+
+<hr></hr>
 
 ![manga reader dark](https://imgur.com/lkcCNfQ.png)
 
+<hr></hr>
+
 ![anime banner light](https://imgur.com/FeWows8.png)
+
+<hr></hr>
 
 ![anime details light](https://imgur.com/xWcl9F4.png)
 
+<hr></hr>
+
 ![manga banner dark](https://imgur.com/0PRcfpx.png)
 
+<hr></hr>
+
 ![manga details light](https://imgur.com/uEDPmas.png)
+
+<hr></hr>
 
