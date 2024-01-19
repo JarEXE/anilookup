@@ -36,25 +36,25 @@ One of my future goals is to research and learn about HTML website scraping, so 
 
 ## Screenshots
 
-![landing page anime](https://imgur.com/WyffISd)
+![landing page anime](https://imgur.com/WyffISd.png)
 
-![landing page manga](https://imgur.com/kN3gtAy)
+![landing page manga](https://imgur.com/kN3gtAy.png)
 
-![landing page anime dark](https://imgur.com/5dHjDDh)
+![landing page anime dark](https://imgur.com/5dHjDDh.png)
 
-![anime watch list](https://imgur.com/ETEgALv)
+![anime watch list](https://imgur.com/ETEgALv.png)
 
-![manga read list](https://imgur.com/EvJP2Od)
+![manga read list](https://imgur.com/EvJP2Od.png)
 
-![manga reader light](https://imgur.com/ECq0kQ2)
+![manga reader light](https://imgur.com/ECq0kQ2.png)
 
-![manga reader dark](https://imgur.com/lkcCNfQ)
+![manga reader dark](https://imgur.com/lkcCNfQ.png)
 
-![anime banner light](https://imgur.com/FeWows8)
+![anime banner light](https://imgur.com/FeWows8.png)
 
-![anime details light](https://imgur.com/xWcl9F4)
+![anime details light](https://imgur.com/xWcl9F4.png)
 
-![manga banner dark](https://imgur.com/0PRcfpx)
+![manga banner dark](https://imgur.com/0PRcfpx.png)
 
-![manga details light](https://imgur.com/uEDPmas)
+![manga details light](https://imgur.com/uEDPmas.png)
 
