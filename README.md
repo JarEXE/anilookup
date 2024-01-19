@@ -1,70 +1,60 @@
-# Getting Started with Create React App
+# AniLookup: Anime and Manga lookup 
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**Site**: https://anilookup.netlify.app
 
-## Available Scripts
+## Description
 
-In the project directory, you can run:
+AniLookup is a fully responsive Anime and Manga lookup React Web Application made as a passion / learning project. 
 
-### `npm start`
+It makes use of various API technologies such as [Jikan V4](https://jikan.moe/), [Kitsu](https://kitsu.docs.apiary.io/), and [Mangadex](https://api.mangadex.org/docs/). 
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+[Google Firebase](https://firebase.google.com/) is used for user accounts and user authentication.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Note
 
-### `npm test`
+As stated in the description, this is a passion / learning project that I sometimes work on in my free time. It is never really "finished" and I would like to keep adding features whenever my schedule allows for it. 
+A ***great*** example of this is the "manga-reader" functionality. Currently the app just gets the chapter images and puts them on the screen for you to scroll and read. No zoom, next chapter, previous chapter, etc.. Think of any regular feature in any good manga-reader or e-book, and it will be missing. 
+These are all features I intend to slowly add in my free time. 
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Additionally, many manga chapters do not load or are straight up just missing. Some manga do not have anything to show at all. [These are problems caused by the Mangadex API itself](https://www.reddit.com/r/mangadex/comments/azb6ei/why_are_there_so_many_missing_chapters/). Especially when trying to load ONLY English language chapters.
 
-### `npm run build`
+One of my future goals is to research and learn about HTML website scraping, so as to include additional manga sources to avoid all of the Mangadex problems. 
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Features
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Responsive UI / design. Works well on all resolutions and screen sizes. 
+- Anime trailers
+- External Links (for streaming sites and MyAnimeList official)
+- ***EXTREMELY*** primitve "manga reader" functionality by way of Mangadex
+- User registration and authentication
+- Watch lists
+- Reading lists
+- Anime watchlist statistics
+- Manga reading list statistics
+- Light mode / dark mode toggle
+- NSFW content toggle
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Screenshots
 
-### `npm run eject`
+![landing page anime](https://imgur.com/WyffISd)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+![landing page manga](https://imgur.com/kN3gtAy)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+![landing page anime dark](https://imgur.com/5dHjDDh)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+![anime watch list](https://imgur.com/ETEgALv)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+![manga read list](https://imgur.com/EvJP2Od)
 
-## Learn More
+![manga reader light](https://imgur.com/ECq0kQ2)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+![manga reader dark](https://imgur.com/lkcCNfQ)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+![anime banner light](https://imgur.com/FeWows8)
 
-### Code Splitting
+![anime details light](https://imgur.com/xWcl9F4)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+![manga banner dark](https://imgur.com/0PRcfpx)
 
-### Analyzing the Bundle Size
+![manga details light](https://imgur.com/uEDPmas)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
