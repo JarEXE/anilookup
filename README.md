@@ -81,3 +81,15 @@ One of my future goals is to research and learn about HTML website scraping, so 
 ![manga details light](https://imgur.com/uEDPmas.png)
 
 <hr></hr>
+
+![studio details](https://imgur.com/zZaSTzx.png)
+
+<hr></hr>
+
+![studio details extra](https://imgur.com/cQ0MHMt.png)
+
+<hr></hr>
+
+![author details](https://imgur.com/QNiuyr8.png)
+
+<hr></hr>
