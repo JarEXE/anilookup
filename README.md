@@ -16,7 +16,7 @@ As stated in the description, this is a passion / learning project that I someti
 A **_great_** example of this is the "manga-reader" functionality. Currently the app just gets the chapter images and puts them on the screen for you to scroll and read. No zoom, next chapter, previous chapter, etc.. Think of any regular feature in any good manga-reader or e-book, and it will be missing.
 These are all features I intend to slowly add in my free time.
 
-Additionally, many manga chapters do not load or are straight up just missing. Some manga do not have anything to show at all. [These are problems caused by the Mangadex API itself](https://www.reddit.com/r/mangadex/comments/azb6ei/why_are_there_so_many_missing_chapters/). Especially when trying to load ONLY English language chapters.
+Additionally, many manga chapters do not load or are straight up just missing. Some manga do not have anything to show at all. [These are problems caused by the Mangadex API itself](https://www.reddit.com/r/mangadex/comments/azb6ei/why_are_there_so_many_missing_chapters/). This is especially true when trying to load only English language chapters.
 
 One of my future goals is to research and learn about HTML website scraping, so as to include additional manga sources to avoid all of the Mangadex problems.
 
