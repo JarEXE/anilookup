@@ -33,6 +33,8 @@ One of my future goals is to research and learn about HTML website scraping, so 
 - Manga reading list statistics
 - Light mode / dark mode toggle
 - NSFW content toggle
+- Animation studio info
+- Manga author info
 
 ## Screenshots
 
