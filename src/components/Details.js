@@ -13,6 +13,7 @@ import ListAddButton from "./plugins/ListAddButton";
 import dateFormat from "dateformat";
 import { Button } from "@mui/material";
 import { Book } from "@mui/icons-material";
+import Collapsible from "react-collapsible";
 
 function Details({ isDarkMode }) {
   const getKitsuCover = sessionStorage.getItem("kitsuCover");
@@ -22,6 +23,8 @@ function Details({ isDarkMode }) {
   const [itemId] = React.useState(getAnimeOrMangaId);
   const [details, setDetails] = React.useState({});
   const [recommendations, setRecommendations] = React.useState({});
+  const [recommendationsFetched, setRecommendationsFetched] =
+    React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [backgroundBlur, setBackgroundBlur] = React.useState({});
   const [streamingSitesSection, setStreamingSitesSection] =
@@ -35,6 +38,16 @@ function Details({ isDarkMode }) {
 
   const notifyRequestRate = () =>
     toast("Too many requests! Please wait a moment then try again.", {
+      icon: "⚠️",
+      style: {
+        borderRadius: "10px",
+        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+        color: `${isDarkMode ? "#333" : "#fff"}`,
+      },
+    });
+
+  const notifyError = (error) =>
+    toast(error, {
       icon: "⚠️",
       style: {
         borderRadius: "10px",
@@ -95,6 +108,27 @@ function Details({ isDarkMode }) {
 
     // Set the authors array in the state
     setAuthors(authorsArray);
+  };
+
+  const fetchRecommendations = async () => {
+    try {
+      // Fetch both details and relations data concurrently
+      const [recommendationsResponse] = await Promise.all([
+        fetch(`https://api.jikan.moe/v4${itemId}/recommendations`),
+      ]);
+
+      const [recommendationsData] = await Promise.all([
+        recommendationsResponse.json(),
+      ]);
+
+      setRecommendations(recommendationsData.data);
+
+      setRecommendationsFetched(true);
+    } catch (error) {
+      console.log(error);
+      notifyError(`Failed to fetch recommendations: ${error}`);
+      return;
+    }
   };
 
   const getMangaIdByName = async (title) => {
@@ -185,7 +219,7 @@ function Details({ isDarkMode }) {
         try {
           setLoading(true);
           // Fetch both details and relations data concurrently
-          const [detailsResponse, recommendationsResponse] = await Promise.all([
+          const [detailsResponse] = await Promise.all([
             fetch(`https://api.jikan.moe/v4${itemId}/full`),
             fetch(`https://api.jikan.moe/v4${itemId}/recommendations`),
           ]);
@@ -204,13 +238,9 @@ function Details({ isDarkMode }) {
             return;
           }
 
-          const [detailsData, recommendationsData] = await Promise.all([
-            detailsResponse.json(),
-            recommendationsResponse.json(),
-          ]);
+          const [detailsData] = await Promise.all([detailsResponse.json()]);
 
           setDetails(detailsData.data);
-          setRecommendations(recommendationsData.data);
 
           setLoading(false);
         } catch (error) {
@@ -719,48 +749,54 @@ function Details({ isDarkMode }) {
               )}
               <h5>Recommended*</h5>
 
-              {typeof recommendations !== "undefined" &&
-              recommendations.length > 0 ? (
-                <div
-                  className={`${
-                    isDarkMode ? "fadeContainerDark" : "fadeContainer"
-                  }`}
-                >
-                  <div className="recommendations">
-                    {recommendations.map((item, index) => (
-                      <div className="zoomed">
-                        <img
-                          key={index}
-                          src={item.entry.images.jpg.image_url}
-                          alt="loading cover..."
-                          loading="lazy"
-                          onClick={() =>
-                            newDetails(
-                              `/${itemType}/${item.entry.mal_id}`,
-                              item.entry.title,
-                              itemType
-                            )
-                          }
-                        />
-                        <div
-                          className="overlay"
-                          onClick={() =>
-                            newDetails(
-                              `/${itemType}/${item.entry.mal_id}`,
-                              item.entry.title,
-                              itemType
-                            )
-                          }
-                        >
-                          <span>{item.entry.title}</span>
+              <Collapsible
+                trigger={"Show Recommendations"}
+                onOpening={fetchRecommendations}
+              >
+                {recommendationsFetched &&
+                typeof recommendations !== "undefined" &&
+                recommendations.length > 0 ? (
+                  <div
+                    className={`${
+                      isDarkMode ? "fadeContainerDark" : "fadeContainer"
+                    }`}
+                  >
+                    <div className="recommendations">
+                      {recommendations.map((item, index) => (
+                        <div className="zoomed">
+                          <img
+                            key={index}
+                            src={item.entry.images.jpg.image_url}
+                            alt="loading cover..."
+                            loading="lazy"
+                            onClick={() =>
+                              newDetails(
+                                `/${itemType}/${item.entry.mal_id}`,
+                                item.entry.title,
+                                itemType
+                              )
+                            }
+                          />
+                          <div
+                            className="overlay"
+                            onClick={() =>
+                              newDetails(
+                                `/${itemType}/${item.entry.mal_id}`,
+                                item.entry.title,
+                                itemType
+                              )
+                            }
+                          >
+                            <span>{item.entry.title}</span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div>No recommended works available.</div>
-              )}
+                ) : (
+                  <div>No recommended works available.</div>
+                )}
+              </Collapsible>
 
               <hr></hr>
               <div
