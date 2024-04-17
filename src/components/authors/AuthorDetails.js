@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "react-circular-progressbar/dist/styles.css";
 import "../../../src/style.css";
@@ -21,41 +21,51 @@ function AuthorDetails({ isDarkMode }) {
   const [showAuthorAnime, setShowAuthorAnime] = React.useState(false);
   const [showAuthorManga, setShowAuthorManga] = React.useState(false);
 
-  let isMounted = true;
-
-  const notifyRequestRate = () =>
-    toast("Too many requests! Please wait a moment then try again.", {
-      icon: "⚠️",
-      style: {
-        borderRadius: "10px",
-        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-        color: `${isDarkMode ? "#333" : "#fff"}`,
-      },
-    });
-
-  const notifyError500 = () =>
-    toast.error(
-      "API error! The information for that author is currently missing or broken.",
-      {
+  const notifyRequestRate = useCallback(
+    function notifyRequestRate() {
+      toast("Too many requests! Please wait a moment then try again.", {
+        icon: "⚠️",
         style: {
           borderRadius: "10px",
           background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
           color: `${isDarkMode ? "#333" : "#fff"}`,
         },
-      }
-    );
+      });
+    },
+    [isDarkMode]
+  );
 
-  const notifyErrorGeneral = () =>
-    toast.error(
-      "API error! Could not fetch requested data. Please try again later.",
-      {
-        style: {
-          borderRadius: "10px",
-          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-          color: `${isDarkMode ? "#333" : "#fff"}`,
-        },
-      }
-    );
+  const notifyError500 = useCallback(
+    function notifyError500() {
+      toast.error(
+        "API error! The information for that author is currently missing or broken.",
+        {
+          style: {
+            borderRadius: "10px",
+            background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+            color: `${isDarkMode ? "#333" : "#fff"}`,
+          },
+        }
+      );
+    },
+    [isDarkMode]
+  );
+
+  const notifyErrorGeneral = useCallback(
+    function notifyErrorGeneral() {
+      toast.error(
+        "API error! Could not fetch requested data. Please try again later.",
+        {
+          style: {
+            borderRadius: "10px",
+            background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+            color: `${isDarkMode ? "#333" : "#fff"}`,
+          },
+        }
+      );
+    },
+    [isDarkMode]
+  );
 
   const navigate = useNavigate();
 
@@ -70,11 +80,6 @@ function AuthorDetails({ isDarkMode }) {
           const authorDetailsResponse = await fetch(
             `https://api.jikan.moe/v4/people/${authorId}/full`
           );
-
-          // component unmounted, don't set the state
-          if (!isMounted) {
-            return;
-          }
 
           // Check the response status before proceeding
           if (authorDetailsResponse.status === 429) {
@@ -124,12 +129,14 @@ function AuthorDetails({ isDarkMode }) {
     } else {
       navigate("/");
     }
-    // cleanup function to update the mounted flag
-    return () => {
-      // eslint-disable-next-line
-      isMounted = false;
-    };
-  }, [authorId]);
+  }, [
+    authorId,
+    authorName.length,
+    navigate,
+    notifyError500,
+    notifyErrorGeneral,
+    notifyRequestRate,
+  ]);
 
   const landingPageRoute = () => {
     navigate("/");

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import AuthorManga from "./AuthorManga";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -9,15 +9,19 @@ const AuthorMangaWorks = ({ isDarkMode, authorId }) => {
   const [cards, setCards] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
 
-  const notifyRequestRate = () =>
-    toast("Too many requests! Please wait a bit then try again.", {
-      icon: "⚠️",
-      style: {
-        borderRadius: "10px",
-        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-        color: `${isDarkMode ? "#333" : "#fff"}`,
-      },
-    });
+  const notifyRequestRate = useCallback(
+    function notifyRequestRate() {
+      toast("Too many requests! Please wait a moment then try again.", {
+        icon: "⚠️",
+        style: {
+          borderRadius: "10px",
+          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+          color: `${isDarkMode ? "#333" : "#fff"}`,
+        },
+      });
+    },
+    [isDarkMode]
+  );
 
   // Use useEffect to re-render the component when allowNSFW changes
   React.useEffect(() => {
@@ -61,8 +65,7 @@ const AuthorMangaWorks = ({ isDarkMode, authorId }) => {
           return;
         }
       });
-    // eslint-disable-next-line
-  }, [isDarkMode, authorId]);
+  }, [isDarkMode, authorId, notifyRequestRate]);
 
   return (
     <>

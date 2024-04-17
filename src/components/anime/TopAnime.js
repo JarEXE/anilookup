@@ -76,7 +76,7 @@ const TopAnime = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
       .catch((error) => {
         console.error("Error fetching API data:", error);
       });
-    // eslint-disable-next-line
+    //eslint-disable-next-line
   }, [allowNSFW, sfwToggle, currentPage, selectedOption, listStatus]);
 
   const notifyInvalidPage = () =>

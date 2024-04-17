@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import { useNavigate } from "react-router-dom";
 import AnimatedProgressProvider from "./plugins/AnimatedProgressProvider";
-import { easeQuadIn } from "d3-ease";
 import "react-circular-progressbar/dist/styles.css";
 import mal from "../images/mal.png";
 import "../../src/style.css";
@@ -34,27 +33,33 @@ function Details({ isDarkMode }) {
   const [loadingChapters, setLoadingChapters] = React.useState(false);
   const [mangaDexMangaID, setMangaDexMangaID] = React.useState(null);
 
-  let isMounted = true;
+  const notifyRequestRate = useCallback(
+    function notifyRequestRate() {
+      toast("Too many requests! Please wait a moment then try again.", {
+        icon: "⚠️",
+        style: {
+          borderRadius: "10px",
+          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+          color: `${isDarkMode ? "#333" : "#fff"}`,
+        },
+      });
+    },
+    [isDarkMode]
+  );
 
-  const notifyRequestRate = () =>
-    toast("Too many requests! Please wait a moment then try again.", {
-      icon: "⚠️",
-      style: {
-        borderRadius: "10px",
-        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-        color: `${isDarkMode ? "#333" : "#fff"}`,
-      },
-    });
-
-  const notifyError = (error) =>
-    toast(error, {
-      icon: "⚠️",
-      style: {
-        borderRadius: "10px",
-        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-        color: `${isDarkMode ? "#333" : "#fff"}`,
-      },
-    });
+  const notifyError = useCallback(
+    function notifyError(error) {
+      toast(error, {
+        icon: "⚠️",
+        style: {
+          borderRadius: "10px",
+          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
+          color: `${isDarkMode ? "#333" : "#fff"}`,
+        },
+      });
+    },
+    [isDarkMode]
+  );
 
   // Define a function to fetch author details and positions
   const fetchAuthorDetailsAndPositions = async () => {
@@ -110,26 +115,33 @@ function Details({ isDarkMode }) {
     setAuthors(authorsArray);
   };
 
-  const fetchRecommendations = async () => {
-    try {
-      // Fetch both details and relations data concurrently
-      const [recommendationsResponse] = await Promise.all([
-        fetch(`https://api.jikan.moe/v4${itemId}/recommendations`),
-      ]);
+  const fetchRecommendations = useCallback(
+    async function fetchRecommendations() {
+      if (recommendations.length > 0) {
+        return;
+      } else {
+        try {
+          // Fetch both details and relations data concurrently
+          const [recommendationsResponse] = await Promise.all([
+            fetch(`https://api.jikan.moe/v4${itemId}/recommendations`),
+          ]);
 
-      const [recommendationsData] = await Promise.all([
-        recommendationsResponse.json(),
-      ]);
+          const [recommendationsData] = await Promise.all([
+            recommendationsResponse.json(),
+          ]);
 
-      setRecommendations(recommendationsData.data);
+          setRecommendations(recommendationsData.data);
 
-      setRecommendationsFetched(true);
-    } catch (error) {
-      console.log(error);
-      notifyError(`Failed to fetch recommendations: ${error}`);
-      return;
-    }
-  };
+          setRecommendationsFetched(true);
+        } catch (error) {
+          console.log(error);
+          notifyError(`Failed to fetch recommendations: ${error}`);
+          return;
+        }
+      }
+    },
+    [itemId, notifyError, recommendations.length]
+  );
 
   const getMangaIdByName = async (title) => {
     setLoadingChapters(true);
@@ -218,16 +230,9 @@ function Details({ isDarkMode }) {
       } else {
         try {
           setLoading(true);
-          // Fetch both details and relations data concurrently
           const [detailsResponse] = await Promise.all([
             fetch(`https://api.jikan.moe/v4${itemId}/full`),
-            fetch(`https://api.jikan.moe/v4${itemId}/recommendations`),
           ]);
-
-          // component unmounted, don't set the state
-          if (!isMounted) {
-            return;
-          }
 
           // Check the response status before proceeding
           if (detailsResponse.status === 429) {
@@ -257,13 +262,7 @@ function Details({ isDarkMode }) {
     } else {
       navigate("/");
     }
-
-    // cleanup function to update the mounted flag
-    return () => {
-      // eslint-disable-next-line
-      isMounted = false;
-    };
-  }, [itemId]);
+  }, [itemId, navigate, notifyRequestRate]);
 
   React.useEffect(() => {
     if (Object.keys(details).length > 0) {
@@ -535,8 +534,6 @@ function Details({ isDarkMode }) {
                       <AnimatedProgressProvider
                         valueStart={0}
                         valueEnd={details.score}
-                        duration={1.4}
-                        easingFunction={easeQuadIn}
                       >
                         {(value) => {
                           return (
