@@ -1,9 +1,14 @@
-import React from "react";
+import React, { memo } from "react";
 import LandingPageAnime from "./LandingPageAnime.js";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const TopAnime = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
+const TopAnime = memo(function TopAnime({
+  isDarkMode,
+  allowNSFW,
+  selectedOption,
+  listStatus,
+}) {
   let sfwToggle = sessionStorage.getItem("sfw");
   // State to hold the key for re-rendering
   const [key, setKey] = React.useState(0);
@@ -212,6 +217,6 @@ const TopAnime = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
       )}
     </>
   );
-};
+});
 
 export default TopAnime;

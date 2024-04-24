@@ -11,7 +11,6 @@ function DarkModeToggle({ onDarkModeToggle }) {
   const themeColor = isDarkMode ? "#FFFFFF" : "#282828";
 
   const toggleDarkMode = () => {
-    console.log(themeColor);
     setIsDarkMode((prev) => !prev);
     onDarkModeToggle(!isDarkMode); // Notify the parent component
     sessionStorage.setItem("darkMode", JSON.stringify(!isDarkMode));

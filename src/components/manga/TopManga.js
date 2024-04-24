@@ -1,9 +1,14 @@
-import React from "react";
+import React, { memo } from "react";
 import LandingPageManga from "./LandingPageManga.js";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const TopManga = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
+const TopManga = memo(function TopManga({
+  isDarkMode,
+  allowNSFW,
+  selectedOption,
+  listStatus,
+}) {
   let sfwToggle = sessionStorage.getItem("sfw");
   // State to hold the key for re-rendering
   const [key, setKey] = React.useState(0);
@@ -60,8 +65,6 @@ const TopManga = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
                 key={anime.mal_id}
                 img={anime.images.jpg.large_image_url}
                 title={anime.title}
-                //synopsis={anime.synopsis}
-                isDarkMode={isDarkMode}
                 malid={anime.mal_id}
                 currentList={
                   listIndex > -1 ? listStatus[listIndex].currentList : null
@@ -216,6 +219,6 @@ const TopManga = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
       )}
     </>
   );
-};
+});
 
 export default TopManga;
