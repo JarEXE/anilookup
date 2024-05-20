@@ -25,7 +25,7 @@ One of my future goals is to research and learn about HTML website scraping, so 
 - Responsive UI / design. Works well on all resolutions and screen sizes.
 - Anime trailers
 - External Links (for streaming sites and MyAnimeList official)
-- **_EXTREMELY_** primitve "manga reader" functionality by way of Mangadex
+- **_EXTREMELY_** primitive "manga reader" functionality by way of Mangadex
 - User registration and authentication
 - Watch lists
 - Reading lists
