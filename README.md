@@ -2,6 +2,8 @@
 
 **Site**: https://anilookup.netlify.app
 
+![responsive layout](https://imgur.com/gNWJm7F.png)
+
 ## Description
 
 AniLookup is a fully responsive Anime and Manga lookup React Web Application made as a passion / learning project.
