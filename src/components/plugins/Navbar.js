@@ -335,7 +335,7 @@ function Navbar({
                     <ExitIcon />
                   </CircleMenuItem>
                   <CircleMenuItem
-                    onClick={() => alert("No info just yet :(")}
+                    onClick={() => alert("https://github.com/JarEXE/anilookup")}
                     tooltip="Info"
                     tooltipPlacement={TooltipPlacement.Bottom}
                   >

@@ -257,7 +257,7 @@ const ListAddButton = ({
         onClick={handleClick}
         style={{
           backgroundColor: `${isDarkMode ? "#0dcaf0" : "#212529"}`,
-          color: "#FFF",
+          color: `${isDarkMode ? "black" : "#fff"}`,
           textTransform: "none",
         }}
       >
