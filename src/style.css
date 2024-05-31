@@ -420,12 +420,14 @@ div.text-on-top {
   height: 275px;
   vertical-align: middle;
   border-radius: 10px;
+  cursor: pointer;
 }
 
 /* hover */
 .image-gallery li:hover .overlay {
   height: 275px;
   transform: scale(1);
+  cursor: pointer;
 }
 
 /* .image-gallery::after {
