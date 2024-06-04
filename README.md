@@ -6,7 +6,7 @@
 
 ## Description
 
-AniLookup is a fully responsive Anime and Manga lookup React Web Application made as a passion / learning project.
+AniLookup is an Anime and Manga lookup React Web Application made as a passion / learning project.
 
 It makes use of various API technologies such as [Jikan V4](https://jikan.moe/), [Kitsu](https://kitsu.docs.apiary.io/), and [Mangadex](https://api.mangadex.org/docs/).
 
