@@ -2,6 +2,7 @@ import React, { useCallback } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import { useNavigate } from "react-router-dom";
 import AnimatedProgressProvider from "./plugins/AnimatedProgressProvider";
+import { easeQuadInOut } from "d3-ease";
 import "react-circular-progressbar/dist/styles.css";
 import mal from "../images/mal.png";
 import "../../src/style.css";
@@ -534,6 +535,8 @@ function Details({ isDarkMode }) {
                       <AnimatedProgressProvider
                         valueStart={0}
                         valueEnd={details.score}
+                        duration={1.4}
+                        easingFunction={easeQuadInOut}
                       >
                         {(value) => {
                           return (
