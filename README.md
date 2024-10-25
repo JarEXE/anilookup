@@ -1,7 +1,5 @@
 # AniLookup: Anime and Manga lookup
 
-**Site**: https://anilookup.netlify.app
-
 ![responsive layout](https://imgur.com/gNWJm7F.png)
 
 ## Description
