@@ -8,6 +8,7 @@ import dateFormat from "dateformat";
 import Collapsible from "react-collapsible";
 import AuthorWorks from "./AuthorWorks";
 import AuthorMangaWorks from "./AuthorMangaWorks";
+import { API_URL } from "../../config/api";
 
 function AuthorDetails({ isDarkMode }) {
   const getAuthorId = sessionStorage.getItem("authorId");
@@ -32,7 +33,7 @@ function AuthorDetails({ isDarkMode }) {
         },
       });
     },
-    [isDarkMode]
+    [isDarkMode],
   );
 
   const notifyError500 = useCallback(
@@ -45,10 +46,10 @@ function AuthorDetails({ isDarkMode }) {
             background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
             color: `${isDarkMode ? "#333" : "#fff"}`,
           },
-        }
+        },
       );
     },
-    [isDarkMode]
+    [isDarkMode],
   );
 
   const notifyErrorGeneral = useCallback(
@@ -61,10 +62,10 @@ function AuthorDetails({ isDarkMode }) {
             background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
             color: `${isDarkMode ? "#333" : "#fff"}`,
           },
-        }
+        },
       );
     },
-    [isDarkMode]
+    [isDarkMode],
   );
 
   const navigate = useNavigate();
@@ -78,7 +79,7 @@ function AuthorDetails({ isDarkMode }) {
           setLoading(true);
           // Fetch both details and relations data concurrently
           const authorDetailsResponse = await fetch(
-            `https://api.jikan.moe/v4/people/${authorId}/full`
+            `${API_URL}/people/${authorId}/full`,
           );
 
           // Check the response status before proceeding
@@ -200,7 +201,7 @@ function AuthorDetails({ isDarkMode }) {
                         authorDetails.birthday !== null
                           ? `Birthday: ${dateFormat(
                               authorDetails.birthday,
-                              "fullDate"
+                              "fullDate",
                             )}`
                           : `Birthday: ?`}
                       </strong>

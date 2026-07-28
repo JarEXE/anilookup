@@ -14,6 +14,11 @@ import dateFormat from "dateformat";
 import { Button } from "@mui/material";
 import { Book } from "@mui/icons-material";
 import Collapsible from "react-collapsible";
+import { API_URL } from "../config/api";
+
+const apiUrl = process.env.API_BASE_URL;
+
+console.log(apiUrl);
 
 function Details({ isDarkMode }) {
   const getKitsuCover = sessionStorage.getItem("kitsuCover");
@@ -45,7 +50,7 @@ function Details({ isDarkMode }) {
         },
       });
     },
-    [isDarkMode]
+    [isDarkMode],
   );
 
   const notifyError = useCallback(
@@ -59,7 +64,7 @@ function Details({ isDarkMode }) {
         },
       });
     },
-    [isDarkMode]
+    [isDarkMode],
   );
 
   // Define a function to fetch author details and positions
@@ -70,7 +75,7 @@ function Details({ isDarkMode }) {
       for (const author of details.authors) {
         try {
           const authorsResponse = await fetch(
-            `https://api.jikan.moe/v4/people/${author.mal_id}/full`
+            `${API_URL}/people/${author.mal_id}/full`,
           );
           const authorsData = await authorsResponse.json();
 
@@ -124,7 +129,7 @@ function Details({ isDarkMode }) {
         try {
           // Fetch both details and relations data concurrently
           const [recommendationsResponse] = await Promise.all([
-            fetch(`https://api.jikan.moe/v4${itemId}/recommendations`),
+            fetch(`${API_URL}${itemId}/recommendations`),
           ]);
 
           const [recommendationsData] = await Promise.all([
@@ -141,7 +146,7 @@ function Details({ isDarkMode }) {
         }
       }
     },
-    [itemId, notifyError, recommendations.length]
+    [itemId, notifyError, recommendations.length],
   );
 
   const getMangaIdByName = async (title) => {
@@ -232,7 +237,7 @@ function Details({ isDarkMode }) {
         try {
           setLoading(true);
           const [detailsResponse] = await Promise.all([
-            fetch(`https://api.jikan.moe/v4${itemId}/full`),
+            fetch(`${API_URL}${itemId}/full`),
           ]);
 
           // Check the response status before proceeding
@@ -327,7 +332,7 @@ function Details({ isDarkMode }) {
     await fetch(
       `https://kitsu.io/api/edge/${itemType}?filter[text]=${navTitle}&page[limit]=${
         itemType === "anime" ? "5" : "1"
-      }`
+      }`,
     ).then(async (response) => {
       kitsuData = await response.json();
     });
@@ -339,7 +344,7 @@ function Details({ isDarkMode }) {
           item.attributes.abbreviatedTitles.includes(navTitle) ||
           item.attributes.titles.en === navTitle ||
           item.attributes.titles.en_jp === navTitle ||
-          item.attributes.titles.ja_jp === navTitle
+          item.attributes.titles.ja_jp === navTitle,
       );
 
       if (matchingItem) {
@@ -359,7 +364,7 @@ function Details({ isDarkMode }) {
       if (kitsuData.data[0].attributes.coverImage != null) {
         sessionStorage.setItem(
           "kitsuCover",
-          `${kitsuData.data[0].attributes.coverImage.original}`
+          `${kitsuData.data[0].attributes.coverImage.original}`,
         );
         sessionStorage.setItem("itemId", navInfo);
         window.location.href = "/details";
@@ -486,8 +491,8 @@ function Details({ isDarkMode }) {
                           details.aired
                             ? details.aired.from
                             : details.published
-                            ? details.published.from
-                            : "?"
+                              ? details.published.from
+                              : "?"
                         }
                         date={dateFormat(new Date(), "isoDateTime")}
                       />
@@ -628,7 +633,7 @@ function Details({ isDarkMode }) {
                         ? authors.map((person) =>
                             person.authorId === author.mal_id
                               ? ` (${person.position})`
-                              : null
+                              : null,
                           )
                         : null}
                     </React.Fragment>
@@ -721,7 +726,7 @@ function Details({ isDarkMode }) {
                                       newDetails(
                                         `/${entry.type}/${entry.mal_id}`,
                                         entry.name,
-                                        entry.type
+                                        entry.type,
                                       )
                                     }
                                   >
@@ -773,7 +778,7 @@ function Details({ isDarkMode }) {
                               newDetails(
                                 `/${itemType}/${item.entry.mal_id}`,
                                 item.entry.title,
-                                itemType
+                                itemType,
                               )
                             }
                           />
@@ -783,7 +788,7 @@ function Details({ isDarkMode }) {
                               newDetails(
                                 `/${itemType}/${item.entry.mal_id}`,
                                 item.entry.title,
-                                itemType
+                                itemType,
                               )
                             }
                           >

@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../../../src/style.css";
+import { API_URL } from "../../config/api";
 const Anime = React.lazy(() => import("./Anime"));
 const Manga = React.lazy(() => import("../manga/Manga"));
 
@@ -25,10 +26,10 @@ function Cards({ allowNSFW, isDarkMode }) {
     if (oldSearch && location.pathname === "/search") {
       axios
         .get(
-          `https://api.jikan.moe/v4/anime?q=${oldSearch}${
+          `${API_URL}/anime?q=${oldSearch}${
             // eslint-disable-next-line
             sfwToggle == 1 ? "/" : "&sfw"
-          }`
+          }`,
         )
         .then((response) => {
           const animes = response.data.data;
@@ -55,10 +56,10 @@ function Cards({ allowNSFW, isDarkMode }) {
     } else if (oldSearch && location.pathname === "/mangasearch") {
       axios
         .get(
-          `https://api.jikan.moe/v4/manga?q=${oldSearch}${
+          `${API_URL}/manga?q=${oldSearch}${
             // eslint-disable-next-line
             sfwToggle == 1 ? "/" : "&sfw"
-          }`
+          }`,
         )
         .then((response) => {
           const mangas = response.data.data;

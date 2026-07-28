@@ -2,6 +2,7 @@ import React, { useCallback } from "react";
 import AuthorAnime from "./AuthorAnime.js";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { API_URL } from "../../config/api";
 
 const AuthorWorks = ({ isDarkMode, authorId }) => {
   // State to hold the key for re-rendering
@@ -20,7 +21,7 @@ const AuthorWorks = ({ isDarkMode, authorId }) => {
         },
       });
     },
-    [isDarkMode]
+    [isDarkMode],
   );
 
   // Use useEffect to re-render the component when allowNSFW changes
@@ -30,7 +31,7 @@ const AuthorWorks = ({ isDarkMode, authorId }) => {
     setKey((prevKey) => prevKey + 1);
 
     axios
-      .get(`https://api.jikan.moe/v4/people/${authorId}/anime`)
+      .get(`${API_URL}/people/${authorId}/anime`)
       .then((response) => {
         const animes = response.data.data;
 

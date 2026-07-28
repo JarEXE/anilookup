@@ -2,6 +2,7 @@ import React from "react";
 import StudioAnime from "../anime/StudioAnime.js";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { API_URL } from "../../config/api.js";
 
 const StudioWorks = ({
   isDarkMode,
@@ -28,16 +29,16 @@ const StudioWorks = ({
 
     axios
       .get(
-        `https://api.jikan.moe/v4/anime?producers=${studioId}${
+        `${API_URL}/anime?producers=${studioId}${
           selectedOption === "all"
             ? null
             : selectedOption === "other"
-            ? `&type=special`
-            : `&type=${selectedOption}`
+              ? `&type=special`
+              : `&type=${selectedOption}`
         }&order_by=${sortBy}&sort=desc&page=${currentPage}${
           // eslint-disable-next-line
           sfwToggle == 1 ? "&" : "&sfw"
-        }`
+        }`,
       )
       .then((response) => {
         const animes = response.data.data;

@@ -6,7 +6,7 @@
 
 AniLookup is an Anime and Manga lookup Web Application made as a passion / learning project.
 
-It makes use of various API technologies such as [Jikan V4](https://jikan.moe/), [Kitsu](https://kitsu.docs.apiary.io/), and [Mangadex](https://api.mangadex.org/docs/).
+It makes use of various API technologies such as [Tenrai](https://api.tenrai.org/), [Kitsu](https://kitsu.docs.apiary.io/), and [Mangadex](https://api.mangadex.org/docs/).
 
 [Google Firebase](https://firebase.google.com/) is used for user accounts and user authentication.
 

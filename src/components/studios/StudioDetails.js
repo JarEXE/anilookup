@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import dateFormat from "dateformat";
 import StudioWorks from "./StudioWorks";
 import ScrollContainer from "react-indiana-drag-scroll";
+import { API_URL } from "../../config/api";
 
 function StudioDetails({ isDarkMode, allowNSFW }) {
   const getStudioId = sessionStorage.getItem("studioId");
@@ -33,7 +34,7 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
         },
       });
     },
-    [isDarkMode]
+    [isDarkMode],
   );
 
   const notifyError500 = useCallback(
@@ -46,10 +47,10 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
             background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
             color: `${isDarkMode ? "#333" : "#fff"}`,
           },
-        }
+        },
       );
     },
-    [isDarkMode]
+    [isDarkMode],
   );
 
   const notifyErrorGeneral = useCallback(
@@ -62,10 +63,10 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
             background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
             color: `${isDarkMode ? "#333" : "#fff"}`,
           },
-        }
+        },
       );
     },
-    [isDarkMode]
+    [isDarkMode],
   );
 
   const navigate = useNavigate();
@@ -88,7 +89,7 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
           setLoading(true);
           // Fetch both details and relations data concurrently
           const [studioDetailsResponse] = await Promise.all([
-            fetch(`https://api.jikan.moe/v4/producers/${studioId}/full`),
+            fetch(`${API_URL}/producers/${studioId}/full`),
           ]);
 
           const [studioDetailsData] = await Promise.all([
@@ -179,7 +180,7 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
                         studioDetails.established !== null
                           ? `Established: ${dateFormat(
                               studioDetails.established,
-                              "fullDate"
+                              "fullDate",
                             )}`
                           : `Established: ?`}
                       </strong>

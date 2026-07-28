@@ -29,7 +29,7 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW, user }) {
   const [selectedOption, setSelectedOption] = React.useState("publishing");
 
   const [listStatus, setListStatus] = React.useState(
-    JSON.parse(sessionStorage.getItem("mangaListItems"))
+    JSON.parse(sessionStorage.getItem("mangaListItems")),
   );
 
   const [listUpdated, setListUpdated] = React.useState(false);
@@ -80,7 +80,7 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW, user }) {
           db,
           "users",
           user.uid,
-          "mangalistitems"
+          "mangalistitems",
         );
 
         try {
@@ -97,26 +97,26 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW, user }) {
           sessionStorage.setItem("mangaListItems", JSON.stringify(dataList));
 
           setReadingListLength(
-            dataList.filter((item) => item["currentList"] === "reading").length
+            dataList.filter((item) => item["currentList"] === "reading").length,
           );
           setHoldListLength(
-            dataList.filter((item) => item["currentList"] === "onhold").length
+            dataList.filter((item) => item["currentList"] === "onhold").length,
           );
           setPlannedListLength(
-            dataList.filter((item) => item["currentList"] === "planned").length
+            dataList.filter((item) => item["currentList"] === "planned").length,
           );
           setDroppedListLength(
-            dataList.filter((item) => item["currentList"] === "dropped").length
+            dataList.filter((item) => item["currentList"] === "dropped").length,
           );
           setCompletedListLength(
             dataList.filter((item) => item["currentList"] === "completed")
-              .length
+              .length,
           );
           setListUpdated(true);
         } catch (error) {
           console.error(
             "Error getting documents from mangalistitems collection:",
-            error
+            error,
           );
           return [];
         }
@@ -382,7 +382,7 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW, user }) {
         <ul className="image-gallery">
           {(selectedOption === "doujin" && allowNSFW === true) ||
           ["publishing", "manhwa", "manga", "novel", "manhua"].includes(
-            selectedOption
+            selectedOption,
           ) ? (
             <TopManga
               isDarkMode={isDarkMode}
@@ -399,9 +399,8 @@ function MangaSearch({ onInputChange, isDarkMode, allowNSFW, user }) {
       <div className="text-center">
         Powered by{" "}
         <strong>
-          <a href="https://jikan.moe/">Jikan</a>
+          <a href="https://api.tenrai.org">Tenrai</a>
         </strong>{" "}
-        REST API
         <p>
           Made by{" "}
           <strong>

@@ -2,6 +2,7 @@ import React from "react";
 import LandingPageAnime from "./LandingPageAnime.js";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { API_URL } from "../../config/api";
 
 const TopAnime = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
   let sfwToggle = sessionStorage.getItem("sfw");
@@ -21,20 +22,20 @@ const TopAnime = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
 
     axios
       .get(
-        `https://api.jikan.moe/v4/top/anime?${
+        `${API_URL}/top/anime?${
           selectedOption === "airing"
             ? "filter=airing"
             : selectedOption === "upcoming"
-            ? "filter=upcoming"
-            : selectedOption === "series"
-            ? "type=tv"
-            : selectedOption === "movies"
-            ? "type=movie"
-            : "filter=airing"
+              ? "filter=upcoming"
+              : selectedOption === "series"
+                ? "type=tv"
+                : selectedOption === "movies"
+                  ? "type=movie"
+                  : "filter=airing"
         }&page=${currentPage}${
           // eslint-disable-next-line
           sfwToggle == 1 ? "&" : "&sfw"
-        }`
+        }`,
       )
       .then((response) => {
         const animes = response.data.data;
@@ -47,7 +48,7 @@ const TopAnime = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
 
             if (listStatus !== null) {
               listIndex = listStatus.findIndex(
-                (list) => parseInt(list.id) === anime.mal_id
+                (list) => parseInt(list.id) === anime.mal_id,
               );
             }
 
