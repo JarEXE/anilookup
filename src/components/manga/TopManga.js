@@ -1,26 +1,48 @@
 import React from "react";
+import { sfwQuery, withoutNsfw } from "../../utils/nsfw";
 import LandingPageManga from "./LandingPageManga.js";
-import axios from "axios";
 import toast from "react-hot-toast";
-import { API_URL } from "../../config/api";
+import { API_URL, apiClient } from "../../config/api";
+import LoadError from "../plugins/LoadError";
+import useUrlParams, { parsePage } from "../../hooks/useUrlParams";
 
 const TopManga = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
-  let sfwToggle = sessionStorage.getItem("sfw");
   // State to hold the key for re-rendering
   const [key, setKey] = React.useState(0);
-  const [cards, setCards] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [pagination, setPagination] = React.useState({});
-  const [currentPage, setCurrentPage] = React.useState(1);
+  const [urlParams, updateUrlParams] = useUrlParams({ page: "1" });
+  const currentPage = parsePage(urlParams.page);
+  const setCurrentPage = (page) => {
+    const newPage = parseInt(page, 10);
+    if (Number.isInteger(newPage) && newPage > 0) {
+      updateUrlParams({ page: newPage });
+    }
+  };
   const [inputValue, setInputValue] = React.useState(currentPage);
 
-  // Use useEffect to re-render the component when allowNSFW changes
+  // keep the page input in sync when the page changes via back/forward
   React.useEffect(() => {
+    setInputValue(currentPage);
+  }, [currentPage]);
+
+  const [mangas, setItems] = React.useState([]);
+  const [loadError, setLoadError] = React.useState(false);
+  // bumped by the "Try again" button to re-run the fetch effect
+  const [reloadKey, setReloadKey] = React.useState(0);
+
+  // Only data is stored here; the cards are rendered from it below. (Building
+  // the JSX inside this effect forced theme/list-status into its dependencies,
+  // which re-fetched the API whenever either changed.)
+  React.useEffect(() => {
+    // ignore a response for a page/filter the user has already moved away from
+    let cancelled = false;
+
     setLoading(true);
-    // Increment the key whenever allowNSFW changes
+    setLoadError(false);
     setKey((prevKey) => prevKey + 1);
 
-    axios
+    apiClient
       .get(
         `${API_URL}/top/manga?${
           selectedOption === "publishing"
@@ -36,61 +58,33 @@ const TopManga = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
                     : selectedOption === "doujin" && allowNSFW === true
                       ? "type=doujin"
                       : "filter=publishing"
-        }&page=${currentPage}${
-          // eslint-disable-next-line
-          allowNSFW === true ? "&" : "&sfw"
-        }`,
+        }&page=${currentPage}${sfwQuery(allowNSFW)}`,
       )
       .then((response) => {
-        const animes = response.data.data;
-        setPagination(response.data.pagination);
-
-        if (animes) {
-          // Map data to Anime components
-          const animeCards = animes.map((anime) => {
-            let listIndex;
-
-            if (listStatus !== null) {
-              listIndex = listStatus.findIndex(
-                (list) => parseInt(list.id) === anime.mal_id,
-              );
-            }
-
-            return (
-              <LandingPageManga
-                key={anime.mal_id}
-                img={anime.images.jpg.large_image_url}
-                title={anime.title}
-                //synopsis={anime.synopsis}
-                isDarkMode={isDarkMode}
-                malid={anime.mal_id}
-                currentList={
-                  listIndex > -1 ? listStatus[listIndex].currentList : null
-                }
-              />
-            );
-          });
-          // Set cards and mark loading as false
-          setCards(animeCards);
-          setLoading(false);
-        } else {
-          setLoading(false);
-          return null;
-        }
+        if (cancelled) return;
+        setPagination(response.data.pagination || {});
+        setItems(withoutNsfw(response.data.data, "manga", allowNSFW));
+        setLoading(false);
       })
       .catch((error) => {
+        if (cancelled) return;
         console.error("Error fetching API data:", error);
+        setLoading(false);
+        setLoadError(true);
       });
-    // eslint-disable-next-line
-  }, [allowNSFW, sfwToggle, currentPage, selectedOption, listStatus]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [allowNSFW, currentPage, selectedOption, reloadKey]);
 
   const notifyInvalidPage = () =>
     toast(`Invalid page! Max is ${pagination.last_visible_page}`, {
       icon: "⚠️",
       style: {
         borderRadius: "10px",
-        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-        color: `${isDarkMode ? "#333" : "#fff"}`,
+        background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+        color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
       },
     });
 
@@ -155,12 +149,38 @@ const TopManga = ({ isDarkMode, allowNSFW, selectedOption, listStatus }) => {
         <div className="loadContainer">
           <span className="loader"></span>
         </div>
+      ) : loadError ? (
+        <LoadError
+          isDarkMode={isDarkMode}
+          message="Couldn't load this list right now."
+          onRetry={() => setReloadKey((prevKey) => prevKey + 1)}
+        />
       ) : (
         // Render the component with a unique key to force re-render
         <div>
-          <div className="cards" key={key}>
-            {cards}
-          </div>
+          <ul className="cover-grid" key={key}>
+            {mangas.map((manga) => {
+              const listIndex =
+                listStatus !== null
+                  ? listStatus.findIndex(
+                      (list) => parseInt(list.id) === manga.mal_id,
+                    )
+                  : -1;
+
+              return (
+                <LandingPageManga
+                  key={manga.mal_id}
+                  img={manga.images.jpg.large_image_url}
+                  title={manga.title}
+                  isDarkMode={isDarkMode}
+                  malid={manga.mal_id}
+                  currentList={
+                    listIndex > -1 ? listStatus[listIndex].currentList : null
+                  }
+                />
+              );
+            })}
+          </ul>
           <div className="pagination">
             <button
               className={`btn btn-${

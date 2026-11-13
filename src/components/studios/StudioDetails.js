@@ -1,153 +1,135 @@
-import React, { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "react-circular-progressbar/dist/styles.css";
 import "../../../src/style.css";
 import Favicon from "../plugins/Favicon";
-import toast from "react-hot-toast";
 import dateFormat from "dateformat";
 import StudioWorks from "./StudioWorks";
 import ScrollContainer from "react-indiana-drag-scroll";
-import { API_URL } from "../../config/api";
+import { API_URL, apiFetch } from "../../config/api";
+import useNotify from "../../hooks/useNotify";
+import useUrlParams from "../../hooks/useUrlParams";
+import { goBackOrHome } from "../../utils/navigation";
+import ErrorPage from "../ErrorPage";
 
+// Rendered at /studio/:id?type=...&sort=...&page=...
 function StudioDetails({ isDarkMode, allowNSFW }) {
-  const getStudioId = sessionStorage.getItem("studioId");
-  const getStudioName = sessionStorage.getItem("studioName");
+  const { id: studioId } = useParams();
 
   const [loading, setLoading] = React.useState(false);
+  const [notFound, setNotFound] = React.useState(false);
 
-  const [studioId] = React.useState(getStudioId);
-  const [studioName] = React.useState(getStudioName);
   const [studioDetails, setStudioDetails] = React.useState({});
 
-  // Initialize state to manage the selected radio button
-  const [selectedOption, setSelectedOption] = React.useState("all");
-  const [sortBy, setSortBy] = React.useState("members");
+  const studioName =
+    studioDetails && Array.isArray(studioDetails.titles)
+      ? (
+          studioDetails.titles.find((title) => title.type === "Default") ||
+          studioDetails.titles[0] || { title: "" }
+        ).title
+      : "";
 
-  const notifyRequestRate = useCallback(
-    function notifyRequestRate() {
-      toast("Too many requests! Please wait a moment then try again.", {
-        icon: "⚠️",
-        style: {
-          borderRadius: "10px",
-          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-          color: `${isDarkMode ? "#333" : "#fff"}`,
-        },
-      });
-    },
-    [isDarkMode],
-  );
+  const [{ type: selectedOption, sort: sortBy }, updateUrlParams] =
+    useUrlParams({ type: "all", sort: "members" });
 
-  const notifyError500 = useCallback(
-    function notifyError500() {
-      toast.error(
-        "API error! The information for that author is currently missing or broken.",
-        {
-          style: {
-            borderRadius: "10px",
-            background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-            color: `${isDarkMode ? "#333" : "#fff"}`,
-          },
-        },
-      );
-    },
-    [isDarkMode],
-  );
-
-  const notifyErrorGeneral = useCallback(
-    function notifyErrorGeneral() {
-      toast.error(
-        "API error! Could not fetch requested data. Please try again later.",
-        {
-          style: {
-            borderRadius: "10px",
-            background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-            color: `${isDarkMode ? "#333" : "#fff"}`,
-          },
-        },
-      );
-    },
-    [isDarkMode],
-  );
+  // stable across dark mode toggles, so it doesn't re-trigger the fetch effect
+  const notify = useNotify(isDarkMode);
+  const notifyRequestRate = () =>
+    notify("Too many requests! Please wait a moment then try again.");
+  const notifyError500 = () =>
+    notify(
+      "API error! The information for that studio is currently missing or broken.",
+      { type: "error" },
+    );
+  const notifyErrorGeneral = () =>
+    notify(
+      "API error! Could not fetch requested data. Please try again later.",
+      { type: "error" },
+    );
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Handler to update the selected radio button
   const handleRadioChange = (event) => {
-    setSelectedOption(event.target.id);
+    // changing the filter starts back at page 1
+    updateUrlParams({ type: event.target.id, page: null });
   };
 
-  const handleSortChange = (sort) => {
-    setSortBy(sort);
+  const handleSortChange = (event, sort) => {
+    event.preventDefault();
+    updateUrlParams({ sort: sort, page: null });
   };
 
   React.useEffect(() => {
     async function fetchStudioData() {
-      if (studioName.length < 1) {
-        return;
-      } else {
-        try {
-          setLoading(true);
-          // Fetch both details and relations data concurrently
-          const [studioDetailsResponse] = await Promise.all([
-            fetch(`${API_URL}/producers/${studioId}/full`),
-          ]);
+      try {
+        setLoading(true);
+        // Fetch both details and relations data concurrently
+        const [studioDetailsResponse] = await Promise.all([
+          apiFetch(`${API_URL}/producers/${studioId}/full`),
+        ]);
 
-          const [studioDetailsData] = await Promise.all([
-            studioDetailsResponse.json(),
-          ]);
-
-          // Check the response status before proceeding
-          if (studioDetailsData.status === 429) {
-            // Handle rate limiting error
-            console.error("Rate limiting error");
-            setLoading(false);
-            notifyRequestRate();
-            navigate("/details");
-            return;
-          }
-
-          if (studioDetailsData.status === 500) {
-            console.error(`API error: ${studioDetailsResponse.error}`);
-            setLoading(false);
-            notifyError500();
-            navigate("/details");
-            return;
-          }
-
-          setStudioDetails(studioDetailsData.data);
-
+        // ids now come from the URL, so they can be invalid
+        if (
+          studioDetailsResponse.status === 404 ||
+          studioDetailsResponse.status === 400
+        ) {
           setLoading(false);
-        } catch (error) {
-          console.log(error);
-          setLoading(false);
-          notifyErrorGeneral();
-          navigate("/details");
+          setNotFound(true);
           return;
         }
+
+        const [studioDetailsData] = await Promise.all([
+          studioDetailsResponse.json(),
+        ]);
+
+        // Check the response status before proceeding
+        if (studioDetailsData.status === 429) {
+          // Handle rate limiting error
+          console.error("Rate limiting error");
+          setLoading(false);
+          notifyRequestRate();
+          goBackOrHome(navigate, location);
+          return;
+        }
+
+        if (studioDetailsData.status === 500) {
+          console.error(`API error: ${studioDetailsResponse.error}`);
+          setLoading(false);
+          notifyError500();
+          goBackOrHome(navigate, location);
+          return;
+        }
+
+        setStudioDetails(studioDetailsData.data);
+
+        setLoading(false);
+      } catch (error) {
+        console.log(error);
+        setLoading(false);
+        notifyErrorGeneral();
+        goBackOrHome(navigate, location);
+        return;
       }
     }
 
-    if (typeof studioId !== "undefined" && studioId !== null) {
-      fetchStudioData();
-    } else {
-      navigate("/");
-    }
+    fetchStudioData();
+    // location is only used for the error fallback and must not trigger a
+    // refetch when the filter/sort/page query params change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     studioId,
     navigate,
-    notifyError500,
-    notifyErrorGeneral,
-    notifyRequestRate,
-    studioName.length,
+    notify,
   ]);
 
-  const landingPageRoute = () => {
-    navigate("/");
-  };
+  if (notFound) {
+    return <ErrorPage isDarkMode={isDarkMode} />;
+  }
 
   return (
     <div className="row">
-      {/* check if details object contains data first otherwise there will be a race condition resulting in errors out the ass. That is to say, this will only run if details has been set fully */}
       {studioDetails && Object.keys(studioDetails).length > 0 && !loading ? (
         <>
           <div className="col-md-12" style={{ marginBottom: "20px" }}>
@@ -164,7 +146,7 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
                 className="fulldetails-container"
                 style={{
                   marginTop: "5%",
-                  color: `${isDarkMode ? "white" : "black"}`,
+                  color: `${isDarkMode ? "var(--d-ink)" : "black"}`,
                 }}
               >
                 <div className="details-container">
@@ -375,7 +357,7 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
                     id="members"
                     autoComplete="off"
                     //   checked={sortBy === "members"}
-                    onClick={() => handleSortChange("members")}
+                    onClick={(event) => handleSortChange(event, "members")}
                   >
                     Members
                   </a>
@@ -390,7 +372,7 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
                     id="score"
                     autoComplete="off"
                     //   checked={sortBy === "score"}
-                    onClick={() => handleSortChange("score")}
+                    onClick={(event) => handleSortChange(event, "score")}
                   >
                     Score
                   </a>
@@ -405,7 +387,7 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
                     id="title"
                     autoComplete="off"
                     //   checked={sortBy === "title"}
-                    onClick={() => handleSortChange("title")}
+                    onClick={(event) => handleSortChange(event, "title")}
                   >
                     Title
                   </a>
@@ -415,7 +397,7 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
           </div>
 
           <div style={{ marginTop: "5%" }}>
-            <ul className="image-gallery">
+            <div className="image-gallery">
               <StudioWorks
                 isDarkMode={isDarkMode}
                 allowNSFW={allowNSFW}
@@ -424,7 +406,7 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
                 selectedOption={selectedOption}
                 sortBy={sortBy}
               />
-            </ul>
+            </div>
           </div>
 
           <div className="row">
@@ -440,19 +422,6 @@ function StudioDetails({ isDarkMode, allowNSFW }) {
                 <small>
                   <i>"Members" refers to MAL members/users.</i>
                 </small>
-                <div style={{ display: "flex", flexDirection: "row" }}>
-                  <a
-                    id="returnBtn"
-                    href="#/"
-                    className={`${
-                      isDarkMode ? "btn btn-info mt-4" : "btn btn-dark mt-4"
-                    }`}
-                    style={{ borderRadius: "25px" }}
-                    onClick={() => landingPageRoute()}
-                  >
-                    Return to Lookup Page
-                  </a>
-                </div>
               </div>
             </div>
           </div>

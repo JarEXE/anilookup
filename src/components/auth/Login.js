@@ -1,7 +1,7 @@
 import React from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const Login = ({ isDarkMode, user }) => {
@@ -13,6 +13,9 @@ const Login = ({ isDarkMode, user }) => {
   const [password, setPassword] = React.useState("");
   const [passwordEmpty, setPasswordEmpty] = React.useState(false);
   const [passwordIncorrect, setPasswordIncorrect] = React.useState(false);
+  // set when this page performs the login, so the "Already logged in!" toast
+  // isn't shown right after the "Welcome" one
+  const justLoggedIn = React.useRef(false);
 
   const onLogin = async (event) => {
     event.preventDefault();
@@ -27,12 +30,13 @@ const Login = ({ isDarkMode, user }) => {
       await signInWithEmailAndPassword(auth, email, password)
         .then(async () => {
           // Signed in
+          justLoggedIn.current = true;
 
           toast.success(`Welcome, ${auth.currentUser.displayName}!`, {
             style: {
               borderRadius: "10px",
-              background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-              color: `${isDarkMode ? "#333" : "#fff"}`,
+              background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+              color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
             },
           });
         })
@@ -46,7 +50,10 @@ const Login = ({ isDarkMode, user }) => {
             setEmailInvalid(true);
             return;
           } else if (
-            errorMessage === "Firebase: Error (auth/wrong-password)."
+            errorMessage === "Firebase: Error (auth/wrong-password)." ||
+            // newer Firebase projects (email enumeration protection) report
+            // a wrong password / unknown email as this single code instead
+            errorMessage === "Firebase: Error (auth/invalid-credential)."
           ) {
             setPasswordIncorrect(true);
             return;
@@ -60,36 +67,42 @@ const Login = ({ isDarkMode, user }) => {
       icon: "⚠️",
       style: {
         borderRadius: "10px",
-        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-        color: `${isDarkMode ? "#333" : "#fff"}`,
+        background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+        color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
       },
     });
 
-  const registerRoute = () => {
-    navigate("/register");
-  };
-
-  const resetRoute = () => {
-    navigate("/reset");
-  };
-
   const inputError = {
-    border: `2px solid ${isDarkMode ? "#ffc107" : "red"}`,
+    border: `2px solid ${isDarkMode ? "var(--d-warning)" : "red"}`,
   };
 
+  // clear the error messages as soon as the user edits the field again
   React.useEffect(() => {
     setEmailEmpty(false);
     setEmailInvalid(false);
+    setEmailError(false);
   }, [email]);
 
   React.useEffect(() => {
     setPasswordEmpty(false);
+    setPasswordIncorrect(false);
   }, [password]);
 
+  // Redirect away once logged in. This used to run during render, which is a
+  // React anti-pattern (side effects on every re-render).
+  React.useEffect(() => {
+    if (user) {
+      if (!justLoggedIn.current) {
+        notifyLoggedIn();
+      }
+      // replace so Back doesn't land on /login and bounce straight back here
+      navigate("/", { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   if (user) {
-    notifyLoggedIn();
-    navigate("/");
-    return;
+    return null;
   } else {
     return (
       <div
@@ -100,7 +113,7 @@ const Login = ({ isDarkMode, user }) => {
         }}
       >
         <div
-          className={`card text-bg-${isDarkMode ? "secondary" : "light"}`}
+          className={`card ${isDarkMode ? "card--dark" : "text-bg-light"}`}
           style={{ boxShadow: "0px 0px 10px 5px rgba(0, 0, 0, 0.5)" }}
         >
           <div className="card-header">Login Details</div>
@@ -125,7 +138,7 @@ const Login = ({ isDarkMode, user }) => {
                 {emailError ? (
                   <div className="error-message">
                     <small
-                      style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                      style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                     >
                       A user with that email address does not exist!
                     </small>
@@ -133,7 +146,7 @@ const Login = ({ isDarkMode, user }) => {
                 ) : emailEmpty ? (
                   <div className="error-message">
                     <small
-                      style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                      style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                     >
                       Email cannot be empty!
                     </small>
@@ -141,7 +154,7 @@ const Login = ({ isDarkMode, user }) => {
                 ) : emailInvalid ? (
                   <div className="error-message">
                     <small
-                      style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                      style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                     >
                       Invalid email address!
                     </small>
@@ -166,7 +179,7 @@ const Login = ({ isDarkMode, user }) => {
                 {passwordEmpty ? (
                   <div className="error-message">
                     <small
-                      style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                      style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                     >
                       Password cannot be empty!
                     </small>
@@ -174,7 +187,7 @@ const Login = ({ isDarkMode, user }) => {
                 ) : passwordIncorrect ? (
                   <div className="error-message">
                     <small
-                      style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                      style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                     >
                       Password incorrect!
                     </small>
@@ -192,24 +205,10 @@ const Login = ({ isDarkMode, user }) => {
           <div className="card-footer text-body-secondary">
             <p className="text-sm text-center" style={{ marginBottom: "0" }}>
               No account yet?{" "}
-              <a
-                href="#/"
-                onClick={() => {
-                  registerRoute();
-                }}
-              >
-                Register!
-              </a>
+              <Link to="/register">Register!</Link>
             </p>
             <p className="text-sm text-center" style={{ marginBottom: "0" }}>
-              <a
-                href="/reset"
-                onClick={() => {
-                  resetRoute();
-                }}
-              >
-                Forgot Password?
-              </a>
+              <Link to="/reset">Forgot Password?</Link>
             </p>
           </div>
         </div>

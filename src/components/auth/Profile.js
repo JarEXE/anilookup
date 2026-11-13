@@ -63,8 +63,8 @@ const Profile = ({ isDarkMode, user }) => {
             toast.success("Profile updated!", {
               style: {
                 borderRadius: "10px",
-                background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-                color: `${isDarkMode ? "#333" : "#fff"}`,
+                background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+                color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
               },
             });
           })
@@ -80,8 +80,8 @@ const Profile = ({ isDarkMode, user }) => {
             toast.success("Profile updated!", {
               style: {
                 borderRadius: "10px",
-                background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-                color: `${isDarkMode ? "#333" : "#fff"}`,
+                background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+                color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
               },
             });
           })
@@ -107,7 +107,8 @@ const Profile = ({ isDarkMode, user }) => {
         setUsername(user.displayName);
         setLoading(false);
       } else {
-        navigate("/login");
+        // replace so Back doesn't return to /profile and bounce to login again
+        navigate("/login", { replace: true });
       }
     });
 
@@ -137,7 +138,7 @@ const Profile = ({ isDarkMode, user }) => {
   }, [password]);
 
   const inputError = {
-    border: `2px solid ${isDarkMode ? "#ffc107" : "red"}`,
+    border: `2px solid ${isDarkMode ? "var(--d-warning)" : "red"}`,
   };
 
   if (loading) {
@@ -169,7 +170,7 @@ const Profile = ({ isDarkMode, user }) => {
           </Alert>
         ) : null}
         <div
-          className={`card text-bg-${isDarkMode ? "secondary" : "light"}`}
+          className={`card ${isDarkMode ? "card--dark" : "text-bg-light"}`}
           style={{ boxShadow: "0px 0px 10px 5px rgba(0, 0, 0, 0.5)" }}
         >
           <div className="card-header">Edit Profile</div>
@@ -206,7 +207,7 @@ const Profile = ({ isDarkMode, user }) => {
                 {usernameEmpty ? (
                   <div className="error-message">
                     <small
-                      style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                      style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                     >
                       Username cannot be empty!
                     </small>
@@ -214,7 +215,7 @@ const Profile = ({ isDarkMode, user }) => {
                 ) : usernameLength ? (
                   <div className="error-message">
                     <small
-                      style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                      style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                     >
                       Username must be between 3 and 15 characters!
                     </small>
@@ -262,7 +263,7 @@ const Profile = ({ isDarkMode, user }) => {
                   {passwordEmpty ? (
                     <div className="error-message">
                       <small
-                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                        style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                       >
                         Password Cannot be empty!
                       </small>
@@ -270,7 +271,7 @@ const Profile = ({ isDarkMode, user }) => {
                   ) : passwordTooShort ? (
                     <div className="error-message">
                       <small
-                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                        style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                       >
                         Password cannot be less than 6 characters!
                       </small>
@@ -295,7 +296,7 @@ const Profile = ({ isDarkMode, user }) => {
                   {passwordMismatch && (
                     <div className="error-message">
                       <small
-                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                        style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                       >
                         Passwords do not match!
                       </small>

@@ -1,25 +1,21 @@
 import React, { lazy, Suspense } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigationType,
+} from "react-router-dom";
 import "./style.css";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import LoadingOverlay from "react-loading-overlay-ts";
-import Cards from "./components/anime/Cards";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Navbar from "./components/plugins/Navbar";
 import ScrollToBottomButton from "./components/plugins/ScrollToBottomButton";
 import MangaChapterList from "./components/manga/MangaChapterList";
 
-// import Register from "./components/auth/Register";
-// import Login from "./components/auth/Login";
-// import Reset from "./components/auth/Reset";
-// import Profile from "./components/auth/Profile";
-// import MangaSearch from "./components/manga/MangaSearch";
-// import Details from "./components/Details";
-// import StudioDetails from "./components/studios/StudioDetails";
-// import AuthorDetails from "./components/authors/AuthorDetails";
-// import Lists from "./components/lists/Lists";
-// import ErrorPage from "./components/ErrorPage";
-// import AnimeSearch from "./components/anime/AnimeSearch";
 const Register = lazy(() => import("./components/auth/Register"));
 const Login = lazy(() => import("./components/auth/Login"));
 const Reset = lazy(() => import("./components/auth/Reset"));
@@ -31,6 +27,44 @@ const AuthorDetails = lazy(() => import("./components/authors/AuthorDetails"));
 const Lists = lazy(() => import("./components/lists/Lists"));
 const ErrorPage = lazy(() => import("./components/ErrorPage"));
 const AnimeSearch = lazy(() => import("./components/anime/AnimeSearch"));
+const SearchResults = lazy(() => import("./components/search/SearchResults"));
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  const navigationType = useNavigationType();
+
+  React.useEffect(() => {
+    if (navigationType !== "POP") {
+      window.scrollTo(0, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  return null;
+}
+
+function RemountOnPathChange({ children }) {
+  const { pathname } = useLocation();
+  return <div key={pathname}>{children}</div>;
+}
+
+// MUI components (menus, lists, progress bars) follow the app's palette.
+// Mirrors the --d-* tokens in style.css; MUI needs real colour values for
+// its own calculations, so they're repeated here.
+const lightMuiTheme = createTheme();
+const darkMuiTheme = createTheme({
+  palette: {
+    mode: "dark",
+    primary: { main: "#5ec4dc", contrastText: "#0d1f24" },
+    background: { default: "#1d2024", paper: "#2e3238" },
+    text: { primary: "#e3e6ea", secondary: "#9aa2ab" },
+    divider: "#3b4047",
+  },
+  components: {
+    // MUI lightens dark paper with a gradient overlay; use the flat surface
+    MuiPaper: { styleOverrides: { root: { backgroundImage: "none" } } },
+  },
+});
 
 function App() {
   const sfwStatus = sessionStorage.getItem("sfw");
@@ -38,13 +72,14 @@ function App() {
   const [user, setUser] = React.useState(null);
   // darkmode will be enabled by default for first time visits or first time users. subsequent toggles will remain upon refresh
   const [isDarkMode, setIsDarkMode] = React.useState(
-    darkStatus == null || typeof darkStatus === "undefined" ? false : darkStatus
+    darkStatus == null || typeof darkStatus === "undefined"
+      ? false
+      : darkStatus,
   );
   const [backgroundBlurred, setBackgroundBlurred] = React.useState(false);
-  const [searchText, setSearchText] = React.useState("");
   const [allowNSFW, setAllowNSFW] = React.useState(
     // eslint-disable-next-line
-    sfwStatus == 1 ? true : false
+    sfwStatus == 1 ? true : false,
   );
 
   const bodyStyling = {
@@ -64,10 +99,6 @@ function App() {
     paddingTop: "0",
   };
 
-  const handleChange = (input) => {
-    setSearchText(input);
-  };
-
   const handleToggle = (input) => {
     setAllowNSFW(input);
   };
@@ -81,198 +112,256 @@ function App() {
   };
 
   React.useEffect(() => {
-    onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
       } else {
+        // clear it on logout too, so the UI doesn't keep showing a signed-in
+        // user until the page reloads
+        setUser(null);
         console.log("user is logged out");
       }
     });
+
+    return () => unsubscribe();
   }, []);
 
+  // browser UI colour (address bar on phones) follows the theme, including
+  // right after a reload (it used to only change when the switch was flipped)
+  React.useEffect(() => {
+    const meta = document.querySelector("meta[name=theme-color]");
+    if (meta) meta.setAttribute("content", isDarkMode ? "#1d2024" : "#ffffff");
+  }, [isDarkMode]);
+
   return (
-    <Router>
-      <div className={`App ${isDarkMode ? "dark" : ""}`}>
-        <Navbar
-          onToggle={handleToggle}
-          onDarkModeToggle={handleDarkModeToggle}
-          isDarkMode={isDarkMode}
-          handleBackgroundBlur={handleBackgroundBlur}
-        />
+    <ThemeProvider theme={isDarkMode ? darkMuiTheme : lightMuiTheme}>
+      <Router>
+        <ScrollToTop />
         <div
-          className="row"
-          style={backgroundBlurred ? bodyStylingBlurred : bodyStyling}
+          className={`App ${isDarkMode ? "dark" : ""}`}
+          data-bs-theme={isDarkMode ? "dark" : "light"}
         >
-          <Suspense
-            fallback={
-              <div
-                style={{
-                  position: "fixed",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  background: "rgba(0, 0, 0, 0.75)",
-                  zIndex: "999",
-                }}
-              >
-                <LoadingOverlay
-                  active={true}
-                  spinner={<span className="overlay_loader"></span>}
-                ></LoadingOverlay>
-              </div>
-            }
+          <Navbar
+            onToggle={handleToggle}
+            onDarkModeToggle={handleDarkModeToggle}
+            isDarkMode={isDarkMode}
+            handleBackgroundBlur={handleBackgroundBlur}
+          />
+          <div
+            className="row"
+            style={backgroundBlurred ? bodyStylingBlurred : bodyStyling}
           >
-            <Routes>
-              <Route
-                exact
-                path="/"
-                element={
-                  <div>
-                    <AnimeSearch
-                      onInputChange={handleChange}
-                      isDarkMode={isDarkMode}
-                      allowNSFW={allowNSFW}
-                      user={user}
-                    />
-                    <ScrollToBottomButton isDarkMode={isDarkMode} />
-                  </div>
-                }
-              />
-              <Route
-                path="/register"
-                element={
-                  <div>
-                    <Register isDarkMode={isDarkMode} user={user} />
-                  </div>
-                }
-              />
-              <Route
-                path="/login"
-                element={
-                  <div>
-                    <Login isDarkMode={isDarkMode} user={user} />
-                  </div>
-                }
-              />
-              <Route
-                path="/reset"
-                element={
-                  <div>
-                    <Reset isDarkMode={isDarkMode} user={user} />
-                  </div>
-                }
-              />
-              <Route
-                path="/profile"
-                element={<Profile isDarkMode={isDarkMode} user={user} />}
-              />
-              <Route
-                exact
-                path="/mangalookup"
-                element={
-                  <div>
-                    <MangaSearch
-                      onInputChange={handleChange}
-                      isDarkMode={isDarkMode}
-                      allowNSFW={allowNSFW}
-                      user={user}
-                    />
-                    <ScrollToBottomButton isDarkMode={isDarkMode} />
-                  </div>
-                }
-              />
-              <Route
-                path="/search"
-                element={
-                  <div>
-                    <Cards
-                      searchText={searchText}
-                      allowNSFW={allowNSFW}
-                      isDarkMode={isDarkMode}
-                    />
-                    <ScrollToBottomButton isDarkMode={isDarkMode} />
-                  </div>
-                }
-              />
-              <Route
-                path="/mangasearch"
-                element={
-                  <div>
-                    <Cards
-                      searchText={searchText}
-                      allowNSFW={allowNSFW}
-                      isDarkMode={isDarkMode}
-                    />
-                    <ScrollToBottomButton isDarkMode={isDarkMode} />
-                  </div>
-                }
-              />
-              <Route
-                path="/read"
-                element={
-                  <div>
-                    <MangaChapterList
-                      isDarkMode={isDarkMode}
-                      allowNSFW={allowNSFW}
-                      user={user}
-                    />
-                    <ScrollToBottomButton isDarkMode={isDarkMode} />
-                  </div>
-                }
-              />
-              <Route
-                path="/details"
-                element={
-                  <div>
-                    <Details
-                      isDarkMode={isDarkMode}
-                      allowNSFW={allowNSFW}
-                      user={user}
-                    />
-                    <ScrollToBottomButton isDarkMode={isDarkMode} />
-                  </div>
-                }
-              />
-              <Route
-                path="/studiodetails"
-                element={
-                  <div>
-                    <StudioDetails
-                      isDarkMode={isDarkMode}
-                      allowNSFW={allowNSFW}
-                    />
-                    <ScrollToBottomButton isDarkMode={isDarkMode} />
-                  </div>
-                }
-              />
-              <Route
-                path="/authordetails"
-                element={
-                  <div>
-                    <AuthorDetails
-                      isDarkMode={isDarkMode}
-                      allowNSFW={allowNSFW}
-                    />
-                    <ScrollToBottomButton isDarkMode={isDarkMode} />
-                  </div>
-                }
-              />
-              <Route
-                path="/lists"
-                element={
-                  <div>
-                    <Lists isDarkMode={isDarkMode} user={user} />
-                    <ScrollToBottomButton isDarkMode={isDarkMode} />
-                  </div>
-                }
-              />
-              <Route path="*" element={<ErrorPage isDarkMode={isDarkMode} />} />
-            </Routes>
-          </Suspense>
+            <Suspense
+              fallback={
+                <div
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    background: "rgba(0, 0, 0, 0.75)",
+                    zIndex: "999",
+                  }}
+                >
+                  <LoadingOverlay
+                    active={true}
+                    spinner={<span className="overlay_loader"></span>}
+                  ></LoadingOverlay>
+                </div>
+              }
+            >
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <div>
+                      <AnimeSearch
+                        isDarkMode={isDarkMode}
+                        allowNSFW={allowNSFW}
+                        user={user}
+                      />
+                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                    </div>
+                  }
+                />
+                <Route path="/anime" element={<Navigate to="/" replace />} />
+                <Route
+                  path="/anime/search"
+                  element={
+                    <div>
+                      <SearchResults
+                        type="anime"
+                        allowNSFW={allowNSFW}
+                        isDarkMode={isDarkMode}
+                      />
+                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                    </div>
+                  }
+                />
+                <Route
+                  path="/anime/:id"
+                  element={
+                    <RemountOnPathChange>
+                      <Details
+                        type="anime"
+                        isDarkMode={isDarkMode}
+                        allowNSFW={allowNSFW}
+                        user={user}
+                      />
+                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                    </RemountOnPathChange>
+                  }
+                />
+
+                <Route
+                  path="/manga"
+                  element={
+                    <div>
+                      <MangaSearch
+                        isDarkMode={isDarkMode}
+                        allowNSFW={allowNSFW}
+                        user={user}
+                      />
+                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                    </div>
+                  }
+                />
+                <Route
+                  path="/manga/search"
+                  element={
+                    <div>
+                      <SearchResults
+                        type="manga"
+                        allowNSFW={allowNSFW}
+                        isDarkMode={isDarkMode}
+                      />
+                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                    </div>
+                  }
+                />
+                <Route
+                  path="/manga/:id"
+                  element={
+                    <RemountOnPathChange>
+                      <Details
+                        type="manga"
+                        isDarkMode={isDarkMode}
+                        allowNSFW={allowNSFW}
+                        user={user}
+                      />
+                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                    </RemountOnPathChange>
+                  }
+                />
+
+                {["/manga/:id/read", "/manga/:id/read/:chapterId"].map((path) => (
+                  <Route
+                    key={path}
+                    path={path}
+                    element={
+                      <div>
+                        <MangaChapterList
+                          isDarkMode={isDarkMode}
+                          allowNSFW={allowNSFW}
+                          user={user}
+                        />
+                        <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      </div>
+                    }
+                  />
+                ))}
+
+                <Route
+                  path="/studio/:id"
+                  element={
+                    <RemountOnPathChange>
+                      <StudioDetails
+                        isDarkMode={isDarkMode}
+                        allowNSFW={allowNSFW}
+                      />
+                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                    </RemountOnPathChange>
+                  }
+                />
+                <Route
+                  path="/author/:id"
+                  element={
+                    <RemountOnPathChange>
+                      <AuthorDetails
+                        isDarkMode={isDarkMode}
+                        allowNSFW={allowNSFW}
+                      />
+                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                    </RemountOnPathChange>
+                  }
+                />
+
+                <Route
+                  path="/register"
+                  element={
+                    <div>
+                      <Register isDarkMode={isDarkMode} user={user} />
+                    </div>
+                  }
+                />
+                <Route
+                  path="/login"
+                  element={
+                    <div>
+                      <Login isDarkMode={isDarkMode} user={user} />
+                    </div>
+                  }
+                />
+                <Route
+                  path="/reset"
+                  element={
+                    <div>
+                      <Reset isDarkMode={isDarkMode} user={user} />
+                    </div>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={<Profile isDarkMode={isDarkMode} user={user} />}
+                />
+                <Route
+                  path="/lists"
+                  element={
+                    <div>
+                      <Lists isDarkMode={isDarkMode} user={user} />
+                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                    </div>
+                  }
+                />
+
+                <Route
+                  path="/mangalookup"
+                  element={<Navigate to="/manga" replace />}
+                />
+                <Route
+                  path="/mangasearch"
+                  element={<Navigate to="/manga" replace />}
+                />
+                <Route path="/search" element={<Navigate to="/" replace />} />
+                <Route path="/details" element={<Navigate to="/" replace />} />
+                <Route
+                  path="/studiodetails"
+                  element={<Navigate to="/" replace />}
+                />
+                <Route
+                  path="/authordetails"
+                  element={<Navigate to="/" replace />}
+                />
+                <Route path="/read" element={<Navigate to="/" replace />} />
+
+                <Route path="*" element={<ErrorPage isDarkMode={isDarkMode} />} />
+              </Routes>
+            </Suspense>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
 }
 

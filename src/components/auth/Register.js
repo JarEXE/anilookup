@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import {
   collection,
@@ -121,11 +121,11 @@ const Register = ({ isDarkMode, user }) => {
           toast.success("Successfully Registered!", {
             style: {
               borderRadius: "10px",
-              background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-              color: `${isDarkMode ? "#333" : "#fff"}`,
+              background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+              color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
             },
           });
-          navigate("/");
+          navigate("/", { replace: true });
         })
         .catch((error) => {
           console.log(error);
@@ -144,18 +144,20 @@ const Register = ({ isDarkMode, user }) => {
     }
   };
 
-  const loginRoute = () => {
-    navigate("/login");
-  };
-
-  const homeRoute = () => {
-    setTimeout(() => {
-      navigate("/");
+  // Already logged in: show the spinner briefly, then go home. This used to be
+  // started from inside render, which queued a new timer on every re-render.
+  React.useEffect(() => {
+    if (!user) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      navigate("/", { replace: true });
     }, 2000);
-  };
+    return () => clearTimeout(timer);
+  }, [user, navigate]);
 
   const inputError = {
-    border: `2px solid ${isDarkMode ? "#ffc107" : "red"}`,
+    border: `2px solid ${isDarkMode ? "var(--d-warning)" : "red"}`,
   };
 
   return (
@@ -169,7 +171,7 @@ const Register = ({ isDarkMode, user }) => {
           }}
         >
           <div
-            className={`card text-bg-${isDarkMode ? "secondary" : "light"}`}
+            className={`card ${isDarkMode ? "card--dark" : "text-bg-light"}`}
             style={{ boxShadow: "0px 0px 10px 5px rgba(0, 0, 0, 0.5)" }}
           >
             <div className="card-header">Registration Form</div>
@@ -193,7 +195,7 @@ const Register = ({ isDarkMode, user }) => {
                   {emailEmpty ? (
                     <div className="error-message">
                       <small
-                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                        style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                       >
                         Email cannot be empty!
                       </small>
@@ -201,7 +203,7 @@ const Register = ({ isDarkMode, user }) => {
                   ) : emailError ? (
                     <div className="error-message">
                       <small
-                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                        style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                       >
                         Email invalid!
                       </small>
@@ -209,7 +211,7 @@ const Register = ({ isDarkMode, user }) => {
                   ) : emailTaken ? (
                     <div className="error-message">
                       <small
-                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                        style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                       >
                         An account with that email address is already
                         registered!
@@ -239,7 +241,7 @@ const Register = ({ isDarkMode, user }) => {
                   {usernameEmpty ? (
                     <div className="error-message">
                       <small
-                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                        style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                       >
                         Username cannot be empty!
                       </small>
@@ -247,7 +249,7 @@ const Register = ({ isDarkMode, user }) => {
                   ) : usernameLength ? (
                     <div className="error-message">
                       <small
-                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                        style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                       >
                         Username must be between 3 and 15 characters!
                       </small>
@@ -255,7 +257,7 @@ const Register = ({ isDarkMode, user }) => {
                   ) : usernameTaken ? (
                     <div className="error-message">
                       <small
-                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                        style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                       >
                         Username is Already taken!
                       </small>
@@ -282,7 +284,7 @@ const Register = ({ isDarkMode, user }) => {
                   {passwordEmpty ? (
                     <div className="error-message">
                       <small
-                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                        style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                       >
                         Password Cannot be empty!
                       </small>
@@ -290,7 +292,7 @@ const Register = ({ isDarkMode, user }) => {
                   ) : passwordTooShort ? (
                     <div className="error-message">
                       <small
-                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                        style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                       >
                         Password cannot be less than 6 characters!
                       </small>
@@ -315,7 +317,7 @@ const Register = ({ isDarkMode, user }) => {
                   {passwordMismatch && (
                     <div className="error-message">
                       <small
-                        style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                        style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                       >
                         Passwords do not match!
                       </small>
@@ -335,15 +337,12 @@ const Register = ({ isDarkMode, user }) => {
             <div className="card-footer text-body-secondary">
               <p className="text-sm text-center" style={{ marginBottom: "0" }}>
                 Already have an account?{" "}
-                <a
-                  href="#/"
-                  style={{ color: `${isDarkMode ? "#17a2b8" : null}` }}
-                  onClick={() => {
-                    loginRoute();
-                  }}
+                <Link
+                  to="/login"
+                  style={{ color: `${isDarkMode ? "var(--d-accent)" : null}` }}
                 >
                   Sign in
-                </a>
+                </Link>
               </p>
             </div>
           </div>
@@ -360,7 +359,6 @@ const Register = ({ isDarkMode, user }) => {
           >
             <span className="loader"></span>
           </div>
-          {homeRoute()}
         </>
       )}
     </>

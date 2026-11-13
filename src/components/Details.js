@@ -1,855 +1,265 @@
-import React, { useCallback } from "react";
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
-import { useNavigate } from "react-router-dom";
-import AnimatedProgressProvider from "./plugins/AnimatedProgressProvider";
-import { easeQuadInOut } from "d3-ease";
-import "react-circular-progressbar/dist/styles.css";
-import mal from "../images/mal.png";
-import "../../src/style.css";
-import YouTubeEmbed from "./plugins/YoutubeEmbed";
-import Favicon from "./plugins/Favicon";
-import toast from "react-hot-toast";
-import ListAddButton from "./plugins/ListAddButton";
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBookOpen } from "@fortawesome/free-solid-svg-icons";
 import dateFormat from "dateformat";
-import { Button } from "@mui/material";
-import { Book } from "@mui/icons-material";
-import Collapsible from "react-collapsible";
-import { API_URL } from "../config/api";
+import ListAddButton from "./plugins/ListAddButton";
+import { API_URL, apiFetch } from "../config/api";
+import useNotify from "../hooks/useNotify";
+import useUrlParams from "../hooks/useUrlParams";
+import LoadError from "./plugins/LoadError";
+import { fetchKitsuCover } from "../utils/kitsu";
+import ErrorPage from "./ErrorPage";
+import NsfwRedirect from "./plugins/NsfwRedirect";
+import { isNsfw } from "../utils/nsfw";
+import DetailsHeader from "./details/DetailsHeader";
+import DetailsTabs from "./details/DetailsTabs";
+import OverviewTab from "./details/OverviewTab";
+import StatsTab from "./details/StatsTab";
+import CharactersTab from "./details/CharactersTab";
+import EpisodesTab from "./details/EpisodesTab";
+import RelatedTab from "./details/RelatedTab";
+import Recommendations from "./details/Recommendations";
 
-const apiUrl = process.env.API_BASE_URL;
+const MANGADEX_URL = "https://api.mangadex.org";
 
-console.log(apiUrl);
+const tabsFor = (type) => [
+  { key: "overview", label: "Overview" },
+  { key: "stats", label: "Stats" },
+  { key: "characters", label: "Characters" },
+  ...(type === "anime" ? [{ key: "episodes", label: "Episodes" }] : []),
+  { key: "related", label: "Related" },
+];
 
-function Details({ isDarkMode }) {
-  const getKitsuCover = sessionStorage.getItem("kitsuCover");
-  const getAnimeOrMangaId = sessionStorage.getItem("itemId");
-
-  const [kitsuCover] = React.useState(getKitsuCover);
-  const [itemId] = React.useState(getAnimeOrMangaId);
-  const [details, setDetails] = React.useState({});
-  const [recommendations, setRecommendations] = React.useState({});
-  const [recommendationsFetched, setRecommendationsFetched] =
-    React.useState(false);
-  const [loading, setLoading] = React.useState(false);
-  const [backgroundBlur, setBackgroundBlur] = React.useState({});
-  const [streamingSitesSection, setStreamingSitesSection] =
-    React.useState(null);
-  const [itemType, setItemType] = React.useState("");
-  const [authors, setAuthors] = React.useState(null);
-  const [loadingChapters, setLoadingChapters] = React.useState(false);
-  const [mangaDexMangaID, setMangaDexMangaID] = React.useState(null);
-
-  const notifyRequestRate = useCallback(
-    function notifyRequestRate() {
-      toast("Too many requests! Please wait a moment then try again.", {
-        icon: "⚠️",
-        style: {
-          borderRadius: "10px",
-          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-          color: `${isDarkMode ? "#333" : "#fff"}`,
-        },
-      });
-    },
-    [isDarkMode],
-  );
-
-  const notifyError = useCallback(
-    function notifyError(error) {
-      toast(error, {
-        icon: "⚠️",
-        style: {
-          borderRadius: "10px",
-          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-          color: `${isDarkMode ? "#333" : "#fff"}`,
-        },
-      });
-    },
-    [isDarkMode],
-  );
-
-  // Define a function to fetch author details and positions
-  const fetchAuthorDetailsAndPositions = async () => {
-    let authorsArray = [];
-
-    if (typeof details.authors !== "undefined") {
-      for (const author of details.authors) {
-        try {
-          const authorsResponse = await fetch(
-            `${API_URL}/people/${author.mal_id}/full`,
-          );
-          const authorsData = await authorsResponse.json();
-
-          if (authorsData) {
-            const targetMalId = details.mal_id;
-            const mangaArray = authorsData.data.manga;
-
-            // Function to find the position that comes before the manga key by matching the target mal_id
-            function findPositionByMalId(targetMalId) {
-              for (let i = 0; i < mangaArray.length; i++) {
-                if (mangaArray[i].manga.mal_id === targetMalId) {
-                  if (i > -1) {
-                    return mangaArray[i].position;
-                  }
-                  // If the first object matches, there's no position before it
-                  return null;
-                }
-              }
-              // Return null if the target mal_id is not found
-              return null;
-            }
-
-            // Call the function to find the position
-            const position = findPositionByMalId(targetMalId);
-
-            if (position !== null) {
-              authorsArray.push({
-                authorId: authorsData.data.mal_id,
-                position: position,
-              });
-            } else {
-              console.log(`Manga ID ${targetMalId} not found in the array.`);
-            }
-          }
-        } catch (error) {
-          console.log(error);
-          return;
-        }
-      }
-    }
-
-    // Set the authors array in the state
-    setAuthors(authorsArray);
-  };
-
-  const fetchRecommendations = useCallback(
-    async function fetchRecommendations() {
-      if (recommendations.length > 0) {
-        return;
-      } else {
-        try {
-          // Fetch both details and relations data concurrently
-          const [recommendationsResponse] = await Promise.all([
-            fetch(`${API_URL}${itemId}/recommendations`),
-          ]);
-
-          const [recommendationsData] = await Promise.all([
-            recommendationsResponse.json(),
-          ]);
-
-          setRecommendations(recommendationsData.data);
-
-          setRecommendationsFetched(true);
-        } catch (error) {
-          console.log(error);
-          notifyError(`Failed to fetch recommendations: ${error}`);
-          return;
-        }
-      }
-    },
-    [itemId, notifyError, recommendations.length],
-  );
-
-  const getMangaIdByName = async (title) => {
-    setLoadingChapters(true);
-    const baseUrl = "https://api.mangadex.org";
-
+// Each manga author's role on this manga ("Story & Art", ...), which only the
+// author's own page lists.
+async function fetchAuthorPositions(details) {
+  const positions = [];
+  for (const author of details.authors || []) {
     try {
-      const response = await fetch("/.netlify/functions/manga-proxy", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: baseUrl,
-          title: title,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch Manga ID");
-      }
-
-      const data = await response.json();
-      console.log(typeof data);
-      console.log(data);
-
-      setMangaDexMangaID(data);
-      setLoadingChapters(false);
+      const response = await apiFetch(`${API_URL}/people/${author.mal_id}/full`);
+      const json = await response.json();
+      const entry = json && json.data && (json.data.manga || []).find(
+        (item) => item.manga.mal_id === details.mal_id,
+      );
+      if (entry) positions.push({ authorId: author.mal_id, position: entry.position });
     } catch (error) {
-      console.log("Invalid URL:", error);
-      setLoadingChapters(false);
-      return null;
+      // one failing author shouldn't drop the others
+      console.log(error);
     }
-  };
+  }
+  return positions;
+}
 
-  const getMangaChapters = async () => {
-    setLoadingChapters(true);
-    const baseUrl = "https://api.mangadex.org";
-
-    try {
-      const response = await fetch("/.netlify/functions/mangachapters-proxy", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: baseUrl,
-          mangaID: mangaDexMangaID,
-          mangaImage: details.images.jpg.large_image_url,
-          mangaTitle: details.title,
-        }),
-      });
-
-      console.log(response);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch Manga Chapters");
-      }
-
-      const data = await response.json();
-
-      sessionStorage.setItem("mangachapters", JSON.stringify(data));
-    } catch (error) {
-      console.log("Invalid URL:", error);
-      return null;
-    }
-
-    if (
-      sessionStorage.getItem("mangachapters") !== "" ||
-      sessionStorage.getItem("mangachapters") !== null
-    ) {
-      setLoadingChapters(false);
-      window.location.href = "/read";
-    } else {
-      setLoadingChapters(false);
-      alert("Failed to fetch manga chapters!");
-      return;
-    }
-  };
-
+// Rendered at /anime/:id and /manga/:id (?tab=overview|stats|characters|
+// episodes|related). Everything comes from the URL, so it works on direct
+// visits, refreshes and back/forward.
+function Details({ isDarkMode, type, allowNSFW }) {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const itemId = `/${type}/${id}`;
+  const notify = useNotify(isDarkMode);
 
+  const [details, setDetails] = React.useState(null);
+  const [kitsuCover, setKitsuCover] = React.useState("");
+  const [loading, setLoading] = React.useState(true);
+  const [notFound, setNotFound] = React.useState(false);
+  const [loadError, setLoadError] = React.useState(false);
+  const [reloadKey, setReloadKey] = React.useState(0);
+  const [authorPositions, setAuthorPositions] = React.useState(null);
+  const [mangaDexId, setMangaDexId] = React.useState(null);
+  const [checkingMangaDex, setCheckingMangaDex] = React.useState(false);
+
+  const tabs = tabsFor(type);
+  const [{ tab: tabParam }, updateUrlParams] = useUrlParams({ tab: "overview" });
+  const activeTab = tabs.some((t) => t.key === tabParam) ? tabParam : "overview";
+
+  // details + Kitsu banner
   React.useEffect(() => {
-    async function fetchData() {
-      if (itemId === null) {
-        navigate("/");
-      } else {
-        try {
-          setLoading(true);
-          const [detailsResponse] = await Promise.all([
-            fetch(`${API_URL}${itemId}/full`),
-          ]);
+    let cancelled = false;
 
-          // Check the response status before proceeding
-          if (detailsResponse.status === 429) {
-            // Handle rate limiting error
-            console.error("Rate limiting error");
-            setLoading(false);
-            notifyRequestRate();
-            return;
-          }
+    (async () => {
+      try {
+        setLoading(true);
+        setLoadError(false);
+        // retries automatically while rate limited
+        const response = await apiFetch(`${API_URL}${itemId}/full`);
+        if (cancelled) return;
 
-          const [detailsData] = await Promise.all([detailsResponse.json()]);
-
-          setDetails(detailsData.data);
-
+        if (response.status === 404 || response.status === 400) {
+          setNotFound(true);
           setLoading(false);
-        } catch (error) {
-          console.log(error);
-          setLoading(false);
-          notifyRequestRate();
           return;
         }
+        if (response.status === 429) {
+          setLoadError(true);
+          setLoading(false);
+          notify("Too many requests! Please wait a moment then try again.");
+          return;
+        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const json = await response.json();
+        const cover = await fetchKitsuCover(type, json.data.title);
+        if (cancelled) return;
+
+        setKitsuCover(cover);
+        setDetails(json.data);
+        setLoading(false);
+      } catch (error) {
+        if (cancelled) return;
+        console.log(error);
+        setLoadError(true);
+        setLoading(false);
+        notify("Failed to load this page. Please try again.");
       }
-    }
+    })();
 
-    if (typeof itemId !== "undefined" && itemId !== null) {
-      fetchData();
-    } else {
-      navigate("/");
-    }
-  }, [itemId, navigate, notifyRequestRate]);
+    return () => {
+      cancelled = true;
+    };
+  }, [itemId, type, notify, reloadKey]);
 
+  // manga only: author roles, and whether MangaDex has it (for "Read")
   React.useEffect(() => {
-    if (Object.keys(details).length > 0) {
-      setBackgroundBlur({
-        backgroundImage: `url("${
-          kitsuCover.length > 0
-            ? kitsuCover
-            : details.images.jpg.large_image_url
-        }")`,
-        width: `${kitsuCover.length > 0 ? "100vw" : "100vw"}`,
-        marginLeft: `${
-          kitsuCover.length > 0 ? "calc(50% - 50vw)" : "calc(50% - 50vw)"
-        }`,
-        backgroundSize: "cover",
-        backgroundPosition: `${kitsuCover.length > 0 ? "" : "center"}`,
-        marginBottom: "20px",
-        boxShadow: `${
-          kitsuCover.length > 0
-            ? "0px 0px 10px 5px rgba(0, 0, 0, 0.5)"
-            : " inset 0 0 0 2000px rgba(28, 28, 28, 0.75)"
-        }`,
-        filter: `${kitsuCover.length > 0 ? "" : "blur(5px)"}`,
-      });
+    if (!details || type !== "manga") return;
+    // about to be redirected away; skip the lookups
+    if (!allowNSFW && isNsfw(details, type)) return;
+    let cancelled = false;
 
-      // anime or manga check
-      if (
-        details.type === "TV" ||
-        details.type === "Special" ||
-        details.type === "ONA" ||
-        details.type === "OVA" ||
-        details.type === "Movie" ||
-        details.type === "Music"
-      ) {
-        setItemType("anime");
-        setStreamingSitesSection(true);
-      } else {
-        setItemType("manga");
-        fetchAuthorDetailsAndPositions();
-        setStreamingSitesSection(false);
-        getMangaIdByName(details.title);
-      }
-    }
-    // eslint-disable-next-line
-  }, [details]);
-
-  const getColor = (score) => {
-    if (score >= 7.5) {
-      return "#00A300"; // Green for high scores
-    } else if (score >= 5.0) {
-      return "#FFA500"; // Yellow for moderate scores
-    } else {
-      return "#FF0000"; // Red for low scores
-    }
-  };
-
-  const newDetails = async (navInfo, navTitle, itemType) => {
-    let kitsuData;
-    setLoading(true);
-    console.log(itemType);
-
-    await fetch(
-      `https://kitsu.io/api/edge/${itemType}?filter[text]=${navTitle}&page[limit]=${
-        itemType === "anime" ? "5" : "1"
-      }`,
-    ).then(async (response) => {
-      kitsuData = await response.json();
+    fetchAuthorPositions(details).then((positions) => {
+      if (!cancelled) setAuthorPositions(positions);
     });
 
-    if (itemType === "anime") {
-      const matchingItem = kitsuData.data.find(
-        (item) =>
-          item.attributes.canonicalTitle === navTitle ||
-          item.attributes.abbreviatedTitles.includes(navTitle) ||
-          item.attributes.titles.en === navTitle ||
-          item.attributes.titles.en_jp === navTitle ||
-          item.attributes.titles.ja_jp === navTitle,
-      );
+    setCheckingMangaDex(true);
+    fetch("/.netlify/functions/manga-proxy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: MANGADEX_URL, title: details.title }),
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch Manga ID");
+        return response.json();
+      })
+      .then((mangaId) => {
+        if (!cancelled) setMangaDexId(mangaId);
+      })
+      .catch((error) => console.log("MangaDex lookup:", error))
+      .finally(() => {
+        if (!cancelled) setCheckingMangaDex(false);
+      });
 
-      if (matchingItem) {
-        const coverImage = matchingItem.attributes.coverImage
-          ? matchingItem.attributes.coverImage.original
-          : "";
-        sessionStorage.setItem("kitsuCover", coverImage);
-        sessionStorage.setItem("itemId", navInfo);
-        window.location.href = "/details";
-      } else {
-        sessionStorage.setItem("kitsuCover", "");
-        sessionStorage.setItem("itemId", navInfo);
-        window.location.href = "/details";
-      }
-    } else {
-      console.log(kitsuData.data[0].attributes);
-      if (kitsuData.data[0].attributes.coverImage != null) {
-        sessionStorage.setItem(
-          "kitsuCover",
-          `${kitsuData.data[0].attributes.coverImage.original}`,
-        );
-        sessionStorage.setItem("itemId", navInfo);
-        window.location.href = "/details";
-      } else {
-        sessionStorage.setItem("kitsuCover", "");
-        sessionStorage.setItem("itemId", navInfo);
-        window.location.href = "/details";
-      }
-    }
+    return () => {
+      cancelled = true;
+    };
+  }, [details, type, allowNSFW]);
+
+  const openReader = () => {
+    navigate(`/manga/${id}/read`, {
+      state: {
+        mangaDexId,
+        title: details.title,
+        image: details.images.jpg.large_image_url,
+      },
+    });
   };
 
-  const studioInfo = async (studioId, studioName) => {
-    try {
-      sessionStorage.setItem("studioId", studioId);
+  if (notFound) {
+    return <ErrorPage isDarkMode={isDarkMode} />;
+  }
 
-      sessionStorage.setItem("studioName", studioName);
+  if (loadError) {
+    return (
+      <LoadError
+        isDarkMode={isDarkMode}
+        message="Couldn't load this page right now."
+        onRetry={() => setReloadKey((key) => key + 1)}
+        minHeight="80vh"
+      />
+    );
+  }
 
-      const storeStudioId = sessionStorage.getItem("studioId");
-      const storeStudioName = sessionStorage.getItem("studioName");
+  if (loading || !details) {
+    return (
+      <div className="details-loading" role="status" aria-busy="true">
+        <span className="loader" />
+        <span className="visually-hidden">Loading…</span>
+      </div>
+    );
+  }
 
-      if (storeStudioId && storeStudioName) {
-        navigate("/studiodetails");
-      }
-    } catch (error) {
-      console.log(error);
-      return;
-    }
-  };
+  // NSFW content is off: opened from the address bar or history, or the
+  // toggle was just switched off while on this page
+  if (!allowNSFW && isNsfw(details, type)) {
+    return <NsfwRedirect type={type} isDarkMode={isDarkMode} />;
+  }
 
-  const authorInfo = async (authorId, authorName) => {
-    try {
-      sessionStorage.setItem("authorId", authorId);
+  const actions = (
+    <>
+      <ListAddButton
+        isDarkMode={isDarkMode}
+        itemType={type}
+        itemId={itemId}
+        title={details.title}
+        type={details.type}
+        image={details.images.jpg.image_url}
+        released={
+          details.aired
+            ? details.aired.from
+            : details.published
+              ? details.published.from
+              : "?"
+        }
+        date={dateFormat(new Date(), "isoDateTime")}
+      />
+      {type === "manga" && (mangaDexId || checkingMangaDex) ? (
+        <button
+          type="button"
+          className="details-action"
+          onClick={openReader}
+          disabled={!mangaDexId}
+          aria-busy={checkingMangaDex}
+        >
+          <FontAwesomeIcon icon={faBookOpen} aria-hidden="true" />
+          {checkingMangaDex ? "Checking…" : "Read"}
+        </button>
+      ) : null}
+    </>
+  );
 
-      sessionStorage.setItem("authorName", authorName);
-
-      const storeAuthorId = sessionStorage.getItem("authorId");
-      const storeAuthorName = sessionStorage.getItem("authorName");
-
-      if (storeAuthorId && storeAuthorName) {
-        navigate("/authordetails");
-      }
-    } catch (error) {
-      console.log(error);
-      return;
-    }
-  };
-
-  const landingPageRoute = () => {
-    navigate("/");
-  };
-
-  // Apply 'dark-mode' class conditionally based on the darkMode state
-  const listGroupClass = `list-group${isDarkMode ? " dark-mode" : ""}`;
-  const blurDetailsClass = `blur-details${isDarkMode ? " dark-mode" : ""}`;
+  let panel;
+  if (activeTab === "stats") {
+    panel = <StatsTab details={details} type={type} isDarkMode={isDarkMode} />;
+  } else if (activeTab === "characters") {
+    panel = <CharactersTab details={details} type={type} isDarkMode={isDarkMode} />;
+  } else if (activeTab === "episodes") {
+    panel = <EpisodesTab details={details} isDarkMode={isDarkMode} />;
+  } else if (activeTab === "related") {
+    panel = <RelatedTab details={details} allowNSFW={allowNSFW} />;
+  } else {
+    panel = (
+      <OverviewTab details={details} type={type} authorPositions={authorPositions} />
+    );
+  }
 
   return (
-    <div className="row">
-      {Object.keys(details).length > 0 && !loading ? (
-        <>
-          <div
-            className="col-md-12"
-            style={{
-              marginBottom: "20px",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div style={backgroundBlur}>
-              <div className="blur-container">
-                <div
-                  className={`${
-                    isDarkMode
-                      ? "pseudo-blur-banner-dark"
-                      : "pseudo-blur-banner"
-                  }`}
-                ></div>
-              </div>
-            </div>
-            <div className={blurDetailsClass}>
-              <img
-                id="thumbnail-img"
-                src={details.images.jpg.large_image_url}
-                alt="anime cover"
-                className="thumbnail"
-              />
-              <div className="fulldetails-container">
-                <div className="details-container">
-                  <div className="text-container">
-                    {details.title.length < 11 ? (
-                      <h1 style={{ fontWeight: "normal" }}>{details.title}</h1>
-                    ) : (
-                      <h3 style={{ fontWeight: "normal" }}>{details.title}</h3>
-                    )}
-                    <p>{details.title_english}</p>
-                    <p style={{ marginBottom: "1px", width: "auto" }}>
-                      <strong>
-                        {typeof details.aired !== "undefined"
-                          ? details.aired.string
-                          : details.published.string}
-                      </strong>
-                    </p>
-                    <p>
-                      <strong>
-                        {typeof details.episodes !== "undefined"
-                          ? details.episodes === null
-                            ? "? Episodes"
-                            : `${details.episodes} Episodes`
-                          : `${
-                              details.chapters === null ? "?" : details.chapters
-                            } Chapters | ${
-                              details.volumes === null ? "?" : details.volumes
-                            } Volume(s)`}
-                      </strong>
-                    </p>
-                    <div style={{ display: "flex", flexDirection: "row" }}>
-                      <ListAddButton
-                        isDarkMode={isDarkMode}
-                        itemType={itemType}
-                        itemId={itemId}
-                        title={details.title}
-                        type={details.type}
-                        image={details.images.jpg.image_url}
-                        released={
-                          details.aired
-                            ? details.aired.from
-                            : details.published
-                              ? details.published.from
-                              : "?"
-                        }
-                        date={dateFormat(new Date(), "isoDateTime")}
-                      />
-                      {itemType === "manga" &&
-                      mangaDexMangaID !== null &&
-                      !loadingChapters ? (
-                        <div style={{ marginLeft: "5%" }}>
-                          <Button
-                            style={{
-                              backgroundColor: `${
-                                isDarkMode ? "#0dcaf0" : "#212529"
-                              }`,
-                              color: `${isDarkMode ? "black" : "#fff"}`,
-                              textTransform: "none",
-                            }}
-                            onClick={getMangaChapters}
-                          >
-                            <Book />
-                            &nbsp;Read
-                          </Button>
-                        </div>
-                      ) : loadingChapters ? (
-                        <div style={{ marginLeft: "5%" }}>
-                          <Button
-                            style={{
-                              backgroundColor: `${
-                                isDarkMode ? "#0dcaf0" : "#212529"
-                              }`,
-                              color: "#FFF",
-                              textTransform: "none",
-                            }}
-                          >
-                            <span
-                              className="spinner-border spinner-border-sm"
-                              role="status"
-                              aria-hidden="true"
-                            ></span>
-                          </Button>
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="gauge-container">
-                    <div className="gauge-wrapper">
-                      <AnimatedProgressProvider
-                        valueStart={0}
-                        valueEnd={details.score}
-                        duration={1.4}
-                        easingFunction={easeQuadInOut}
-                      >
-                        {(value) => {
-                          return (
-                            <CircularProgressbar
-                              value={value}
-                              maxValue={10}
-                              text={`${details.score ? details.score : "-"}`}
-                              styles={buildStyles({
-                                pathTransition: "none",
-                                pathColor: getColor(details.score),
-                              })}
-                            />
-                          );
-                        }}
-                      </AnimatedProgressProvider>
-                    </div>
-
-                    <div className="ranked-wrapper">
-                      <strong>Ranked #{details.rank || "-"}</strong>
-                    </div>
-                  </div>
-                </div>
-                <div className="container-secondary">
-                  <div className="thumbnail-synopsis">
-                    {details.synopsis || "No synopsis available."}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <ul className={listGroupClass}>
-              <li key={1} className="list-group-item">
-                <strong>Japanese Title:</strong> {details.title_japanese || "-"}
-              </li>
-              <li key={2} className="list-group-item">
-                <strong>Synonyms:</strong>{" "}
-                {details.title_synonyms.map((x) => x.trim()).join(", ") || "-"}
-              </li>
-              <li key={3} className="list-group-item">
-                <strong>Genres:</strong>{" "}
-                {details.genres.map((x) => x.name).join(", ") || "-"}
-              </li>
-              <li key={4} className="list-group-item">
-                <strong>Themes:</strong>{" "}
-                {details.themes.map((x) => x.name).join(", ") || "-"}
-              </li>
-              <li key={5} className="list-group-item">
-                <strong>Type:</strong> {details.type || ""}
-              </li>
-              {typeof details.duration !== "undefined" ? (
-                <li key={6} className="list-group-item">
-                  <strong>Duration:</strong> {details.duration || "-"}
-                </li>
-              ) : null}
-              {typeof details.rating !== "undefined" ? (
-                <li key={7} className="list-group-item">
-                  <strong>Rating:</strong> {details.rating || "-"}
-                </li>
-              ) : null}
-              {typeof details.source !== "undefined" ? (
-                <li key={8} className="list-group-item">
-                  <strong>Source:</strong> {details.source || "-"}
-                </li>
-              ) : null}
-
-              <li key={9} className="list-group-item">
-                <strong>Status:</strong> {details.status || "-"}
-              </li>
-              {typeof details.producers !== "undefined" ? (
-                <li key={10} className="list-group-item">
-                  <strong>Producers:</strong>{" "}
-                  {details.producers.map((x) => x.name).join(", ") || "-"}
-                </li>
-              ) : typeof details.authors !== "undefined" ? (
-                <li key={10} className="list-group-item">
-                  <strong>Authors:</strong>{" "}
-                  {details.authors.map((author) => (
-                    <React.Fragment key={author.mal_id}>
-                      {author > 0 && ", "}{" "}
-                      <a
-                        href="#/"
-                        rel="noopener noreferrer"
-                        onClick={() =>
-                          authorInfo(`${author.mal_id}`, `${author.name}`)
-                        }
-                      >
-                        {author.name}
-                      </a>
-                      {authors
-                        ? authors.map((person) =>
-                            person.authorId === author.mal_id
-                              ? ` (${person.position})`
-                              : null,
-                          )
-                        : null}
-                    </React.Fragment>
-                  ))}
-                </li>
-              ) : null}
-              {typeof details.producers !== "undefined" ? (
-                <li key={11} className="list-group-item">
-                  <strong>Studios:</strong>{" "}
-                  {details.studios.map((studio) => (
-                    <a
-                      key={studio.mal_id}
-                      // eslint-disable-next-line
-                      href="#/"
-                      rel="noopener noreferrer"
-                      onClick={() =>
-                        studioInfo(`${studio.mal_id}`, `${studio.name}`)
-                      }
-                    >
-                      {studio.name}{" "}
-                    </a>
-                  ))}
-                </li>
-              ) : (
-                <li key={11} className="list-group-item">
-                  <strong>Serializations:</strong>{" "}
-                  {details.serializations.map((x) => x.name).join(", ") || "-"}
-                </li>
-              )}
-            </ul>
-          </div>
-          <div className="row">
-            <div style={{ margin: "5px" }} className="well">
-              {typeof details.trailer !== "undefined" ? (
-                <>
-                  <h5>Trailer</h5>
-                  <YouTubeEmbed embedUrl={details.trailer.embed_url} />
-                  <hr></hr>
-                </>
-              ) : null}
-
-              {streamingSitesSection ? (
-                <>
-                  <h5>Streaming Sites</h5>
-                  {typeof details.streaming !== "undefined" &&
-                  details.streaming.length > 0 ? (
-                    <>
-                      <ul style={{ listStyle: "none", padding: "0" }}>
-                        {details.streaming.map((item, index) => (
-                          <li
-                            key={index}
-                            style={{ display: "flex", alignItems: "center" }}
-                          >
-                            <Favicon url={item.url} />
-                            <a href={item.url}>{item.name}</a>
-                          </li>
-                        ))}
-                      </ul>
-                      <hr />
-                    </>
-                  ) : (
-                    <div>
-                      No streaming sites available.
-                      <hr />
-                    </div>
-                  )}
-                </>
-              ) : null}
-
-              <h5>Related Works</h5>
-              {typeof details.relations !== "undefined" &&
-              details.relations.length > 0 ? (
-                <>
-                  <table style={{ borderSpacing: "0px" }}>
-                    <tbody>
-                      {details.relations.map((item, index) => (
-                        <React.Fragment key={index}>
-                          <tr>
-                            <td nowrap="" valign="top">
-                              {item.relation}:&nbsp;
-                            </td>
-                            <td width={"100%"}>
-                              {item.entry.map((entry, entryIndex) => (
-                                <div key={entryIndex}>
-                                  <a
-                                    // eslint-disable-next-line
-                                    href="#/"
-                                    rel="noopener noreferrer"
-                                    onClick={() =>
-                                      newDetails(
-                                        `/${entry.type}/${entry.mal_id}`,
-                                        entry.name,
-                                        entry.type,
-                                      )
-                                    }
-                                  >
-                                    {entry.name}
-                                  </a>
-                                </div>
-                              ))}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td colSpan="4">
-                              <hr />
-                            </td>
-                          </tr>
-                        </React.Fragment>
-                      ))}
-                    </tbody>
-                  </table>
-                </>
-              ) : (
-                <div>
-                  No related works available.
-                  <hr></hr>
-                </div>
-              )}
-              <h5>Recommended*</h5>
-
-              <Collapsible
-                trigger={"Show Recommendations"}
-                onOpening={fetchRecommendations}
-              >
-                {recommendationsFetched &&
-                typeof recommendations !== "undefined" &&
-                recommendations.length > 0 ? (
-                  <div
-                    className={`${
-                      isDarkMode ? "fadeContainerDark" : "fadeContainer"
-                    }`}
-                  >
-                    <div className="recommendations">
-                      {recommendations.map((item, index) => (
-                        <div className="zoomed">
-                          <img
-                            key={index}
-                            src={item.entry.images.jpg.image_url}
-                            alt="loading cover..."
-                            loading="lazy"
-                            onClick={() =>
-                              newDetails(
-                                `/${itemType}/${item.entry.mal_id}`,
-                                item.entry.title,
-                                itemType,
-                              )
-                            }
-                          />
-                          <div
-                            className="overlay"
-                            onClick={() =>
-                              newDetails(
-                                `/${itemType}/${item.entry.mal_id}`,
-                                item.entry.title,
-                                itemType,
-                              )
-                            }
-                          >
-                            <span>{item.entry.title}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div>No recommended works available.</div>
-                )}
-              </Collapsible>
-
-              <hr></hr>
-              <div
-                style={{
-                  marginTop: "-15px",
-                  color: "gray",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <small>
-                  <i>*Recommended works are based on MAL user votes.</i>
-                </small>
-                <div style={{ display: "flex", flexDirection: "row" }}>
-                  <img src={mal} width={"25px"} alt="myanimelist" />
-                  &nbsp;&nbsp;
-                  <a href={details.url || "-"} target="_blank" rel="noreferrer">
-                    View on MyAnimeList{""}
-                  </a>
-                </div>
-              </div>
-              <a
-                id="returnBtn"
-                href="#/"
-                className={`${
-                  isDarkMode ? "btn btn-info mt-4" : "btn btn-dark mt-4"
-                }`}
-                style={{ borderRadius: "25px" }}
-                onClick={() => landingPageRoute()}
-              >
-                Return to Lookup Page
-              </a>
-            </div>
-          </div>
-        </>
-      ) : (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: "80vh",
-          }}
-        >
-          <span className="loader"></span>
-        </div>
-      )}
-    </div>
+    <article className="details-page">
+      <DetailsHeader
+        details={details}
+        type={type}
+        kitsuCover={kitsuCover}
+        isDarkMode={isDarkMode}
+        actions={actions}
+      />
+      <DetailsTabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onChange={(key) => updateUrlParams({ tab: key })}
+      >
+        {panel}
+      </DetailsTabs>
+      <Recommendations details={details} type={type} allowNSFW={allowNSFW} />
+    </article>
   );
 }
 

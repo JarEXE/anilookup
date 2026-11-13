@@ -1,10 +1,11 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../../firebase";
 import Switch from "react-switch";
 import DarkModeToggle from "./DarkModeToggle";
 import toast, { Toaster } from "react-hot-toast";
+import SearchBox from "../search/SearchBox";
 import InfoIcon from "@mui/icons-material/Info";
 import ListIcon from "@mui/icons-material/ListRounded";
 import ExitIcon from "@mui/icons-material/ExitToApp";
@@ -25,8 +26,8 @@ function Navbar({
     toast.success("NSFW content disabled!", {
       style: {
         borderRadius: "10px",
-        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-        color: `${isDarkMode ? "#333" : "#fff"}`,
+        background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+        color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
       },
     });
   const notifyUnsafe = () =>
@@ -34,8 +35,8 @@ function Navbar({
       icon: "⚠️",
       style: {
         borderRadius: "10px",
-        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-        color: `${isDarkMode ? "#333" : "#fff"}`,
+        background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+        color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
       },
     });
   const sfwStatus = sessionStorage.getItem("sfw");
@@ -47,17 +48,31 @@ function Navbar({
   const location = useLocation();
   const navigate = useNavigate();
 
-  const landingPageRoute = () => {
-    if (location.pathname === "/search" || location.pathname === "/") {
-      navigate("/");
-    } else if (
-      location.pathname === "/mangasearch" ||
-      location.pathname === "/mangalookup"
-    ) {
-      navigate("/mangalookup");
-    } else {
-      navigate("/");
-    }
+  const landingPagePath =
+    location.pathname === "/manga" || location.pathname === "/manga/search"
+      ? "/manga"
+      : "/";
+
+  // Pages that already have their own big search box don't get one here.
+  const hasOwnSearch = [
+    "/",
+    "/manga",
+    "/anime/search",
+    "/manga/search",
+  ].includes(location.pathname);
+
+  // Which catalogue the navbar search starts on, from where the user is.
+  const searchParamsType = new URLSearchParams(location.search).get("type");
+  const navSearchType =
+    location.pathname.startsWith("/manga") ||
+    location.pathname.startsWith("/author") ||
+    (location.pathname === "/lists" && searchParamsType === "manga")
+      ? "manga"
+      : "anime";
+
+  const withoutHashNavigation = (handler) => (event) => {
+    event.preventDefault();
+    handler();
   };
 
   const handleChange = () => {
@@ -121,12 +136,13 @@ function Navbar({
         toast.success(`You have been logged out. Redirecting...`, {
           style: {
             borderRadius: "10px",
-            background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-            color: `${isDarkMode ? "#333" : "#fff"}`,
+            background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+            color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
           },
         });
 
         sessionStorage.removeItem("animeListItems");
+        sessionStorage.removeItem("mangaListItems");
         navigate("/");
 
         // refresh page after 3 seconds
@@ -142,10 +158,10 @@ function Navbar({
             icon: "⚠️",
             style: {
               borderRadius: "10px",
-              background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-              color: `${isDarkMode ? "#W333" : "#fff"}`,
+              background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+              color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
             },
-          }
+          },
         );
 
         navigate(0);
@@ -153,19 +169,22 @@ function Navbar({
   };
 
   const customStyles = {
-    color: isDarkMode ? "white" : "black",
+    color: isDarkMode ? "var(--d-ink)" : "black",
     fontSize: "24px",
   };
 
   React.useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
       } else {
-        console.log(user);
+        // clear it on logout too, so the menu switches back to "Login"
+        setUser(null);
         console.log("user is logged out");
       }
     });
+
+    return () => unsubscribe();
   }, []);
 
   React.useEffect(() => {
@@ -186,21 +205,25 @@ function Navbar({
   return (
     <nav className="navbar navbar-expand-lg">
       <div className="container-fluid">
-        <a
+        <Link
           className="navbar-brand"
-          href="#/"
+          to={landingPagePath}
           style={customStyles}
-          onClick={() => landingPageRoute()}
         >
           AniLookup{" "}
           <img
             alt="detective anya with magnifying glass"
-            src="anya.png"
+            src="/anya.png"
             width={35}
             height={35}
             style={{ borderRadius: "20px" }}
           />
-        </a>
+        </Link>
+        {!hasOwnSearch ? (
+          <div className="navbar-search">
+            <SearchBox type={navSearchType} variant="nav" />
+          </div>
+        ) : null}
         <button
           className="navbar-toggler"
           type="button"
@@ -210,8 +233,8 @@ function Navbar({
           aria-expanded="false"
           aria-label="Toggle navigation"
           style={{
-            backgroundColor: `${isDarkMode ? "#0dcaf0" : "#fff"}`,
-            borderColor: `${isDarkMode ? "#0dcaf0" : "#282828"}`,
+            backgroundColor: `${isDarkMode ? "var(--d-surface-2)" : "#fff"}`,
+            borderColor: `${isDarkMode ? "var(--d-line)" : "#282828"}`,
           }}
         >
           <span className="navbar-toggler-icon"></span>
@@ -233,6 +256,7 @@ function Navbar({
                     onChange={handleChange}
                     checked={checked}
                     className="react-switch"
+                    aria-label="Show NSFW content"
                     height={20}
                     width={46}
                   />
@@ -244,21 +268,20 @@ function Navbar({
               {user && screenWidth < 992 ? (
                 <>
                   <li className="nav-item">
-                    <a
+                    <Link
                       className="nav-link"
-                      href="#/"
-                      onClick={() => landingPageRoute()}
-                      style={{ color: `${isDarkMode ? "#fff" : "#282828"}` }}
+                      to={landingPagePath}
+                      style={{ color: `${isDarkMode ? "var(--d-ink)" : "#282828"}` }}
                     >
                       Home
-                    </a>
+                    </Link>
                   </li>
                   <li className="nav-item">
                     <a
                       className="nav-link"
-                      href="#/"
-                      onClick={() => profileRoute()}
-                      style={{ color: `${isDarkMode ? "#fff" : "#282828"}` }}
+                      href="/profile"
+                      onClick={withoutHashNavigation(profileRoute)}
+                      style={{ color: `${isDarkMode ? "var(--d-ink)" : "#282828"}` }}
                     >
                       Profile
                     </a>
@@ -266,9 +289,9 @@ function Navbar({
                   <li className="nav-item">
                     <a
                       className="nav-link"
-                      href="#/"
-                      onClick={() => listsRoute()}
-                      style={{ color: `${isDarkMode ? "#fff" : "#282828"}` }}
+                      href="/lists"
+                      onClick={withoutHashNavigation(listsRoute)}
+                      style={{ color: `${isDarkMode ? "var(--d-ink)" : "#282828"}` }}
                     >
                       Lists
                     </a>
@@ -277,8 +300,10 @@ function Navbar({
                     <a
                       className="nav-link"
                       href="#/"
-                      onClick={() => alert("No info just yet :(")}
-                      style={{ color: `${isDarkMode ? "#fff" : "#282828"}` }}
+                      onClick={withoutHashNavigation(() =>
+                        alert("No info just yet :("),
+                      )}
+                      style={{ color: `${isDarkMode ? "var(--d-ink)" : "#282828"}` }}
                     >
                       Info
                     </a>
@@ -288,8 +313,8 @@ function Navbar({
                     <a
                       className="nav-link"
                       href="#/"
-                      onClick={() => handleLogout()}
-                      style={{ color: `${isDarkMode ? "#fff" : "#282828"}` }}
+                      onClick={withoutHashNavigation(handleLogout)}
+                      style={{ color: `${isDarkMode ? "var(--d-ink)" : "#282828"}` }}
                     >
                       Logout
                     </a>

@@ -22,8 +22,8 @@ const Reset = ({ isDarkMode, user }) => {
           toast.success(`Password reset email sent to ${email}`, {
             style: {
               borderRadius: "10px",
-              background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-              color: `${isDarkMode ? "#333" : "#fff"}`,
+              background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+              color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
             },
           });
         })
@@ -42,23 +42,32 @@ const Reset = ({ isDarkMode, user }) => {
       icon: "⚠️",
       style: {
         borderRadius: "10px",
-        background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-        color: `${isDarkMode ? "#333" : "#fff"}`,
+        background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+        color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
       },
     });
 
   const inputError = {
-    border: `2px solid ${isDarkMode ? "#ffc107" : "red"}`,
+    border: `2px solid ${isDarkMode ? "var(--d-warning)" : "red"}`,
   };
 
   React.useEffect(() => {
     setEmailEmpty(false);
   }, [email]);
 
+  // Redirect away if already logged in. This used to run during render, which
+  // is a React anti-pattern (side effects on every re-render).
+  React.useEffect(() => {
+    if (user) {
+      notifyLoggedIn();
+      // replace so Back doesn't land here and bounce straight back
+      navigate("/", { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   if (user) {
-    notifyLoggedIn();
-    navigate("/");
-    return;
+    return null;
   } else {
     return (
       <div
@@ -69,7 +78,7 @@ const Reset = ({ isDarkMode, user }) => {
         }}
       >
         <div
-          className={`card text-bg-${isDarkMode ? "secondary" : "light"}`}
+          className={`card ${isDarkMode ? "card--dark" : "text-bg-light"}`}
           style={{ boxShadow: "0px 0px 10px 5px rgba(0, 0, 0, 0.5)" }}
         >
           <div className="card-header">Password Reset</div>
@@ -93,7 +102,7 @@ const Reset = ({ isDarkMode, user }) => {
                 {emailEmpty ? (
                   <div className="error-message">
                     <small
-                      style={{ color: `${isDarkMode ? "#ffc107" : "red"}` }}
+                      style={{ color: `${isDarkMode ? "var(--d-warning)" : "red"}` }}
                     >
                       Email cannot be empty!
                     </small>

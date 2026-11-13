@@ -1,85 +1,85 @@
-import React, { useCallback } from "react";
+import React from "react";
 import AuthorManga from "./AuthorManga";
-import axios from "axios";
-import toast from "react-hot-toast";
-import { API_URL } from "../../config/api";
+import { API_URL, apiClient } from "../../config/api";
+import LoadError from "../plugins/LoadError";
+import useNsfwFilter from "../../hooks/useNsfwFilter";
 
-const AuthorMangaWorks = ({ isDarkMode, authorId }) => {
+const AuthorMangaWorks = ({ isDarkMode, authorId, allowNSFW }) => {
   // State to hold the key for re-rendering
   const [key, setKey] = React.useState(0);
-  const [cards, setCards] = React.useState(null);
+  const [works, setWorks] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState(false);
+  // bumped by the "Try again" button to re-run the fetch effect
+  const [reloadKey, setReloadKey] = React.useState(0);
 
-  const notifyRequestRate = useCallback(
-    function notifyRequestRate() {
-      toast("Too many requests! Please wait a moment then try again.", {
-        icon: "⚠️",
-        style: {
-          borderRadius: "10px",
-          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-          color: `${isDarkMode ? "#333" : "#fff"}`,
-        },
-      });
-    },
-    [isDarkMode],
-  );
-
-  // Use useEffect to re-render the component when allowNSFW changes
+  // Only data is stored here; the cards are rendered from it below. (Building
+  // the JSX inside this effect forced the theme into its dependencies, which
+  // re-fetched the API on every dark mode toggle.)
   React.useEffect(() => {
+    let cancelled = false;
+
     setLoading(true);
-    // Increment the key whenever allowNSFW changes
+    setLoadError(false);
     setKey((prevKey) => prevKey + 1);
 
-    axios
+    apiClient
       .get(`${API_URL}/people/${authorId}/manga`)
       .then((response) => {
-        const mangas = response.data.data;
-
-        if (mangas) {
-          // Map data to Anime components
-          const mangaCards = mangas.map((manga) => {
-            return (
-              <AuthorManga
-                role={manga.position.replace(/^add /, "")}
-                key={manga.manga.mal_id}
-                img={manga.manga.images.jpg.large_image_url}
-                title={manga.manga.title}
-                isDarkMode={isDarkMode}
-                malid={manga.manga.mal_id}
-              />
-            );
-          });
-
-          // Set cards and mark loading as false
-          setCards(mangaCards);
-          setLoading(false);
-        } else {
-          setLoading(false);
-          return null;
-        }
+        if (cancelled) return;
+        setWorks(response.data.data || []);
+        setLoading(false);
       })
       .catch((error) => {
-        if (error.message === "Request failed with status code 429") {
-          notifyRequestRate();
-          console.error("Error fetching anime data:", error);
-          setLoading(false);
-          return;
-        }
+        if (cancelled) return;
+        // used to leave the spinner running forever on anything but a 429
+        console.error("Error fetching API data:", error);
+        setLoading(false);
+        setLoadError(true);
       });
-  }, [isDarkMode, authorId, notifyRequestRate]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authorId, reloadKey]);
+
+  // people/{id}/manga doesn't say which works are NSFW, so they're looked up
+  // while NSFW content is off
+  const ids = React.useMemo(() => works.map((work) => work.manga.mal_id), [works]);
+  const nsfw = useNsfwFilter("manga", ids, allowNSFW);
+  const shown = works.filter((work) => !nsfw.isHidden(work.manga.mal_id));
 
   return (
     <>
-      {loading ? (
+      {loading || nsfw.pending ? (
         <div className="loadContainer">
           <span className="loader"></span>
         </div>
+      ) : loadError ? (
+        <LoadError
+          isDarkMode={isDarkMode}
+          message="Couldn't load these works right now."
+          onRetry={() => setReloadKey((prevKey) => prevKey + 1)}
+        />
+      ) : nsfw.failed ? (
+        <p>Couldn't check these works for NSFW content, so they're hidden for now.</p>
+      ) : works.length > 0 && shown.length === 0 ? (
+        <p>No works to show while NSFW content is off.</p>
       ) : (
         // Render the component with a unique key to force re-render
         <div>
-          <div className="cards" key={key}>
-            {cards}
-          </div>
+          <ul className="cover-grid" key={key}>
+            {shown.map((work) => (
+              <AuthorManga
+                role={work.position.replace(/^add /, "")}
+                key={work.manga.mal_id}
+                img={work.manga.images.jpg.large_image_url}
+                title={work.manga.title}
+                isDarkMode={isDarkMode}
+                malid={work.manga.mal_id}
+              />
+            ))}
+          </ul>
         </div>
       )}
     </>

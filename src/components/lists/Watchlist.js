@@ -3,7 +3,6 @@ import DataTable, { createTheme } from "react-data-table-component";
 import dateFormat from "dateformat";
 import sortArray from "sort-array";
 import moment from "moment-timezone";
-import LoadingOverlay from "react-loading-overlay-ts";
 import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
@@ -27,7 +26,6 @@ import toast from "react-hot-toast";
 const All = ({ isDarkMode, selectedOption, sortBy }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = React.useState(true);
-  const [isActive, setIsActive] = React.useState(false);
   const [activeList, setActiveList] = React.useState(null);
   const [allData, setAllData] = React.useState([]);
   const [currentData, setCurrentData] = React.useState([]);
@@ -77,7 +75,7 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
           return [];
         }
       } else {
-        navigate("/login");
+        navigate("/login", { replace: true });
       }
     });
 
@@ -220,8 +218,8 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
           toast.success(`List updated`, {
             style: {
               borderRadius: "10px",
-              background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-              color: `${isDarkMode ? "#333" : "#fff"}`,
+              background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+              color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
             },
           });
         } else {
@@ -231,8 +229,8 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
           toast.success(`List updated`, {
             style: {
               borderRadius: "10px",
-              background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-              color: `${isDarkMode ? "#333" : "#fff"}`,
+              background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+              color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
             },
           });
         }
@@ -248,7 +246,7 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
               ...doc.data(),
             });
           });
-          sessionStorage.setItem("animelistitems", JSON.stringify(dataList));
+          sessionStorage.setItem("animeListItems", JSON.stringify(dataList));
         } catch (error) {
           console.error(
             "Error getting documents from animelistitems collection:",
@@ -261,13 +259,13 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
         toast.error(`Something went wrong!`, {
           style: {
             borderRadius: "10px",
-            background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-            color: `${isDarkMode ? "#333" : "#fff"}`,
+            background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+            color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
           },
         });
       }
     } else {
-      navigate("/login");
+      navigate("/login", { replace: true });
     }
 
     setAnchorEl(null);
@@ -296,8 +294,8 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
       toast.success(`Removed from lists.`, {
         style: {
           borderRadius: "10px",
-          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-          color: `${isDarkMode ? "#333" : "#fff"}`,
+          background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+          color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
         },
       });
 
@@ -313,7 +311,7 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
             ...doc.data(),
           });
         });
-        sessionStorage.setItem("animelistitems", JSON.stringify(dataList));
+        sessionStorage.setItem("animeListItems", JSON.stringify(dataList));
       } catch (error) {
         console.error(
           "Error getting documents from animelistitems collection:",
@@ -327,8 +325,8 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
       toast.error(`Something went wrong!`, {
         style: {
           borderRadius: "10px",
-          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-          color: `${isDarkMode ? "#333" : "#fff"}`,
+          background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+          color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
         },
       });
     }
@@ -337,9 +335,29 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
   };
 
   // createTheme creates a new theme named solarized that overrides the build in dark theme
+  // same values as the --d-* palette in style.css (this library needs plain
+  // colour values, not CSS variables)
   createTheme("dark", {
+    text: {
+      primary: "#e3e6ea",
+      secondary: "#9aa2ab",
+      disabled: "#9aa2ab",
+    },
     background: {
-      default: "#282828",
+      default: "#1d2024",
+    },
+    divider: {
+      default: "#3b4047",
+    },
+    button: {
+      default: "#e3e6ea",
+      hover: "#343940",
+      focus: "#343940",
+      disabled: "#9aa2ab",
+    },
+    highlightOnHover: {
+      default: "#2e3238",
+      text: "#e3e6ea",
     },
   });
 
@@ -392,8 +410,8 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
               )
             }
             style={{
-              backgroundColor: `${isDarkMode ? "#0dcaf0" : "#212529"}`,
-              color: `${isDarkMode ? "black" : "white"}`,
+              backgroundColor: `${isDarkMode ? "var(--d-accent)" : "#212529"}`,
+              color: `${isDarkMode ? "var(--d-accent-ink)" : "white"}`,
               textTransform: "none",
               height: "30px",
               fontSize: `${screenWidth > 500 ? "16px" : "12px"}`,
@@ -416,7 +434,7 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
               onClick={handleListAdd}
               style={{
                 backgroundColor: `${
-                  activeList === "watching" ? "rgba(0, 0, 0, 0.04)" : "#FFF"
+                  activeList === "watching" ? "rgba(127, 127, 127, 0.18)" : "transparent"
                 }`,
               }}
             >
@@ -434,7 +452,7 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
               onClick={handleListAdd}
               style={{
                 backgroundColor: `${
-                  activeList === "onhold" ? "rgba(0, 0, 0, 0.04)" : "#FFF"
+                  activeList === "onhold" ? "rgba(127, 127, 127, 0.18)" : "transparent"
                 }`,
               }}
             >
@@ -452,7 +470,7 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
               onClick={handleListAdd}
               style={{
                 backgroundColor: `${
-                  activeList === "planned" ? "rgba(0, 0, 0, 0.04)" : "#FFF"
+                  activeList === "planned" ? "rgba(127, 127, 127, 0.18)" : "transparent"
                 }`,
               }}
             >
@@ -470,7 +488,7 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
               onClick={handleListAdd}
               style={{
                 backgroundColor: `${
-                  activeList === "dropped" ? "rgba(0, 0, 0, 0.04)" : "#FFF"
+                  activeList === "dropped" ? "rgba(127, 127, 127, 0.18)" : "transparent"
                 }`,
               }}
             >
@@ -488,7 +506,7 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
               onClick={handleListAdd}
               style={{
                 backgroundColor: `${
-                  activeList === "completed" ? "rgba(0, 0, 0, 0.04)" : "#FFF"
+                  activeList === "completed" ? "rgba(127, 127, 127, 0.18)" : "transparent"
                 }`,
               }}
             >
@@ -513,10 +531,10 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
 
           <Button
             id={`detailsButton`}
-            onClick={() => showDetails(row.itemId, row.title)}
+            onClick={() => showDetails(row.itemId)}
             style={{
-              backgroundColor: `${isDarkMode ? "#0dcaf0" : "#212529"}`,
-              color: `${isDarkMode ? "black" : "white"}`,
+              backgroundColor: `${isDarkMode ? "var(--d-accent)" : "#212529"}`,
+              color: `${isDarkMode ? "var(--d-accent-ink)" : "white"}`,
               textTransform: "none",
               height: "30px",
               fontSize: `${screenWidth > 500 ? "16px" : "12px"}`,
@@ -589,62 +607,13 @@ const All = ({ isDarkMode, selectedOption, sortBy }) => {
     );
   };
 
-  const showDetails = async (animeId, animeTitle) => {
-    setIsActive(true);
-    let kitsuData;
-
-    await fetch(
-      `https://kitsu.io/api/edge/anime?filter[text]=${animeTitle}&page[limit]=5`
-    ).then(async (response) => {
-      kitsuData = await response.json();
-    });
-
-    const matchingItem = kitsuData.data.find(
-      (item) =>
-        item.attributes.canonicalTitle === animeTitle ||
-        item.attributes.abbreviatedTitles.includes(animeTitle) ||
-        item.attributes.titles.en === animeTitle ||
-        item.attributes.titles.en_jp === animeTitle ||
-        item.attributes.titles.ja_jp === animeTitle
-    );
-
-    if (matchingItem) {
-      const coverImage = matchingItem.attributes.coverImage
-        ? matchingItem.attributes.coverImage.original
-        : "";
-      sessionStorage.setItem("kitsuCover", coverImage);
-      sessionStorage.setItem("itemId", animeId);
-      setIsActive(false);
-      navigate("/details");
-    } else {
-      sessionStorage.setItem("kitsuCover", "");
-      sessionStorage.setItem("itemId", animeId);
-      setIsActive(false);
-      navigate("/details");
-    }
+  // row.itemId is already the route path, e.g. "/anime/21"
+  const showDetails = (animeId) => {
+    navigate(animeId);
   };
 
   return (
     <>
-      {isActive ? (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "rgba(0, 0, 0, 0.75)",
-            zIndex: "999",
-          }}
-        >
-          <LoadingOverlay
-            active={isActive}
-            spinner={<span className="overlay_loader"></span>}
-          ></LoadingOverlay>
-        </div>
-      ) : null}
-
       <DataTable
         columns={columns}
         data={currentData}

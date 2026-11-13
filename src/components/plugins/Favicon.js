@@ -1,34 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+
+// Builds the Google favicon service URL for a site.
+//
+// This used to go through the favicon-proxy Netlify function, which only
+// fetched this same URL server-side to read back its address. Google answers
+// with a 404 status (plus a default globe icon) for sites without a favicon,
+// which made the proxy fail and left a broken <img src="">. The browser can load
+// the image directly: no proxy round trip, and it works in local development.
+function faviconUrl(url) {
+  try {
+    const domain = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${domain}`;
+  } catch (error) {
+    return "";
+  }
+}
 
 function Favicon({ url }) {
-  const [favicon, setFavicon] = useState("");
-  useEffect(() => {
-    async function fetchFavicon() {
-      try {
-        const response = await fetch("/.netlify/functions/favicon-proxy", {
-          method: "POST",
-          body: JSON.stringify({ url }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch favicon");
-        }
-
-        const data = await response.json();
-
-        setFavicon(data.faviconUrl);
-      } catch (error) {
-        console.error("Invalid URL:", error);
-        return null;
-      }
-    }
-
-    fetchFavicon();
-  }, [url]);
+  const src = faviconUrl(url);
 
   return (
     <img
-      src={favicon}
+      src={src || undefined}
       alt="Favicon"
       style={{ marginRight: "5px", maxWidth: "25px", maxHeight: "25px" }}
     />

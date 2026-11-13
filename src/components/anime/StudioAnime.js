@@ -1,107 +1,23 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import LazyLoad from "react-lazyload";
-import { NumericFormat } from "react-number-format";
-import LoadingOverlay from "react-loading-overlay-ts";
+import CoverCard from "../plugins/CoverCard";
+import { compactNumber } from "../details/format";
 
-const StudioAnime = (props) => {
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isActive, setIsActive] = React.useState(false);
-  let kitsuData;
-  const navigate = useNavigate();
-
-  const showDetails = async (animeId) => {
-    setIsLoading(true);
-    setIsActive(true);
-
-    await fetch(
-      `https://kitsu.io/api/edge/anime?filter[text]=${props.title}&page[limit]=5`
-    ).then(async (response) => {
-      kitsuData = await response.json();
-    });
-
-    const matchingItem = kitsuData.data.find(
-      (item) =>
-        item.attributes.canonicalTitle === props.title ||
-        item.attributes.abbreviatedTitles.includes(props.title) ||
-        item.attributes.titles.en === props.title ||
-        item.attributes.titles.en_jp === props.title ||
-        item.attributes.titles.ja_jp === props.title
-    );
-
-    if (matchingItem) {
-      const coverImage = matchingItem.attributes.coverImage
-        ? matchingItem.attributes.coverImage.original
-        : "";
-      sessionStorage.setItem("kitsuCover", coverImage);
-      sessionStorage.setItem("itemId", `/anime/${animeId}`);
-      navigate("/details");
-    } else {
-      sessionStorage.setItem("kitsuCover", "");
-      sessionStorage.setItem("itemId", `/anime/${animeId}`);
-      navigate("/details");
-    }
-  };
+// A work on a studio page: role, score and MAL members under the title.
+function StudioAnime({ img, title, malid, role, score, members }) {
   return (
-    <>
-      {isLoading ? (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "rgba(0, 0, 0, 0.75)",
-            zIndex: "999",
-          }}
-        >
-          <LoadingOverlay
-            active={isActive}
-            spinner={<span className="overlay_loader"></span>}
-          ></LoadingOverlay>
-        </div>
-      ) : (
-        <li id="studioAnimeList" className="zoomed-landing-page">
-          <LazyLoad>
-            <div
-              className="studioAnimeDiv"
-              style={{ display: "flex", flexDirection: "column" }}
-            >
-              <img
-                src={props.img}
-                alt="loading cover..."
-                loading="lazy"
-                onClick={() => showDetails(`${props.malid}`)}
-                style={{ maxWidth: "190px" }}
-              />
-              <p>
-                Role: <strong>{props.role || "-"}</strong>
-              </p>
-              <p style={{ marginTop: "-15px" }}>
-                Score: <strong>{props.score || "-"}</strong>
-              </p>
-              <p style={{ marginTop: "-15px" }}>
-                Members:{" "}
-                <NumericFormat
-                  value={props.members || "-"}
-                  thousandSeparator=","
-                  displayType="text"
-                  renderText={(value) => <b>{value}</b>}
-                />
-              </p>
-            </div>
-          </LazyLoad>
-          <div
-            className="overlay"
-            style={{ overflowY: "hidden" }}
-            onClick={() => showDetails(`${props.malid}`)}
-          >
-            <span>{props.title}</span>
-          </div>
-        </li>
-      )}
-    </>
+    <CoverCard
+      to={`/anime/${malid}`}
+      image={img}
+      title={title}
+      subtitle={role || "Unknown role"}
+      meta={
+        <>
+          <span>{score ? `★ ${score.toFixed(2)}` : "No score"}</span>
+          <span>{members ? `${compactNumber(members)} members` : null}</span>
+        </>
+      }
+    />
   );
-};
+}
+
 export default StudioAnime;

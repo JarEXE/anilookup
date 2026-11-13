@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 
 const ErrorPage = ({ isDarkMode }) => {
@@ -14,7 +13,7 @@ const ErrorPage = ({ isDarkMode }) => {
     >
       <div className="text-center">
         <img
-          src="anya.png"
+          src="/anya.png"
           alt="anime girl looking through magnifying glass"
           width={150}
           height={150}

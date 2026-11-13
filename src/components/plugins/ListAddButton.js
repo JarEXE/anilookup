@@ -37,6 +37,9 @@ const ListAddButton = ({
 
   // primary useffect for checking user status and setting database status
   React.useEffect(() => {
+    // ignore a lookup that finishes after the item/type has changed
+    let cancelled = false;
+
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         const itemDocRef = doc(
@@ -48,6 +51,8 @@ const ListAddButton = ({
         );
 
         const docSnapshot = await getDoc(itemDocRef);
+
+        if (cancelled) return;
 
         if (docSnapshot.exists()) {
           setItemData(true);
@@ -62,7 +67,10 @@ const ListAddButton = ({
     setLoading(false);
 
     // Clean up the subscription when the component unmounts
-    return () => unsubscribe();
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, [itemId, itemType]);
 
   const handleClick = (event) => {
@@ -110,8 +118,8 @@ const ListAddButton = ({
           toast.success(`Added to list`, {
             style: {
               borderRadius: "10px",
-              background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-              color: `${isDarkMode ? "#333" : "#fff"}`,
+              background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+              color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
             },
           });
         } else {
@@ -121,8 +129,8 @@ const ListAddButton = ({
           toast.success(`Added to list`, {
             style: {
               borderRadius: "10px",
-              background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-              color: `${isDarkMode ? "#333" : "#fff"}`,
+              background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+              color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
             },
           });
         }
@@ -140,7 +148,7 @@ const ListAddButton = ({
             });
           });
           sessionStorage.setItem(
-            `${itemType === "anime" ? "animelistitems" : "mangalistitems"}`,
+            itemType === "anime" ? "animeListItems" : "mangaListItems",
             JSON.stringify(dataList)
           );
         } catch (error) {
@@ -155,8 +163,8 @@ const ListAddButton = ({
         toast.error(`Something went wrong!`, {
           style: {
             borderRadius: "10px",
-            background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-            color: `${isDarkMode ? "#333" : "#fff"}`,
+            background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+            color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
           },
         });
       }
@@ -190,8 +198,8 @@ const ListAddButton = ({
       toast.success(`Removed from lists.`, {
         style: {
           borderRadius: "10px",
-          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-          color: `${isDarkMode ? "#333" : "#fff"}`,
+          background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+          color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
         },
       });
 
@@ -207,7 +215,7 @@ const ListAddButton = ({
           });
         });
         sessionStorage.setItem(
-          `${itemType === "anime" ? "animelistitems" : "mangalistitems"}`,
+          itemType === "anime" ? "animeListItems" : "mangaListItems",
           JSON.stringify(dataList)
         );
       } catch (error) {
@@ -222,8 +230,8 @@ const ListAddButton = ({
       toast.error(`Something went wrong!`, {
         style: {
           borderRadius: "10px",
-          background: `${isDarkMode ? "#0dcaf0" : "#333"}`,
-          color: `${isDarkMode ? "#333" : "#fff"}`,
+          background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
+          color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
         },
       });
     }
@@ -249,16 +257,20 @@ const ListAddButton = ({
   return (
     <div>
       <Button
-        className="mb-4"
         id="basic-button"
         aria-controls={open ? "basic-menu" : undefined}
         aria-haspopup="true"
         aria-expanded={open ? "true" : undefined}
         onClick={handleClick}
         style={{
-          backgroundColor: `${isDarkMode ? "#0dcaf0" : "#212529"}`,
-          color: `${isDarkMode ? "black" : "#fff"}`,
+          backgroundColor: `${isDarkMode ? "var(--d-accent)" : "#212529"}`,
+          color: `${isDarkMode ? "var(--d-accent-ink)" : "#fff"}`,
           textTransform: "none",
+          // same pill shape as the other actions on the details page
+          minHeight: "36px",
+          padding: "0 16px",
+          borderRadius: "18px",
+          fontSize: "0.9rem",
         }}
       >
         {itemData ? (
@@ -286,7 +298,7 @@ const ListAddButton = ({
             onClick={handleListAdd}
             style={{
               backgroundColor: `${
-                activeList === "watching" ? "rgba(0, 0, 0, 0.04)" : "#FFF"
+                activeList === "watching" ? "rgba(127, 127, 127, 0.18)" : "transparent"
               }`,
             }}
           >
@@ -305,7 +317,7 @@ const ListAddButton = ({
             onClick={handleListAdd}
             style={{
               backgroundColor: `${
-                activeList === "reading" ? "rgba(0, 0, 0, 0.04)" : "#FFF"
+                activeList === "reading" ? "rgba(127, 127, 127, 0.18)" : "transparent"
               }`,
             }}
           >
@@ -325,7 +337,7 @@ const ListAddButton = ({
           onClick={handleListAdd}
           style={{
             backgroundColor: `${
-              activeList === "onhold" ? "rgba(0, 0, 0, 0.04)" : "#FFF"
+              activeList === "onhold" ? "rgba(127, 127, 127, 0.18)" : "transparent"
             }`,
           }}
         >
@@ -343,7 +355,7 @@ const ListAddButton = ({
           onClick={handleListAdd}
           style={{
             backgroundColor: `${
-              activeList === "planned" ? "rgba(0, 0, 0, 0.04)" : "#FFF"
+              activeList === "planned" ? "rgba(127, 127, 127, 0.18)" : "transparent"
             }`,
           }}
         >
@@ -361,7 +373,7 @@ const ListAddButton = ({
           onClick={handleListAdd}
           style={{
             backgroundColor: `${
-              activeList === "dropped" ? "rgba(0, 0, 0, 0.04)" : "#FFF"
+              activeList === "dropped" ? "rgba(127, 127, 127, 0.18)" : "transparent"
             }`,
           }}
         >
@@ -379,7 +391,7 @@ const ListAddButton = ({
           onClick={handleListAdd}
           style={{
             backgroundColor: `${
-              activeList === "completed" ? "rgba(0, 0, 0, 0.04)" : "#FFF"
+              activeList === "completed" ? "rgba(127, 127, 127, 0.18)" : "transparent"
             }`,
           }}
         >

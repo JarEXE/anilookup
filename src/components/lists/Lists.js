@@ -1,62 +1,58 @@
 import React from "react";
 import All from "./Watchlist";
 import AllManga from "./ReadingList";
+import useUrlParams from "../../hooks/useUrlParams";
+
+const sortLabels = {
+  default: "Default",
+  name: "Name (A-Z)",
+  released: "Released Date",
+};
+
+const listStatuses = [
+  "all",
+  "watching",
+  "reading",
+  "onhold",
+  "planned",
+  "dropped",
+  "completed",
+];
 
 const AnimeLists = ({ isDarkMode }) => {
-  const [listType, setListType] = React.useState("anime");
-  const [selectedOption, setSelectedOption] = React.useState("all");
-  const [sortBy, setSortBy] = React.useState("default");
-  const [sortText, setSortText] = React.useState("Default");
+  const [urlParams, updateUrlParams] = useUrlParams({
+    type: "anime",
+    status: "all",
+    sort: "default",
+  });
+  const listType = urlParams.type === "manga" ? "manga" : "anime";
+  const selectedOption = listStatuses.includes(urlParams.status)
+    ? urlParams.status
+    : "all";
+  const sortBy = sortLabels[urlParams.sort] ? urlParams.sort : "default";
+  const sortText = sortLabels[sortBy];
 
   const handleListType = (event) => {
-    if (event.target.id === "animelist") {
-      setListType("anime");
-    } else if (event.target.id === "mangalist") {
-      setListType("manga");
-    } else {
-      setListType("anime");
-    }
-
-    setSelectedOption("all");
-    setSortBy("default");
-    setSortText("Default");
+    // switching between anime and manga resets the status tab and sorting
+    updateUrlParams({
+      type: event.target.id === "mangalist" ? "manga" : "anime",
+      status: null,
+      sort: null,
+    });
   };
 
   const handleClick = (event) => {
-    console.log("clicked");
-    if (event.target.id === "all") {
-      setSelectedOption("all");
-    } else if (event.target.id === "watching") {
-      setSelectedOption("watching");
-    } else if (event.target.id === "reading") {
-      setSelectedOption("reading");
-    } else if (event.target.id === "onhold") {
-      setSelectedOption("onhold");
-    } else if (event.target.id === "planned") {
-      setSelectedOption("planned");
-    } else if (event.target.id === "dropped") {
-      setSelectedOption("dropped");
-    } else if (event.target.id === "completed") {
-      setSelectedOption("completed");
-    } else {
-      setSelectedOption("all");
-    }
+    updateUrlParams({
+      status: listStatuses.includes(event.target.id) ? event.target.id : null,
+    });
   };
 
   const handleSortChange = (event) => {
-    if (event.target.id === "default") {
-      setSortBy("default");
-      setSortText("Default");
-    } else if (event.target.id === "name") {
-      setSortBy("name");
-      setSortText("Name (A-Z)");
-    } else if (event.target.id === "released") {
-      setSortBy("released");
-      setSortText("Released Date");
-    } else {
-      setSortBy("default");
-      setSortText("Default");
-    }
+    // these are <a href="#/"> items - don't let them add a "#/" history entry
+    event.preventDefault();
+    updateUrlParams({
+      sort: sortLabels[event.target.id] ? event.target.id : null,
+    });
   };
   return (
     <div style={{ marginTop: "5%" }}>
@@ -73,7 +69,7 @@ const AnimeLists = ({ isDarkMode }) => {
             id="animelist"
             autoComplete="off"
             checked={listType === "anime"}
-            onClick={handleListType}
+            onChange={handleListType}
           />
           <label
             className={`${
@@ -91,7 +87,7 @@ const AnimeLists = ({ isDarkMode }) => {
             id="mangalist"
             autoComplete="off"
             checked={listType === "manga"}
-            onClick={handleListType}
+            onChange={handleListType}
           />
           <label
             className={`${
@@ -126,7 +122,7 @@ const AnimeLists = ({ isDarkMode }) => {
               id="all"
               autoComplete="off"
               checked={selectedOption === "all"}
-              onClick={handleClick}
+              onChange={handleClick}
             />
             <label
               className={`${
@@ -146,7 +142,7 @@ const AnimeLists = ({ isDarkMode }) => {
               checked={
                 selectedOption === "watching" || selectedOption === "reading"
               }
-              onClick={handleClick}
+              onChange={handleClick}
             />
             <label
               className={`${
@@ -164,7 +160,7 @@ const AnimeLists = ({ isDarkMode }) => {
               id="onhold"
               autoComplete="off"
               checked={selectedOption === "onhold"}
-              onClick={handleClick}
+              onChange={handleClick}
             />
             <label
               className={`${
@@ -183,7 +179,7 @@ const AnimeLists = ({ isDarkMode }) => {
               id="planned"
               autoComplete="off"
               checked={selectedOption === "planned"}
-              onClick={handleClick}
+              onChange={handleClick}
             />
             <label
               className={`${
@@ -202,7 +198,7 @@ const AnimeLists = ({ isDarkMode }) => {
               id="dropped"
               autoComplete="off"
               checked={selectedOption === "dropped"}
-              onClick={handleClick}
+              onChange={handleClick}
             />
             <label
               className={`${
@@ -220,7 +216,7 @@ const AnimeLists = ({ isDarkMode }) => {
               id="completed"
               autoComplete="off"
               checked={selectedOption === "completed"}
-              onClick={handleClick}
+              onChange={handleClick}
             />
             <label
               className={`${
