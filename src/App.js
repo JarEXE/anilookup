@@ -31,6 +31,7 @@ const Lists = lazy(() => import("./components/lists/Lists"));
 const ErrorPage = lazy(() => import("./components/ErrorPage"));
 const AnimeSearch = lazy(() => import("./components/anime/AnimeSearch"));
 const SearchResults = lazy(() => import("./components/search/SearchResults"));
+const Browse = lazy(() => import("./components/browse/Browse"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -177,6 +178,15 @@ function App() {
                 />
                 <Route path="/anime" element={<Navigate to="/" replace />} />
                 <Route
+                  path="/anime/browse"
+                  element={
+                    <div>
+                      <Browse key="anime" type="anime" allowNSFW={allowNSFW} />
+                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                    </div>
+                  }
+                />
+                <Route
                   path="/anime/search"
                   element={
                     <div>
@@ -213,6 +223,15 @@ function App() {
                         allowNSFW={allowNSFW}
                         user={user}
                       />
+                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                    </div>
+                  }
+                />
+                <Route
+                  path="/manga/browse"
+                  element={
+                    <div>
+                      <Browse key="manga" type="manga" allowNSFW={allowNSFW} />
                       <ScrollToBottomButton isDarkMode={isDarkMode} />
                     </div>
                   }

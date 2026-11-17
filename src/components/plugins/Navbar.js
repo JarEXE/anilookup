@@ -190,6 +190,17 @@ function Navbar({ onToggle, onDarkModeToggle, isDarkMode }) {
                 </div>
               </div>
             </li>
+            <li className="nav-item">
+              <Link
+                className="nav-link navbar-browse-link"
+                to={`/${navSearchType}/browse`}
+                aria-current={
+                  location.pathname === `/${navSearchType}/browse` ? "page" : undefined
+                }
+              >
+                Browse
+              </Link>
+            </li>
             <hr></hr>
             {user ? (
               // phones: the account menu's items, as plain links in the

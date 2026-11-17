@@ -5,7 +5,26 @@ export const SORT_OPTIONS = [
   { value: "relevance", label: "Best match", params: "" },
   { value: "score", label: "Highest rated", params: "&order_by=score&sort=desc" },
   { value: "newest", label: "Newest", params: "&order_by=start_date&sort=desc" },
+  { value: "oldest", label: "Oldest", params: "&order_by=start_date&sort=asc" },
+  { value: "favorites", label: "Most favorited", params: "&order_by=favorites&sort=desc" },
+  { value: "title", label: "Title (A–Z)", params: "&order_by=title&sort=asc" },
 ];
+
+export const STATUS_OPTIONS = {
+  anime: [
+    { value: "", label: "Any status" },
+    { value: "airing", label: "Airing now" },
+    { value: "complete", label: "Finished" },
+    { value: "upcoming", label: "Not yet aired" },
+  ],
+  manga: [
+    { value: "", label: "Any status" },
+    { value: "publishing", label: "Publishing" },
+    { value: "complete", label: "Finished" },
+    { value: "hiatus", label: "On hiatus" },
+    { value: "discontinued", label: "Discontinued" },
+  ],
+};
 
 export const TYPE_OPTIONS = {
   anime: [

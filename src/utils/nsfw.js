@@ -9,6 +9,12 @@
 const EXPLICIT_GENRE_IDS = [12, 49]; // Hentai, Erotica
 const EXPLICIT_GENRES = new Set(EXPLICIT_GENRE_IDS);
 
+// Is this genre id one that makes a title NSFW (Hentai, Erotica)? Ecchi is not.
+export const isNsfwGenre = (genreId) => EXPLICIT_GENRES.has(Number(genreId));
+
+// their names, for messages shown before the genre list has loaded
+export const NSFW_GENRE_NAMES = { 12: "Hentai", 49: "Erotica" };
+
 export function isNsfw(item, type) {
   if (!item) return false;
   const genres = [...(item.genres || []), ...(item.explicit_genres || [])];

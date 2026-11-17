@@ -3,15 +3,14 @@ import { Link } from "react-router-dom";
 import useApiResource from "../details/useApiResource";
 import { fullNumber } from "../details/format";
 import { SectionError } from "./LandingSection";
-
-const NSFW_GENRES = new Set([12, 49]); // Hentai, Erotica
+import { isNsfwGenre } from "../../utils/nsfw";
 const GENRE_COUNT = 12;
 
 // The biggest genres (by number of titles), each opening the genre search.
 export function GenreLinks({ type, allowNSFW }) {
   const { data, status, retry } = useApiResource(`/genres/${type}`);
   const genres = (data || [])
-    .filter((genre) => allowNSFW || !NSFW_GENRES.has(genre.mal_id))
+    .filter((genre) => allowNSFW || !isNsfwGenre(genre.mal_id))
     .sort((a, b) => b.count - a.count)
     .slice(0, GENRE_COUNT);
 
@@ -42,6 +41,9 @@ export function GenreLinks({ type, allowNSFW }) {
           ))}
         </ul>
       )}
+      <Link className="landing-side__more" to={`/${type}/browse`}>
+        All genres, themes and {type === "anime" ? "studios" : "magazines"}
+      </Link>
     </div>
   );
 }
@@ -86,6 +88,9 @@ export function MagazineLinks({ items, status }) {
           </li>
         ))}
       </ul>
+      <Link className="landing-side__more" to="/manga/browse#magazines">
+        All magazines
+      </Link>
     </div>
   );
 }

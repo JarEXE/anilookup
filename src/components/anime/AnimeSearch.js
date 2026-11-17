@@ -1,5 +1,4 @@
 import React from "react";
-import toast from "react-hot-toast";
 import useUrlParams from "../../hooks/useUrlParams";
 import useUserList from "../../hooks/useUserList";
 import useApiResource from "../details/useApiResource";
@@ -27,15 +26,6 @@ const TOP_OPTIONS = [
 ];
 
 function AnimeSearch({ isDarkMode, allowNSFW, user }) {
-  const notifyBadSearch = () =>
-    toast.error("Type a title to search.", {
-      style: {
-        borderRadius: "10px",
-        background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
-        color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
-      },
-    });
-
   const [{ top: selectedOption }, updateUrlParams] = useUrlParams({
     top: "airing",
   });
@@ -64,7 +54,6 @@ function AnimeSearch({ isDarkMode, allowNSFW, user }) {
         <SearchBox
           type="anime"
           variant="hero"
-          onEmptySubmit={notifyBadSearch}
         />
         <HeroFacts
           facts={[

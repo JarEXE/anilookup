@@ -46,7 +46,6 @@ function SearchBox({
   type: pageType,
   initialQuery = "",
   variant = "hero",
-  onEmptySubmit,
 }) {
   const navigate = useNavigate();
   const inputRef = React.useRef(null);
@@ -120,16 +119,12 @@ function SearchBox({
   };
 
   const submitSearch = () => {
-    if (!query.trim()) {
-      if (onEmptySubmit) onEmptySubmit();
-      inputRef.current && inputRef.current.focus();
-      return;
-    }
     setOpen(false);
     // closes the on-screen keyboard on phones
     inputRef.current && inputRef.current.blur();
     if (isNav) setQuery("");
-    navigate(resultsUrl(type, query));
+    // nothing typed: show everything there is to browse instead
+    navigate(query.trim() ? resultsUrl(type, query) : `/${type}/browse`);
   };
 
   const handleSubmit = (event) => {
