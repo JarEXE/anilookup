@@ -22,11 +22,12 @@ const STATUS = {
 
 // A cover with its title always visible underneath (no hover-only text, so it
 // works the same on touch screens). Optional extra lines go in `meta`, and
-// `listStatus` shows the user's list badge on the cover.
+// `listStatus` shows the user's list badge on the cover, `rank` a "#12"
+// badge in its corner.
 //
 // Must be rendered inside a <ul className="cover-grid"> or
 // <ul className="cover-row">.
-function CoverCard({ to, image, title, subtitle, meta, listStatus }) {
+function CoverCard({ to, image, title, subtitle, meta, listStatus, rank }) {
   const status = listStatus ? STATUS[listStatus] : null;
 
   return (
@@ -34,6 +35,11 @@ function CoverCard({ to, image, title, subtitle, meta, listStatus }) {
       <Link to={to} className="cover-card__link">
         <span className="cover-card__image">
           <img src={image} alt="" loading="lazy" width="225" height="320" />
+          {rank ? (
+            <span className="cover-card__rank">
+              <span className="visually-hidden">Rank </span>#{rank}
+            </span>
+          ) : null}
           {status ? (
             <span className="cover-card__badge" title={status.label}>
               <FontAwesomeIcon

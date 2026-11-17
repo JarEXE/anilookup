@@ -1,257 +1,184 @@
 import React from "react";
-import { sfwQuery, withoutNsfw } from "../../utils/nsfw";
-import StudioAnime from "../anime/StudioAnime.js";
-import toast from "react-hot-toast";
-import { API_URL, apiClient } from "../../config/api.js";
+import CoverCard from "../plugins/CoverCard";
 import LoadError from "../plugins/LoadError";
+import { API_URL, apiClient } from "../../config/api";
 import useUrlParams, { parsePage } from "../../hooks/useUrlParams";
+import { sfwQuery, withoutNsfw } from "../../utils/nsfw";
+import Pager from "../landing/Pager";
+import { CoverSkeletons } from "../landing/LandingSection";
 
-// What this studio did for the given anime. Later matches win, so the order of
-// precedence is Studio > Licensor > Producer (same as before).
-function studioRole(anime, studioName) {
-  let foundIn = null;
+const PER_PAGE = 24;
 
-  if ((anime.producers || []).some((item) => item.name === studioName)) {
-    foundIn = "Producer";
-  }
-  if ((anime.licensors || []).some((item) => item.name === studioName)) {
-    foundIn = "Licensor";
-  }
-  if ((anime.studios || []).some((item) => item.name === studioName)) {
-    foundIn = "Studio";
-  }
+export const TYPE_OPTIONS = [
+  { value: "all", label: "All", query: "" },
+  { value: "tv", label: "TV", query: "&type=tv" },
+  { value: "movie", label: "Movies", query: "&type=movie" },
+  { value: "ona", label: "ONA", query: "&type=ona" },
+  { value: "ova", label: "OVA", query: "&type=ova" },
+  { value: "other", label: "Specials", query: "&type=special" },
+];
 
-  return foundIn;
+export const SORT_OPTIONS = [
+  { value: "start_date", label: "Newest", query: "&order_by=start_date&sort=desc" },
+  { value: "members", label: "Most popular", query: "&order_by=members&sort=desc" },
+  { value: "score", label: "Highest rated", query: "&order_by=score&sort=desc" },
+  // was sorted descending (Z to A) before
+  { value: "title", label: "Title (A–Z)", query: "&order_by=title&sort=asc" },
+];
+
+// What this studio did for the given anime: animation studio, licensor or
+// producer (in that order of precedence).
+function studioRole(anime, studioId) {
+  const has = (list) => (list || []).some((item) => String(item.mal_id) === String(studioId));
+  if (has(anime.studios)) return "Studio";
+  if (has(anime.licensors)) return "Licensor";
+  if (has(anime.producers)) return "Producer";
+  return null;
 }
 
-const StudioWorks = ({
-  isDarkMode,
-  allowNSFW,
-  studioId,
-  studioName,
-  selectedOption,
-  sortBy,
-}) => {
-  // State to hold the key for re-rendering
-  const [key, setKey] = React.useState(0);
-  const [loading, setLoading] = React.useState(true);
-  const [pagination, setPagination] = React.useState({});
-  const [urlParams, updateUrlParams] = useUrlParams({ page: "1" });
-  const currentPage = parsePage(urlParams.page);
-  const setCurrentPage = (page) => {
-    const newPage = parseInt(page, 10);
-    if (Number.isInteger(newPage) && newPage > 0) {
-      updateUrlParams({ page: newPage });
-    }
-  };
-  const [inputValue, setInputValue] = React.useState(currentPage);
+// Every anime the studio is credited on, filterable by type and sortable,
+// with the same pager as the Top lists. All of it lives in the URL.
+function StudioWorks({ studioId, allowNSFW, isDarkMode }) {
+  const [params, updateUrlParams] = useUrlParams({ type: "all", sort: "start_date", page: "1" });
+  const typeOption = TYPE_OPTIONS.find((o) => o.value === params.type) || TYPE_OPTIONS[0];
+  const sortOption = SORT_OPTIONS.find((o) => o.value === params.sort) || SORT_OPTIONS[0];
+  const page = parsePage(params.page);
 
-  // keep the page input in sync when the page changes via back/forward
-  React.useEffect(() => {
-    setInputValue(currentPage);
-  }, [currentPage]);
-
-  const [animes, setItems] = React.useState([]);
-  const [loadError, setLoadError] = React.useState(false);
-  // bumped by the "Try again" button to re-run the fetch effect
+  const [state, setState] = React.useState({ items: [], pagination: null, status: "loading" });
   const [reloadKey, setReloadKey] = React.useState(0);
+  const sectionRef = React.useRef(null);
 
-  // Only data is stored here; the cards are rendered from it below. (Building
-  // the JSX inside this effect forced the theme into its dependencies, which
-  // re-fetched the API on every dark mode toggle.)
   React.useEffect(() => {
-    // ignore a response for a page/filter the user has already moved away from
     let cancelled = false;
-
-    setLoading(true);
-    setLoadError(false);
-    setKey((prevKey) => prevKey + 1);
-
+    setState((prev) => ({ ...prev, status: "loading" }));
     apiClient
       .get(
-        `${API_URL}/anime?producers=${studioId}${
-          selectedOption === "all"
-            ? ""
-            : selectedOption === "other"
-              ? `&type=special`
-              : `&type=${selectedOption}`
-        }&order_by=${sortBy}&sort=desc&page=${currentPage}${sfwQuery(allowNSFW)}`,
+        `${API_URL}/anime?producers=${studioId}${typeOption.query}${sortOption.query}` +
+          `&limit=${PER_PAGE}&page=${page}${sfwQuery(allowNSFW)}`,
       )
       .then((response) => {
         if (cancelled) return;
-        setPagination(response.data.pagination || {});
-        setItems(withoutNsfw(response.data.data, "anime", allowNSFW));
-        setLoading(false);
+        setState({
+          items: withoutNsfw(response.data.data, "anime", allowNSFW),
+          pagination: response.data.pagination || null,
+          status: "ready",
+        });
       })
       .catch((error) => {
         if (cancelled) return;
-        console.error("Error fetching API data:", error);
-        setLoading(false);
-        setLoadError(true);
+        console.error("Error loading studio works:", error);
+        setState({ items: [], pagination: null, status: "error" });
       });
-
     return () => {
       cancelled = true;
     };
-  }, [
-    allowNSFW,
-    currentPage,
-    studioId,
-    selectedOption,
-    sortBy,
-    reloadKey,
-  ]);
+  }, [studioId, typeOption.query, sortOption.query, page, allowNSFW, reloadKey]);
 
-  const notifyInvalidPage = () =>
-    toast(`Invalid page! Max is ${pagination.last_visible_page}`, {
-      icon: "⚠️",
-      style: {
-        borderRadius: "10px",
-        background: `${isDarkMode ? "var(--d-surface-2)" : "#333"}`,
-        color: `${isDarkMode ? "var(--d-ink)" : "#fff"}`,
-      },
-    });
-
-  const nextPage = () => {
-    if (pagination.has_next_page) {
-      setLoading(true);
-      const nextPage = currentPage + 1;
-      setInputValue(nextPage);
-      setCurrentPage(nextPage);
-    }
+  const goToPage = (target) => {
+    updateUrlParams({ page: target > 1 ? target : null });
+    if (sectionRef.current) sectionRef.current.scrollIntoView({ block: "start" });
   };
 
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setLoading(true);
-      const prevPage = currentPage - 1;
-      setInputValue(prevPage);
-      setCurrentPage(prevPage);
-    }
-  };
+  const total = state.pagination && state.pagination.items ? state.pagination.items.total : null;
+  const lastPage = (state.pagination && state.pagination.last_visible_page) || 1;
 
-  const handleInputChange = (event) => {
-    const value = parseInt(event.target.value, 10); // Parse the input value as an integer
-    setInputValue(value); // Update the input value state
-  };
-
-  const handleInputBlur = () => {
-    // When the input loses focus, update the currentPage state
-
-    if (inputValue > pagination.last_visible_page) {
-      notifyInvalidPage();
-      return;
-    } else {
-      setCurrentPage(inputValue);
-    }
-  };
-
-  const handleInputKeyPress = (event) => {
-    // Check if Enter key was pressed
-    if (event.key === "Enter") {
-      if (inputValue > pagination.last_visible_page) {
-        notifyInvalidPage();
-        return;
-      } else {
-        setCurrentPage(inputValue); // Update currentPage when Enter is pressed
-      }
-    }
-  };
-
-  const handleArrowClick = () => {
-    if (inputValue > pagination.last_visible_page) {
-      notifyInvalidPage();
-      return;
-    } else {
-      setCurrentPage(inputValue);
-    }
-  };
+  let body;
+  if (state.status === "error") {
+    body = (
+      <LoadError
+        isDarkMode={isDarkMode}
+        message="Couldn't load these works right now."
+        onRetry={() => setReloadKey((key) => key + 1)}
+      />
+    );
+  } else if (state.status === "loading") {
+    body = <CoverSkeletons count={12} className="cover-grid entity-works__grid" />;
+  } else if (!state.items.length) {
+    body = <p className="details-muted">No {typeOption.value === "all" ? "" : `${typeOption.label} `}works listed.</p>;
+  } else {
+    body = (
+      <>
+        <ul className="cover-grid entity-works__grid">
+          {state.items.map((anime) => {
+            const role = studioRole(anime, studioId);
+            const year = anime.aired && anime.aired.prop && anime.aired.prop.from && anime.aired.prop.from.year;
+            return (
+              <CoverCard
+                key={anime.mal_id}
+                to={`/anime/${anime.mal_id}`}
+                image={anime.images.jpg.large_image_url || anime.images.jpg.image_url}
+                title={anime.title}
+                subtitle={role && role !== "Studio" ? `As ${role.toLowerCase()}` : null}
+                meta={
+                  <>
+                    {typeof anime.score === "number" ? <span>★ {anime.score.toFixed(2)}</span> : null}
+                    {anime.type ? <span>{anime.type}</span> : null}
+                    {year ? <span>{year}</span> : null}
+                  </>
+                }
+              />
+            );
+          })}
+        </ul>
+        {lastPage > 1 ? (
+          <Pager
+            id="studio-page"
+            label="Studio works pages"
+            page={page}
+            lastPage={lastPage}
+            hasNext={Boolean(state.pagination && state.pagination.has_next_page)}
+            onPage={goToPage}
+          />
+        ) : null}
+      </>
+    );
+  }
 
   return (
-    <>
-      {loading ? (
-        <div className="loadContainer">
-          <span className="loader"></span>
+    <section className="entity-works" aria-labelledby="studio-works-heading" ref={sectionRef}>
+      <div className="entity-works__header">
+        <h2 className="details-heading" id="studio-works-heading">
+          All works
+        </h2>
+        {total !== null && state.status === "ready" ? (
+          <span className="details-muted entity-works__total">
+            {fullCount(total)} {total === 1 ? "title" : "titles"}
+          </span>
+        ) : null}
+      </div>
+      <div className="entity-works__bar">
+        <div className="landing-tabs" role="group" aria-label="Type">
+          {TYPE_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              className="landing-tabs__button"
+              aria-pressed={o.value === typeOption.value}
+              onClick={() => updateUrlParams({ type: o.value, page: null })}
+            >
+              {o.label}
+            </button>
+          ))}
         </div>
-      ) : loadError ? (
-        <LoadError
-          isDarkMode={isDarkMode}
-          message="Couldn't load this studio's works right now."
-          onRetry={() => setReloadKey((prevKey) => prevKey + 1)}
-        />
-      ) : (
-        // Render the component with a unique key to force re-render
-        <div>
-          <ul className="cover-grid" key={key}>
-            {animes.map((anime) => (
-              <StudioAnime
-                key={anime.mal_id}
-                img={anime.images.jpg.large_image_url}
-                title={anime.title}
-                isDarkMode={isDarkMode}
-                malid={anime.mal_id}
-                role={studioRole(anime, studioName)}
-                score={anime.score}
-                members={anime.members}
-              />
+        <label className="search-page__filter">
+          <span>Sort by</span>
+          <select
+            value={sortOption.value}
+            onChange={(event) => updateUrlParams({ sort: event.target.value, page: null })}
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
             ))}
-          </ul>
-          <div className="pagination">
-            <button
-              className={`btn btn-${
-                isDarkMode ? "info" : "dark"
-              } pagination-prev`}
-              onClick={prevPage}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </button>
-
-            <div className="row align-items-center pagination-container-full">
-              &nbsp;&nbsp;&nbsp;&nbsp;Page&nbsp;
-              <div className="col pagination-container">
-                <input
-                  className="pagination-input"
-                  value={inputValue}
-                  type="number"
-                  min={1}
-                  max={pagination.last_visible_page}
-                  onChange={handleInputChange}
-                  onBlur={handleInputBlur}
-                  onKeyDown={handleInputKeyPress}
-                />
-              </div>
-              <div
-                className="col-auto"
-                style={{ paddingLeft: "0", paddingRight: "0" }}
-              >
-                <button
-                  className={`btn btn-${
-                    isDarkMode ? "info" : "dark"
-                  } pagination-button`}
-                  onClick={handleArrowClick}
-                  aria-label="Go to Page"
-                >
-                  <span>&#8594;</span>
-                </button>
-              </div>
-              &nbsp;of {pagination.last_visible_page}&nbsp;&nbsp;&nbsp;&nbsp;
-            </div>
-
-            <button
-              className={`btn btn-${
-                isDarkMode ? "info" : "dark"
-              } pagination-next`}
-              onClick={nextPage}
-              disabled={!pagination.has_next_page}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-    </>
+          </select>
+        </label>
+      </div>
+      {body}
+    </section>
   );
-};
+}
+
+const fullCount = (n) => new Intl.NumberFormat("en").format(n);
 
 export default StudioWorks;

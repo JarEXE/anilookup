@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import LoadError from "../plugins/LoadError";
 import useApiResource from "./useApiResource";
 import { displayName } from "./format";
@@ -58,23 +59,20 @@ function CharactersTab({ details, type, isDarkMode }) {
                 className="character-card__image"
               />
               <div className="character-card__text">
-                <a
-                  href={character.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="character-card__name"
-                >
+                <Link to={`/character/${character.mal_id}`} className="character-card__name">
                   {displayName(character.name)}
-                  <span className="visually-hidden"> on MyAnimeList (opens in a new tab)</span>
-                </a>
+                </Link>
                 <span className={`character-card__role${role === "Main" ? " character-card__role--main" : ""}`}>
                   {role}
                 </span>
                 {japaneseVoice ? (
-                  <span className="character-card__voice">
+                  <Link
+                    to={`/author/${japaneseVoice.person.mal_id}`}
+                    className="character-card__voice"
+                  >
                     <span className="visually-hidden">Japanese voice: </span>
                     {displayName(japaneseVoice.person.name)}
-                  </span>
+                  </Link>
                 ) : null}
               </div>
             </li>

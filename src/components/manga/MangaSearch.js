@@ -1,11 +1,48 @@
 import React from "react";
+import toast from "react-hot-toast";
 import useUrlParams from "../../hooks/useUrlParams";
 import useUserList from "../../hooks/useUserList";
+import useApiResource from "../details/useApiResource";
+import { sfwQuery, withoutNsfw } from "../../utils/nsfw";
 import ListStats from "../stats/ListStats";
 import SearchBox from "../search/SearchBox";
-import TopManga from "./TopManga";
-import toast from "react-hot-toast";
-import ScrollContainer from "react-indiana-drag-scroll";
+import HeroFacts from "../landing/HeroFacts";
+import Spotlight from "../landing/Spotlight";
+import NewSeries from "../landing/NewSeries";
+import TopList from "../landing/TopList";
+import SignInPrompt from "../landing/SignInPrompt";
+import { GenreLinks, MagazineLinks } from "../landing/BrowseLinks";
+import { FanRecs } from "../landing/Discover";
+
+const TOP_OPTIONS = [
+  { value: "publishing", label: "Publishing", query: "filter=publishing" },
+  { value: "manga", label: "Manga", query: "type=manga" },
+  { value: "manhwa", label: "Manhwa", query: "type=manhwa" },
+  { value: "manhua", label: "Manhua", query: "type=manhua" },
+  { value: "novel", label: "Novels", query: "type=novel" },
+];
+const DOUJIN_OPTION = {
+  value: "doujin",
+  label: "Doujinshi",
+  query: "type=doujin",
+};
+
+const NEW_SERIES_LIMIT = 25;
+
+// series in `items` that started this calendar month (up to today)
+function startedThisMonth(items) {
+  const now = new Date();
+  return items.filter((item) => {
+    const from =
+      item.published && item.published.from && new Date(item.published.from);
+    return (
+      from &&
+      from <= now &&
+      from.getUTCFullYear() === now.getFullYear() &&
+      from.getUTCMonth() === now.getMonth()
+    );
+  }).length;
+}
 
 function MangaSearch({ isDarkMode, allowNSFW, user }) {
   const notifyBadSearch = () =>
@@ -21,18 +58,16 @@ function MangaSearch({ isDarkMode, allowNSFW, user }) {
   });
 
   // The signed-in user's manga list (Firestore), shared by the stats panel and
-  // the status badges on the Top cards.
+  // the status badges on the cards.
   const {
     items: listItems,
     status: listLoadStatus,
     reload: reloadList,
   } = useUserList("manga", user);
 
-  const topOptionAllowed =
-    (selectedOption === "doujin" && allowNSFW === true) ||
-    ["publishing", "manhwa", "manga", "novel", "manhua"].includes(
-      selectedOption,
-    );
+  // Doujinshi is only offered while NSFW content is on (as before)
+  const topOptions = allowNSFW ? [...TOP_OPTIONS, DOUJIN_OPTION] : TOP_OPTIONS;
+  const topOptionAllowed = topOptions.some((o) => o.value === selectedOption);
 
   React.useEffect(() => {
     if (!topOptionAllowed) {
@@ -41,184 +76,108 @@ function MangaSearch({ isDarkMode, allowNSFW, user }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topOptionAllowed]);
 
-  const handleRadioChange = (event) => {
-    // switching tabs starts back at page 1
-    updateUrlParams({ top: event.target.id, page: null });
-  };
+  // the 25 most-read series still publishing: the spotlight shows the top
+  // five, and their magazines make up "Browse by magazine"
+  const popular = useApiResource(
+    `/manga?status=publishing&order_by=members&sort=desc&limit=25${sfwQuery(allowNSFW)}`,
+  );
+  const fresh = useApiResource(
+    `/manga?status=publishing&order_by=start_date&sort=desc&limit=${NEW_SERIES_LIMIT}${sfwQuery(allowNSFW)}`,
+  );
+  const popularItems = withoutNsfw(popular.data, "manga", allowNSFW);
+  const freshItems = withoutNsfw(fresh.data, "manga", allowNSFW);
+  const newThisMonth =
+    fresh.status === "ready" ? startedThisMonth(freshItems) : null;
 
   return (
-    <div>
-      <div className="container text-center">
-        <div className="search-hero">
-          <h1 className="search-hero__title">Look up any manga</h1>
-          <SearchBox
-            type="manga"
-            variant="hero"
-            onEmptySubmit={notifyBadSearch}
-          />
-        </div>
-        {user ? (
-          <ListStats
-            type="manga"
-            items={listItems}
-            status={listLoadStatus}
-            onRetry={reloadList}
-          />
-        ) : null}
-        <hr className="separator"></hr>
-        <div className="container text-center mt-4">
-          <p className="lead">Top</p>
-        </div>
-
-        <ScrollContainer className="inputToggles">
-          <div className="inputToggleContainer">
-            <div
-              className="btn-group mb-4"
-              role="group"
-              aria-label="Basic radio toggle button group"
-            >
-              <input
-                type="radio"
-                className="btn-check"
-                name="btnradio"
-                id="publishing"
-                autoComplete="off"
-                checked={selectedOption === "publishing"}
-                onChange={handleRadioChange}
-              />
-              <label
-                className={`${
-                  isDarkMode ? "btn btn-outline-info" : "btn btn-outline-dark"
-                }`}
-                htmlFor="publishing"
-              >
-                Publishing
-              </label>
-
-              <input
-                type="radio"
-                className="btn-check"
-                name="btnradio"
-                id="manga"
-                autoComplete="off"
-                checked={selectedOption === "manga"}
-                onChange={handleRadioChange}
-              />
-              <label
-                className={`${
-                  isDarkMode ? "btn btn-outline-info" : "btn btn-outline-dark"
-                }`}
-                htmlFor="manga"
-              >
-                Manga
-              </label>
-
-              <input
-                type="radio"
-                className="btn-check"
-                name="btnradio"
-                id="manhwa"
-                autoComplete="off"
-                checked={selectedOption === "manhwa"}
-                onChange={handleRadioChange}
-              />
-              <label
-                className={`${
-                  isDarkMode ? "btn btn-outline-info" : "btn btn-outline-dark"
-                }`}
-                htmlFor="manhwa"
-              >
-                Manhwa
-              </label>
-
-              <input
-                type="radio"
-                className="btn-check"
-                name="btnradio"
-                id="manhua"
-                autoComplete="off"
-                checked={selectedOption === "manhua"}
-                onChange={handleRadioChange}
-              />
-              <label
-                className={`${
-                  isDarkMode ? "btn btn-outline-info" : "btn btn-outline-dark"
-                }`}
-                htmlFor="manhua"
-              >
-                Manhua
-              </label>
-
-              <input
-                type="radio"
-                className="btn-check"
-                name="btnradio"
-                id="novel"
-                autoComplete="off"
-                checked={selectedOption === "novel"}
-                onChange={handleRadioChange}
-              />
-              <label
-                className={`${
-                  isDarkMode ? "btn btn-outline-info" : "btn btn-outline-dark"
-                }`}
-                htmlFor="novel"
-              >
-                Novel
-              </label>
-
-              {allowNSFW ? (
-                <>
-                  <input
-                    type="radio"
-                    className="btn-check"
-                    name="btnradio"
-                    id="doujin"
-                    autoComplete="off"
-                    checked={selectedOption === "doujin"}
-                    onChange={handleRadioChange}
-                  />
-                  <label
-                    className={`${
-                      isDarkMode
-                        ? "btn btn-outline-info"
-                        : "btn btn-outline-dark"
-                    }`}
-                    htmlFor="doujin"
-                  >
-                    Doujinshi
-                  </label>
-                </>
-              ) : null}
-            </div>
-          </div>
-        </ScrollContainer>
+    <div className="landing">
+      <div className="search-hero landing-hero">
+        <h1 className="search-hero__title">Look up any manga</h1>
+        <SearchBox
+          type="manga"
+          variant="hero"
+          onEmptySubmit={notifyBadSearch}
+        />
+        <HeroFacts
+          facts={[
+            {
+              value:
+                popular.pagination && popular.pagination.items
+                  ? popular.pagination.items.total
+                  : null,
+              label: "still publishing",
+            },
+            {
+              value: newThisMonth,
+              // the list holds the newest 25, so a full list means "at least"
+              plus:
+                newThisMonth !== null &&
+                (fresh.data || []).length >= NEW_SERIES_LIMIT &&
+                newThisMonth === freshItems.length,
+              label: "new series this month",
+            },
+          ]}
+        />
       </div>
-      <div>
-        <div className="image-gallery">
-          {topOptionAllowed ? (
-            <TopManga
-              isDarkMode={isDarkMode}
-              allowNSFW={allowNSFW}
-              selectedOption={selectedOption}
-              listStatus={user ? listItems : null}
+
+      <Spotlight
+        id="popular-heading"
+        type="manga"
+        title="Popular right now"
+        kicker="#1 most read, still publishing"
+        items={popularItems}
+        status={popular.status}
+        onRetry={popular.retry}
+        listItems={user ? listItems : null}
+      />
+
+      <div className="landing-band">
+        <div className="landing-band__main">
+          <NewSeries
+            items={freshItems}
+            status={fresh.status}
+            onRetry={fresh.retry}
+          />
+        </div>
+        <aside className="landing-side" aria-label="Your list and magazines">
+          {user ? (
+            <ListStats
+              type="manga"
+              items={listItems}
+              status={listLoadStatus}
+              onRetry={reloadList}
+              compact
             />
-          ) : null}
+          ) : (
+            <SignInPrompt type="manga" />
+          )}
+          <MagazineLinks items={popularItems} status={popular.status} />
+        </aside>
+      </div>
+
+      {topOptionAllowed ? (
+        <TopList
+          type="manga"
+          title="Top manga"
+          options={topOptions}
+          selected={selectedOption}
+          onSelect={(value) => updateUrlParams({ top: value, page: null })}
+          allowNSFW={allowNSFW}
+          listItems={user ? listItems : null}
+          isDarkMode={isDarkMode}
+        />
+      ) : null}
+
+      <div className="landing-pair">
+        <FanRecs type="manga" allowNSFW={allowNSFW} />
+        <div className="landing-section landing-half">
+          <GenreLinks type="manga" allowNSFW={allowNSFW} />
         </div>
       </div>
-      <hr className="footer-separator"></hr>
-      <div className="text-center">
-        Powered by{" "}
-        <strong>
-          <a href="https://api.tenrai.org">Tenrai</a>
-        </strong>{" "}
-        <p>
-          Made by{" "}
-          <strong>
-            <a href="https://github.com/JarEXE">Jarome Eyken</a>
-          </strong>
-        </p>
-      </div>
+
+      <footer className="landing-footer">
+        Powered by <a href="https://api.tenrai.org">Tenrai</a>
+      </footer>
     </div>
   );
 }

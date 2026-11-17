@@ -6,24 +6,25 @@ import { API_URL, apiFetch } from "../../config/api";
 const cache = new Map();
 
 // Fetches `${API_URL}${path}` once `enabled` is true.
-// Returns { data, status: "idle" | "loading" | "ready" | "error", retry }.
+// Returns { data, pagination, status: "idle" | "loading" | "ready" | "error",
+// retry }.
 export default function useApiResource(path, enabled = true) {
   const [state, setState] = React.useState(() =>
     cache.has(path)
-      ? { data: cache.get(path), status: "ready" }
-      : { data: null, status: "idle" },
+      ? { ...cache.get(path), status: "ready" }
+      : { data: null, pagination: null, status: "idle" },
   );
   const [reloadKey, setReloadKey] = React.useState(0);
 
   React.useEffect(() => {
     if (!enabled || !path) return;
     if (cache.has(path)) {
-      setState({ data: cache.get(path), status: "ready" });
+      setState({ ...cache.get(path), status: "ready" });
       return;
     }
 
     let cancelled = false;
-    setState({ data: null, status: "loading" });
+    setState({ data: null, pagination: null, status: "loading" });
 
     apiFetch(`${API_URL}${path}`)
       .then((response) => {
@@ -31,13 +32,14 @@ export default function useApiResource(path, enabled = true) {
         return response.json();
       })
       .then((json) => {
-        cache.set(path, json.data);
-        if (!cancelled) setState({ data: json.data, status: "ready" });
+        const entry = { data: json.data, pagination: json.pagination || null };
+        cache.set(path, entry);
+        if (!cancelled) setState({ ...entry, status: "ready" });
       })
       .catch((error) => {
         if (cancelled) return;
         console.error(`Error loading ${path}:`, error);
-        setState({ data: null, status: "error" });
+        setState({ data: null, pagination: null, status: "error" });
       });
 
     return () => {

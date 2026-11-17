@@ -1,271 +1,176 @@
 import React from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import "react-circular-progressbar/dist/styles.css";
-import "../../../src/style.css";
-import Favicon from "../plugins/Favicon";
-import dateFormat from "dateformat";
-import Collapsible from "react-collapsible";
-import AuthorWorks from "./AuthorWorks";
-import AuthorMangaWorks from "./AuthorMangaWorks";
+import { useParams } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { API_URL, apiFetch } from "../../config/api";
-import useNotify from "../../hooks/useNotify";
-import { goBackOrHome } from "../../utils/navigation";
+import useTitleInfo from "../../hooks/useTitleInfo";
+import Favicon from "../plugins/Favicon";
+import LoadError from "../plugins/LoadError";
 import ErrorPage from "../ErrorPage";
+import EntityHeader from "../entity/EntityHeader";
+import AboutSection from "../entity/AboutSection";
+import { displayName, fullNumber } from "../details/format";
+import PersonWorks, { KnownFor, groupWorks, startYear } from "./PersonWorks";
 
-// Rendered at /author/:id
+const formatDate = (iso) =>
+  new Date(iso).toLocaleDateString("en", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+
+// Rendered at /author/:id. Any MyAnimeList person: manga authors, anime
+// staff and voice actors (whichever credits they have get a tab).
 function AuthorDetails({ isDarkMode, allowNSFW }) {
   const { id: authorId } = useParams();
-
-  const [loading, setLoading] = React.useState(false);
-  const [notFound, setNotFound] = React.useState(false);
-
-  const [authorDetails, setAuthorDetails] = React.useState({});
-  const authorName = (authorDetails && authorDetails.name) || "";
-  const [showAuthorAnime, setShowAuthorAnime] = React.useState(false);
-  const [showAuthorManga, setShowAuthorManga] = React.useState(false);
-
-  // stable across dark mode toggles, so it doesn't re-trigger the fetch effect
-  const notify = useNotify(isDarkMode);
-  const notifyRequestRate = () =>
-    notify("Too many requests! Please wait a moment then try again.");
-  const notifyError500 = () =>
-    notify(
-      "API error! The information for that author is currently missing or broken.",
-      { type: "error" },
-    );
-  const notifyErrorGeneral = () =>
-    notify(
-      "API error! Could not fetch requested data. Please try again later.",
-      { type: "error" },
-    );
-
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [person, setPerson] = React.useState(null);
+  const [status, setStatus] = React.useState("loading");
+  const [reloadKey, setReloadKey] = React.useState(0);
 
   React.useEffect(() => {
-    async function fetchAuthorData() {
+    let cancelled = false;
+    setStatus("loading");
+    (async () => {
       try {
-        setLoading(true);
-        // Fetch both details and relations data concurrently
-        const authorDetailsResponse = await apiFetch(
-          `${API_URL}/people/${authorId}/full`,
-        );
-
-        // ids now come from the URL, so they can be invalid
-        if (
-          authorDetailsResponse.status === 404 ||
-          authorDetailsResponse.status === 400
-        ) {
-          setLoading(false);
-          setNotFound(true);
+        // retries by itself while rate limited
+        const response = await apiFetch(`${API_URL}/people/${authorId}/full`);
+        if (cancelled) return;
+        if (response.status === 404 || response.status === 400) {
+          setStatus("notfound");
           return;
         }
-
-        // Check the response status before proceeding
-        if (authorDetailsResponse.status === 429) {
-          // Handle rate limiting error
-          console.error("Rate limiting error");
-          setLoading(false);
-          notifyRequestRate();
-          goBackOrHome(navigate, location);
-          return;
-        }
-
-        const authorDetailsData = await authorDetailsResponse.json();
-
-        // Check the response status before proceeding
-        if (authorDetailsData.status === 429) {
-          // Handle rate limiting error
-          console.error("Rate limiting error");
-          setLoading(false);
-          notifyRequestRate();
-          goBackOrHome(navigate, location);
-          return;
-        }
-
-        if (authorDetailsData.status === 500) {
-          console.error(`API error: ${authorDetailsResponse.error}`);
-          setLoading(false);
-          notifyError500();
-          goBackOrHome(navigate, location);
-          return;
-        }
-
-        setAuthorDetails(authorDetailsData.data);
-
-        setLoading(false);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        if (cancelled) return;
+        setPerson(json.data);
+        setStatus("ready");
       } catch (error) {
-        console.log(error);
-        setLoading(false);
-        notifyErrorGeneral();
-        goBackOrHome(navigate, location);
-        return;
+        if (cancelled) return;
+        console.error("Error loading person:", error);
+        setStatus("error");
       }
-    }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [authorId, reloadKey]);
 
-    fetchAuthorData();
-    // location is only used for the error fallback
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    authorId,
-    navigate,
-    notify,
-  ]);
+  const groups = React.useMemo(
+    () => (person ? groupWorks(person) : { manga: [], anime: [], voices: [] }),
+    [person],
+  );
+  const animeIds = React.useMemo(
+    () => [...new Set([...groups.anime, ...groups.voices].map((e) => e.id))],
+    [groups],
+  );
+  const mangaIds = React.useMemo(() => groups.manga.map((e) => e.id), [groups]);
+  const animeInfo = useTitleInfo("anime", animeIds);
+  const mangaInfo = useTitleInfo("manga", mangaIds);
 
-  const toggleAuthorAnime = () => {
-    setShowAuthorAnime(!showAuthorAnime);
-  };
+  const infoFor = (type, id) => (type === "anime" ? animeInfo.get(id) : mangaInfo.get(id));
+  const infoStatus =
+    animeInfo.status === "loading" || mangaInfo.status === "loading"
+      ? "loading"
+      : animeInfo.status === "error" || mangaInfo.status === "error"
+        ? "error"
+        : "ready";
 
-  const toggleAuthorManga = () => {
-    setShowAuthorManga(!showAuthorManga);
-  };
-
-  if (notFound) {
-    return <ErrorPage isDarkMode={isDarkMode} />;
+  if (status === "notfound") return <ErrorPage isDarkMode={isDarkMode} />;
+  if (status === "error") {
+    return (
+      <LoadError
+        isDarkMode={isDarkMode}
+        message="Couldn't load this person right now."
+        onRetry={() => setReloadKey((key) => key + 1)}
+        minHeight="80vh"
+      />
+    );
+  }
+  if (status !== "ready" || !person) {
+    return (
+      <div className="details-loading" role="status" aria-busy="true">
+        <span className="loader" />
+        <span className="visually-hidden">Loading…</span>
+      </div>
+    );
   }
 
+  const name = displayName(person.name);
+  const nativeName = [person.family_name, person.given_name].filter(Boolean).join(" ");
+  const otherNames = (person.alternate_names || []).slice(0, 3).join(", ");
+
+  // years of their first and latest credited work
+  const years = [...groups.manga, ...groups.anime, ...groups.voices]
+    .map((entry) => startYear(infoFor(entry.type, entry.id)))
+    .filter(Boolean);
+  const active =
+    years.length > 1
+      ? `${Math.min(...years)}–${Math.max(...years)}`
+      : years.length === 1
+        ? String(years[0])
+        : null;
+
   return (
-    <div className="row">
-      {/* check if details object contains data first otherwise there will be a race condition resulting in errors out the ass. That is to say, this will only run if details has been set fully */}
-      {authorDetails && Object.keys(authorDetails).length > 0 && !loading ? (
-        <>
-          <div className="col-md-12" style={{ marginBottom: "20px" }}>
-            <div
-              className={`${isDarkMode ? "pseudo-blur-dark" : "pseudo-blur"}`}
-            >
-              <img
-                id="thumbnail-img"
-                src={authorDetails.images.jpg.image_url}
-                alt="author cover"
-                className="thumbnail"
-              />
-              <div
-                className="fulldetails-container"
-                style={{ color: `${isDarkMode ? "var(--d-ink)" : "black"}` }}
-              >
-                <div className="details-container">
-                  <div className="text-container">
-                    {authorName.length < 11 ? (
-                      <h1 style={{ fontWeight: "normal" }}>{authorName}</h1>
-                    ) : (
-                      <h3 style={{ fontWeight: "normal" }}>{authorName}</h3>
-                    )}
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        color: "gray",
-                        marginTop: "-15px",
-                      }}
-                    >
-                      <br />
-                      <small>
-                        <i>Given Name: {authorDetails.given_name || "-"}</i>
-                      </small>
-                      <small>
-                        <i>Family Name: {authorDetails.family_name || "-"}</i>
-                      </small>
-                      <br />
-                    </div>
+    <article className="entity-page">
+      <EntityHeader
+        image={person.images && person.images.jpg && person.images.jpg.image_url}
+        title={name}
+        subtitle={
+          nativeName || otherNames ? (
+            <>
+              {nativeName}
+              {otherNames ? (
+                <span className="entity-head__aka">Also known as {otherNames}</span>
+              ) : null}
+            </>
+          ) : null
+        }
+        actions={
+          <>
+            {person.website_url ? (
+              <a className="details-action" href={person.website_url} target="_blank" rel="noreferrer">
+                <Favicon url={person.website_url} />
+                Website
+                <span className="visually-hidden"> (opens in a new tab)</span>
+              </a>
+            ) : null}
+            <a className="details-action" href={person.url} target="_blank" rel="noreferrer">
+              View on MAL
+              <FontAwesomeIcon icon={faArrowUpRightFromSquare} aria-hidden="true" />
+              <span className="visually-hidden"> (opens in a new tab)</span>
+            </a>
+          </>
+        }
+        facts={[
+          { label: "Birthday", value: person.birthday ? formatDate(person.birthday) : null },
+          { label: "Favorites", value: person.favorites ? fullNumber(person.favorites) : null },
+          { label: "Manga", value: groups.manga.length || null },
+          { label: groups.voices.length ? "Anime staff" : "Anime", value: groups.anime.length || null },
+          { label: "Voice roles", value: groups.voices.length || null },
+          { label: "Active", value: active },
+        ]}
+      />
 
-                    <p style={{ marginBottom: "1px", width: "auto" }}>
-                      <strong>
-                        {typeof authorDetails.birthday !== "undefined" &&
-                        authorDetails.birthday !== null
-                          ? `Birthday: ${dateFormat(
-                              authorDetails.birthday,
-                              "fullDate",
-                            )}`
-                          : `Birthday: ?`}
-                      </strong>
-                    </p>
-                  </div>
-                </div>
-                <div className="container-secondary">
-                  <div className="thumbnail-synopsis">
-                    {authorDetails.about || "No information available."}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div style={{ margin: "5px" }} className="well">
-              <h5>Website</h5>
-              {typeof authorDetails.website_url !== "undefined" &&
-              authorDetails.website_url !== null &&
-              authorDetails.website_url.length > 0 ? (
-                <>
-                  <Favicon url={authorDetails.website_url} />
-                  <a href={authorDetails.website_url}>
-                    {authorDetails.website_url}
-                  </a>
-                  <hr />
-                </>
-              ) : (
-                <div>
-                  No website available.
-                  <hr />
-                </div>
-              )}
-            </div>
-          </div>
-          <h5>Works by this author</h5>
-          {authorDetails.anime.length !== 0 ? (
-            <Collapsible
-              trigger={"Anime"}
-              onOpening={toggleAuthorAnime}
-              onClose={toggleAuthorAnime}
-            >
-              <div style={{ marginTop: "5%" }}>
-                <div className="image-gallery">
-                  {showAuthorAnime ? (
-                    <AuthorWorks
-                      isDarkMode={isDarkMode}
-                      authorId={authorId}
-                      allowNSFW={allowNSFW}
-                    />
-                  ) : null}
-                </div>
-              </div>
-            </Collapsible>
-          ) : null}
+      <AboutSection
+        id="about-heading"
+        text={person.about}
+        emptyText="No biography available."
+      />
 
-          {authorDetails.manga.length !== 0 ? (
-            <Collapsible
-              trigger={"Manga"}
-              onOpening={toggleAuthorManga}
-              onClose={toggleAuthorManga}
-            >
-              <div style={{ marginTop: "5%" }}>
-                <div className="image-gallery">
-                  {showAuthorManga ? (
-                    <AuthorMangaWorks
-                      isDarkMode={isDarkMode}
-                      authorId={authorId}
-                      authorName={authorName}
-                      allowNSFW={allowNSFW}
-                    />
-                  ) : null}
-                </div>
-              </div>
-            </Collapsible>
-          ) : null}
+      <KnownFor groups={groups} infoFor={infoFor} allowNSFW={allowNSFW} />
 
-        </>
+      {groups.manga.length || groups.anime.length || groups.voices.length ? (
+        <PersonWorks
+          groups={groups}
+          infoFor={infoFor}
+          infoStatus={infoStatus}
+          allowNSFW={allowNSFW}
+        />
       ) : (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: "80vh",
-          }}
-        >
-          <span className="loader"></span>
-        </div>
+        <p className="details-muted">No credited works listed.</p>
       )}
-    </div>
+    </article>
   );
 }
 

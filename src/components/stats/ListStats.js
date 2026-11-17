@@ -22,7 +22,7 @@ function readExpanded(type) {
 // Compact list summary for the landing pages: total, a segmented status bar
 // and one link per status into the Lists page. Everything else sits behind
 // "More stats" so the Top cards stay the focus of the page.
-function ListStats({ type, items, status, onRetry }) {
+function ListStats({ type, items, status, onRetry, compact = false }) {
   const [expanded, setExpanded] = React.useState(() => readExpanded(type));
   const statuses = getStatuses(type);
   const noun = type === "anime" ? "Anime" : "Manga";
@@ -169,7 +169,10 @@ function ListStats({ type, items, status, onRetry }) {
   }
 
   return (
-    <section className="list-stats" aria-labelledby={titleId}>
+    <section
+      className={`list-stats${compact ? " list-stats--compact" : ""}`}
+      aria-labelledby={titleId}
+    >
       <div className="list-stats__header">
         <h2 className="list-stats__title" id={titleId}>
           Your {noun} Stats

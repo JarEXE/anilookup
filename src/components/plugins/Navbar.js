@@ -1,27 +1,16 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { loginState } from "../../utils/authRedirect";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../../firebase";
 import Switch from "react-switch";
 import DarkModeToggle from "./DarkModeToggle";
 import toast, { Toaster } from "react-hot-toast";
 import SearchBox from "../search/SearchBox";
-import InfoIcon from "@mui/icons-material/Info";
-import ListIcon from "@mui/icons-material/ListRounded";
-import ExitIcon from "@mui/icons-material/ExitToApp";
-import ProfileIcon from "@mui/icons-material/Person2";
-import {
-  CircleMenu,
-  CircleMenuItem,
-  TooltipPlacement,
-} from "react-circular-menu";
+import AccountMenu from "./AccountMenu";
+import { listUrl } from "../stats/listStatuses";
 
-function Navbar({
-  onToggle,
-  onDarkModeToggle,
-  isDarkMode,
-  handleBackgroundBlur,
-}) {
+function Navbar({ onToggle, onDarkModeToggle, isDarkMode }) {
   const notifySafe = () =>
     toast.success("NSFW content disabled!", {
       style: {
@@ -43,8 +32,6 @@ function Navbar({
   // eslint-disable-next-line
   const [checked, setChecked] = React.useState(sfwStatus == 1 ? true : false);
   const [user, setUser] = React.useState(null);
-  const [closeMenu, setCloseMenu] = React.useState(true);
-  const [screenWidth, setScreenWidth] = React.useState(window.innerWidth);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -70,11 +57,6 @@ function Navbar({
       ? "manga"
       : "anime";
 
-  const withoutHashNavigation = (handler) => (event) => {
-    event.preventDefault();
-    handler();
-  };
-
   const handleChange = () => {
     if (checked) {
       setChecked(false);
@@ -89,49 +71,9 @@ function Navbar({
     }
   };
 
-  const handleMenuOpen = () => {
-    // menu is open
-    setCloseMenu(false);
-    handleBackgroundBlur(true);
-  };
-
-  const handleMenuClosed = async () => {
-    // menu is closed
-    setCloseMenu(true);
-    handleBackgroundBlur(false);
-  };
-
-  const loginRoute = () => {
-    navigate("/login");
-  };
-
-  const profileRoute = async () => {
-    // close the menu then redirect
-    await handleMenuClosed();
-    //navigate("/profile");
-
-    if (auth.currentUser !== null) {
-      navigate("/profile");
-    } else {
-      navigate("/login");
-    }
-  };
-
-  const listsRoute = async () => {
-    await handleMenuClosed();
-
-    if (auth.currentUser !== null) {
-      navigate("/lists");
-    } else {
-      navigate("/login");
-    }
-  };
-
   const handleLogout = async () => {
     await signOut(auth)
       .then(async () => {
-        // close the menu then redirect
-        await handleMenuClosed();
         // Sign-out successful.
         toast.success(`You have been logged out. Redirecting...`, {
           style: {
@@ -187,21 +129,6 @@ function Navbar({
     return () => unsubscribe();
   }, []);
 
-  React.useEffect(() => {
-    // Update screenWidth state when the window is resized
-    const handleResize = () => {
-      setScreenWidth(window.innerWidth);
-    };
-
-    // Add event listener for window resize
-    window.addEventListener("resize", handleResize);
-
-    // Remove event listener on component unmount
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []); // Empty dependency array ensures the effect runs once after the initial render
-
   return (
     <nav className="navbar navbar-expand-lg">
       <div className="container-fluid">
@@ -243,8 +170,8 @@ function Navbar({
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
               <div
-                className="toggle-container"
-                style={{ marginRight: "30px", marginTop: "8px" }}
+                className="toggle-container navbar-toggles"
+                style={{ marginRight: "30px" }}
               >
                 <div className="toggle-container">
                   <DarkModeToggle onDarkModeToggle={onDarkModeToggle} />
@@ -264,123 +191,65 @@ function Navbar({
               </div>
             </li>
             <hr></hr>
-            <>
-              {user && screenWidth < 992 ? (
-                <>
-                  <li className="nav-item">
-                    <Link
-                      className="nav-link"
-                      to={landingPagePath}
-                      style={{ color: `${isDarkMode ? "var(--d-ink)" : "#282828"}` }}
-                    >
-                      Home
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link"
-                      href="/profile"
-                      onClick={withoutHashNavigation(profileRoute)}
-                      style={{ color: `${isDarkMode ? "var(--d-ink)" : "#282828"}` }}
-                    >
-                      Profile
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link"
-                      href="/lists"
-                      onClick={withoutHashNavigation(listsRoute)}
-                      style={{ color: `${isDarkMode ? "var(--d-ink)" : "#282828"}` }}
-                    >
-                      Lists
-                    </a>
-                  </li>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link"
-                      href="#/"
-                      onClick={withoutHashNavigation(() =>
-                        alert("No info just yet :("),
-                      )}
-                      style={{ color: `${isDarkMode ? "var(--d-ink)" : "#282828"}` }}
-                    >
-                      Info
-                    </a>
-                  </li>
-                  <hr></hr>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link"
-                      href="#/"
-                      onClick={withoutHashNavigation(handleLogout)}
-                      style={{ color: `${isDarkMode ? "var(--d-ink)" : "#282828"}` }}
-                    >
-                      Logout
-                    </a>
-                  </li>
-                  <hr></hr>
-                </>
-              ) : null}
-            </>
+            {user ? (
+              // phones: the account menu's items, as plain links in the
+              // collapsed menu (desktop uses the avatar dropdown instead)
+              <>
+                <li className="nav-item d-lg-none">
+                  <Link className="nav-link navbar-account-link" to="/profile">
+                    Profile ({user.displayName})
+                  </Link>
+                </li>
+                <li className="nav-item d-lg-none">
+                  <Link
+                    className="nav-link navbar-account-link"
+                    to={listUrl("anime")}
+                  >
+                    Anime list
+                  </Link>
+                </li>
+                <li className="nav-item d-lg-none">
+                  <Link
+                    className="nav-link navbar-account-link"
+                    to={listUrl("manga")}
+                  >
+                    Manga list
+                  </Link>
+                </li>
+                {/* <li className="nav-item d-lg-none">
+                  <a className="nav-link navbar-account-link" href={ABOUT_URL} target="_blank" rel="noreferrer">
+                    About AniLookup
+                    <span className="visually-hidden"> (opens GitHub in a new tab)</span>
+                  </a>
+                </li> */}
+                <li className="nav-item d-lg-none">
+                  <button
+                    type="button"
+                    className="nav-link navbar-account-link"
+                    onClick={handleLogout}
+                  >
+                    Sign out
+                  </button>
+                </li>
+              </>
+            ) : null}
           </ul>
           <span className="navbar-text">
-            {user && screenWidth > 991 ? (
-              <div className="mobile-width">
-                <CircleMenu
-                  startAngle={180}
-                  rotationAngle={-120}
-                  itemSize={1}
-                  radius={5}
-                  open={closeMenu ? false : true}
-                  rotationAngleInclusive={false}
-                  onMenuToggle={(menuActive) =>
-                    menuActive === true ? handleMenuOpen() : handleMenuClosed()
-                  }
-                >
-                  <CircleMenuItem
-                    tooltip="Edit Profile"
-                    tooltipPlacement={TooltipPlacement.Left}
-                    onClick={() => profileRoute()}
-                  >
-                    <ProfileIcon />
-                  </CircleMenuItem>
-                  <CircleMenuItem
-                    onClick={() => listsRoute()}
-                    tooltip="Lists"
-                    tooltipPlacement={TooltipPlacement.Left}
-                  >
-                    <ListIcon />
-                  </CircleMenuItem>
-                  <CircleMenuItem
-                    onClick={() => handleLogout()}
-                    tooltip="Logout"
-                    tooltipPlacement={TooltipPlacement.Left}
-                  >
-                    <ExitIcon />
-                  </CircleMenuItem>
-                  <CircleMenuItem
-                    onClick={() => alert("https://github.com/JarEXE/anilookup")}
-                    tooltip="Info"
-                    tooltipPlacement={TooltipPlacement.Bottom}
-                  >
-                    <InfoIcon />
-                  </CircleMenuItem>
-                </CircleMenu>
-              </div>
+            {user ? (
+              <span className="navbar-account d-none d-lg-flex">
+                <Link className="navbar-lists-link" to={listUrl(navSearchType)}>
+                  My lists
+                </Link>
+                <AccountMenu user={user} onSignOut={handleLogout} />
+              </span>
             ) : !user ? (
-              <>
-                <button
-                  id="loginButton"
-                  className="btn btn-secondary"
-                  style={{ borderRadius: "25px" }}
-                  onClick={loginRoute}
-                >
-                  Login
-                </button>
-                <br />
-                <br />
-              </>
+              <Link
+                to="/login"
+                state={loginState(location)}
+                className="landing-button navbar-signin"
+              >
+                Sign in
+              </Link>
             ) : null}
           </span>
         </div>

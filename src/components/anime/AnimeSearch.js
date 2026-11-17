@@ -1,11 +1,30 @@
 import React from "react";
+import toast from "react-hot-toast";
 import useUrlParams from "../../hooks/useUrlParams";
 import useUserList from "../../hooks/useUserList";
+import useApiResource from "../details/useApiResource";
+import { sfwQuery, withoutNsfw } from "../../utils/nsfw";
 import ListStats from "../stats/ListStats";
 import SearchBox from "../search/SearchBox";
-import TopAnime from "./TopAnime";
-import toast from "react-hot-toast";
-import ScrollContainer from "react-indiana-drag-scroll";
+import HeroFacts from "../landing/HeroFacts";
+import Spotlight from "../landing/Spotlight";
+import AiringToday from "../landing/AiringToday";
+import TopList from "../landing/TopList";
+import SignInPrompt from "../landing/SignInPrompt";
+import { GenreLinks } from "../landing/BrowseLinks";
+import {
+  ComingSoon,
+  FanRecs,
+  TopCharacters,
+  upcomingPath,
+} from "../landing/Discover";
+
+const TOP_OPTIONS = [
+  { value: "airing", label: "Airing", query: "filter=airing" },
+  { value: "upcoming", label: "Upcoming", query: "filter=upcoming" },
+  { value: "series", label: "Series", query: "type=tv" },
+  { value: "movies", label: "Movies", query: "type=movie" },
+];
 
 function AnimeSearch({ isDarkMode, allowNSFW, user }) {
   const notifyBadSearch = () =>
@@ -27,138 +46,86 @@ function AnimeSearch({ isDarkMode, allowNSFW, user }) {
     reload: reloadList,
   } = useUserList("anime", user);
 
-  // Handler to update the selected radio button
-  const handleRadioChange = (event) => {
-    // switching tabs starts back at page 1
-    updateUrlParams({ top: event.target.id, page: null });
-  };
+  const season = useApiResource(
+    `/seasons/now?order_by=members&sort=desc&limit=10${sfwQuery(allowNSFW)}`,
+  );
+  // also feeds the "Coming soon" row further down (same request, cached)
+  const upcoming = useApiResource(upcomingPath(allowNSFW));
+
+  const total = (resource) =>
+    resource.pagination && resource.pagination.items
+      ? resource.pagination.items.total
+      : null;
 
   return (
-    <div>
-      <div className="container text-center">
-        <div className="search-hero">
-          <h1 className="search-hero__title">Look up any anime</h1>
-          <SearchBox
-            type="anime"
-            variant="hero"
-            onEmptySubmit={notifyBadSearch}
-          />
-        </div>
-        {user ? (
-          <ListStats
-            type="anime"
-            items={listItems}
-            status={listLoadStatus}
-            onRetry={reloadList}
-          />
-        ) : null}
-        <hr className="separator"></hr>
-        <div className="container text-center mt-4">
-          <p className="lead">Top</p>
-        </div>
-        <ScrollContainer className="inputToggles">
-          <div
-            className="btn-group mb-4"
-            role="group"
-            aria-label="Basic radio toggle button group"
-          >
-            <input
-              type="radio"
-              className="btn-check"
-              name="btnradio"
-              id="airing"
-              autoComplete="off"
-              checked={selectedOption === "airing"}
-              onChange={handleRadioChange}
-            />
-            <label
-              className={`${
-                isDarkMode ? "btn btn-outline-info" : "btn btn-outline-dark"
-              }`}
-              htmlFor="airing"
-            >
-              Airing
-            </label>
-
-            <input
-              type="radio"
-              className="btn-check"
-              name="btnradio"
-              id="upcoming"
-              autoComplete="off"
-              checked={selectedOption === "upcoming"}
-              onChange={handleRadioChange}
-            />
-            <label
-              className={`${
-                isDarkMode ? "btn btn-outline-info" : "btn btn-outline-dark"
-              }`}
-              htmlFor="upcoming"
-            >
-              Upcoming
-            </label>
-
-            <input
-              type="radio"
-              className="btn-check"
-              name="btnradio"
-              id="series"
-              autoComplete="off"
-              checked={selectedOption === "series"}
-              onChange={handleRadioChange}
-            />
-            <label
-              className={`${
-                isDarkMode ? "btn btn-outline-info" : "btn btn-outline-dark"
-              }`}
-              htmlFor="series"
-            >
-              Series
-            </label>
-
-            <input
-              type="radio"
-              className="btn-check"
-              name="btnradio"
-              id="movies"
-              autoComplete="off"
-              checked={selectedOption === "movies"}
-              onChange={handleRadioChange}
-            />
-            <label
-              className={`${
-                isDarkMode ? "btn btn-outline-info" : "btn btn-outline-dark"
-              }`}
-              htmlFor="movies"
-            >
-              Movies
-            </label>
-          </div>
-        </ScrollContainer>
+    <div className="landing">
+      <div className="search-hero landing-hero">
+        <h1 className="search-hero__title">Look up any anime</h1>
+        <SearchBox
+          type="anime"
+          variant="hero"
+          onEmptySubmit={notifyBadSearch}
+        />
+        <HeroFacts
+          facts={[
+            { value: total(season), label: "new this season" },
+            { value: total(upcoming), label: "announced" },
+          ]}
+        />
       </div>
-      <div>
-        <div className="image-gallery">
-          <TopAnime
-            isDarkMode={isDarkMode}
-            allowNSFW={allowNSFW}
-            selectedOption={selectedOption}
-            listStatus={user ? listItems : null}
-          />
+
+      <Spotlight
+        id="season-heading"
+        type="anime"
+        title="This season"
+        kicker="#1 this season"
+        items={withoutNsfw(season.data, "anime", allowNSFW)}
+        status={season.status}
+        onRetry={season.retry}
+        listItems={user ? listItems : null}
+      />
+
+      <div className="landing-band">
+        <div className="landing-band__main">
+          <AiringToday allowNSFW={allowNSFW} />
         </div>
+        <aside className="landing-side" aria-label="Your list and genres">
+          {user ? (
+            <ListStats
+              type="anime"
+              items={listItems}
+              status={listLoadStatus}
+              onRetry={reloadList}
+              compact
+            />
+          ) : (
+            <SignInPrompt type="anime" />
+          )}
+          <GenreLinks type="anime" allowNSFW={allowNSFW} />
+        </aside>
       </div>
-      <hr className="footer-separator"></hr>
-      <div className="text-center">
-        Powered by{" "}
-        <strong>
-          <a href="https://api.tenrai.org">Tenrai</a>
-        </strong>{" "}
-        <p>
-          Made by{" "}
-          <strong>
-            <a href="https://github.com/JarEXE">Jarome Eyken</a>
-          </strong>
-        </p>
+
+      <TopList
+        type="anime"
+        title="Top anime"
+        options={TOP_OPTIONS}
+        selected={selectedOption}
+        onSelect={(value) => updateUrlParams({ top: value, page: null })}
+        allowNSFW={allowNSFW}
+        listItems={user ? listItems : null}
+        isDarkMode={isDarkMode}
+      />
+
+      <ComingSoon allowNSFW={allowNSFW} />
+
+      <div className="landing-pair">
+        <FanRecs type="anime" allowNSFW={allowNSFW} />
+        <TopCharacters />
       </div>
+
+      <footer className="landing-footer">
+        Powered by <a href="https://api.tenrai.org">Tenrai</a>
+      </footer>
     </div>
   );
 }

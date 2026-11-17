@@ -123,6 +123,10 @@ function SearchResults({ type, isDarkMode, allowNSFW }) {
   const genreParam = searchParams.get("genre");
   const genreId = /^\d+$/.test(genreParam || "") ? genreParam : null;
   const genreName = useGenreName(type, genreId);
+  // magazine id (manga only), from "Browse by magazine" on the manga page
+  const magazineParam = searchParams.get("magazine");
+  const magazineId =
+    type === "manga" && /^\d+$/.test(magazineParam || "") ? magazineParam : null;
   const [urlParams, updateUrlParams] = useUrlParams({
     type: "",
     sort: "popular",
@@ -143,7 +147,7 @@ function SearchResults({ type, isDarkMode, allowNSFW }) {
   const [reloadKey, setReloadKey] = React.useState(0);
 
   React.useEffect(() => {
-    if (!searchQuery && !genreId) return;
+    if (!searchQuery && !genreId && !magazineId) return;
 
     // ignore results for a search/page the user already moved away from
     let cancelled = false;
@@ -154,6 +158,7 @@ function SearchResults({ type, isDarkMode, allowNSFW }) {
       .get(
         `${API_URL}/${type}?q=${encodeURIComponent(searchQuery)}` +
           `${genreId ? `&genres=${genreId}` : ""}` +
+          `${magazineId ? `&magazines=${magazineId}` : ""}` +
           `&page=${page}&limit=${PER_PAGE}${sort.params}` +
           `${typeFilter ? `&type=${typeFilter}` : ""}${sfwQuery(allowNSFW)}`,
       )
@@ -173,10 +178,28 @@ function SearchResults({ type, isDarkMode, allowNSFW }) {
     return () => {
       cancelled = true;
     };
-  }, [searchQuery, genreId, type, page, sort.params, typeFilter, allowNSFW, reloadKey]);
+  }, [searchQuery, genreId, magazineId, type, page, sort.params, typeFilter, allowNSFW, reloadKey]);
+
+  // The API has no magazine lookup, but every result names its magazines,
+  // so the name comes from there.
+  const magazineName = React.useMemo(() => {
+    if (!magazineId) return null;
+    for (const item of results) {
+      const match = (item.serializations || []).find(
+        (mag) => String(mag.mal_id) === magazineId,
+      );
+      if (match) return match.name;
+    }
+    return null;
+  }, [results, magazineId]);
+  const [lastMagazineName, setLastMagazineName] = React.useState(null);
+  React.useEffect(() => {
+    if (magazineName) setLastMagazineName(magazineName);
+  }, [magazineName]);
+  const shownMagazineName = magazineName || lastMagazineName;
 
   // nothing to search for - go to that section's home
-  if (!searchQuery && !genreId) {
+  if (!searchQuery && !genreId && !magazineId) {
     return <Navigate to={type === "manga" ? "/manga" : "/"} replace />;
   }
 
@@ -191,6 +214,16 @@ function SearchResults({ type, isDarkMode, allowNSFW }) {
     return `?${next.toString()}`;
   };
   const scrollToTop = () => window.scrollTo(0, 0);
+
+  // the same search minus one filter; with nothing left, the section's home
+  const withoutFilter = (param) => {
+    const next = new URLSearchParams(searchParams);
+    next.delete(param);
+    next.delete("page");
+    const remaining = ["q", "genre", "magazine"].some((key) => next.get(key));
+    if (!remaining) return type === "manga" ? "/manga" : "/";
+    return `/${type}/search?${next.toString()}`;
+  };
 
   let content;
   if (loading) {
@@ -210,6 +243,7 @@ function SearchResults({ type, isDarkMode, allowNSFW }) {
           No {type} found
           {searchQuery ? ` for “${searchQuery}”` : ""}
           {genreId && genreName ? ` in ${genreName}` : ""}
+          {magazineId && shownMagazineName ? ` from ${shownMagazineName}` : ""}
           {typeFilter
             ? ` with type ${typeOptions.find((o) => o.value === typeFilter).label}`
             : ""}
@@ -265,10 +299,10 @@ function SearchResults({ type, isDarkMode, allowNSFW }) {
 
       <div className="search-page__header">
         <h1 className="search-page__title">
-          {genreId
-            ? `${genreName || "Genre"} ${type}${
-                searchQuery ? ` matching “${searchQuery}”` : ""
-              }`
+          {genreId || magazineId
+            ? `${genreId ? `${genreName || "Genre"} ${type}` : "Manga"}${
+                magazineId ? ` from ${shownMagazineName || "this magazine"}` : ""
+              }${searchQuery ? ` matching “${searchQuery}”` : ""}`
             : `${type === "anime" ? "Anime" : "Manga"} results for “${searchQuery}”`}
         </h1>
         <p className="search-page__count" role="status">
@@ -282,23 +316,30 @@ function SearchResults({ type, isDarkMode, allowNSFW }) {
         </p>
       </div>
 
-      {genreId ? (
-        <div className="search-page__active-filters">
-          <Link
-            className="search-page__chip"
-            to={
-              searchQuery
-                ? `/${type}/search?q=${encodeURIComponent(searchQuery)}`
-                : type === "manga"
-                  ? "/manga"
-                  : "/"
-            }
-            aria-label={`Remove genre filter ${genreName || ""}`}
-          >
-            {genreName || "Genre"}
-            <FontAwesomeIcon icon={faXmark} aria-hidden="true" />
-          </Link>
-        </div>
+      {genreId || magazineId ? (
+        <ul className="search-page__active-filters" aria-label="Active filters">
+          {[
+            genreId && { param: "genre", kind: "genre", name: genreName || "Genre" },
+            magazineId && {
+              param: "magazine",
+              kind: "magazine",
+              name: shownMagazineName || "Magazine",
+            },
+          ]
+            .filter(Boolean)
+            .map((filter) => (
+              <li key={filter.param}>
+                <Link
+                  className="search-page__chip"
+                  to={withoutFilter(filter.param)}
+                  aria-label={`Remove ${filter.kind} filter ${filter.name}`}
+                >
+                  {filter.name}
+                  <FontAwesomeIcon icon={faXmark} aria-hidden="true" />
+                </Link>
+              </li>
+            ))}
+        </ul>
       ) : null}
 
       <div className="search-page__filters">

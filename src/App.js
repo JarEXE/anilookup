@@ -24,6 +24,9 @@ const MangaSearch = lazy(() => import("./components/manga/MangaSearch"));
 const Details = lazy(() => import("./components/Details"));
 const StudioDetails = lazy(() => import("./components/studios/StudioDetails"));
 const AuthorDetails = lazy(() => import("./components/authors/AuthorDetails"));
+const CharacterDetails = lazy(() =>
+  import("./components/characters/CharacterDetails"),
+);
 const Lists = lazy(() => import("./components/lists/Lists"));
 const ErrorPage = lazy(() => import("./components/ErrorPage"));
 const AnimeSearch = lazy(() => import("./components/anime/AnimeSearch"));
@@ -76,7 +79,6 @@ function App() {
       ? false
       : darkStatus,
   );
-  const [backgroundBlurred, setBackgroundBlurred] = React.useState(false);
   const [allowNSFW, setAllowNSFW] = React.useState(
     // eslint-disable-next-line
     sfwStatus == 1 ? true : false,
@@ -90,14 +92,6 @@ function App() {
     paddingTop: "0",
   };
 
-  const bodyStylingBlurred = {
-    maxWidth: "900px",
-    margin: "0 auto 20px auto",
-    padding: "20px",
-    filter: "blur(5px)",
-    marginTop: "0",
-    paddingTop: "0",
-  };
 
   const handleToggle = (input) => {
     setAllowNSFW(input);
@@ -107,9 +101,6 @@ function App() {
     setIsDarkMode(value);
   };
 
-  const handleBackgroundBlur = (value) => {
-    setBackgroundBlurred(value);
-  };
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -145,11 +136,10 @@ function App() {
             onToggle={handleToggle}
             onDarkModeToggle={handleDarkModeToggle}
             isDarkMode={isDarkMode}
-            handleBackgroundBlur={handleBackgroundBlur}
           />
           <div
             className="row"
-            style={backgroundBlurred ? bodyStylingBlurred : bodyStyling}
+            style={bodyStyling}
           >
             <Suspense
               fallback={
@@ -277,6 +267,18 @@ function App() {
                   element={
                     <RemountOnPathChange>
                       <StudioDetails
+                        isDarkMode={isDarkMode}
+                        allowNSFW={allowNSFW}
+                      />
+                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                    </RemountOnPathChange>
+                  }
+                />
+                <Route
+                  path="/character/:id"
+                  element={
+                    <RemountOnPathChange>
+                      <CharacterDetails
                         isDarkMode={isDarkMode}
                         allowNSFW={allowNSFW}
                       />

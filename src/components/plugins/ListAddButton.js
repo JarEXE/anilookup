@@ -15,7 +15,8 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { auth, db } from "../../firebase";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { goToLogin } from "../../utils/authRedirect";
 import toast from "react-hot-toast";
 
 const ListAddButton = ({
@@ -29,6 +30,7 @@ const ListAddButton = ({
   date,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = React.useState(true);
   const [itemData, setItemData] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -81,7 +83,10 @@ const ListAddButton = ({
     setAnchorEl(null);
   };
 
-  const handleListAdd = async (event) => {
+  const handleListAdd = (event) => addToList(event.currentTarget.id);
+
+  // `listKey` is the menu item's id: watching, completed, onhold, ...
+  const addToList = async (listKey) => {
     if (auth.currentUser !== null) {
       const itemDocRef = doc(
         db,
@@ -99,7 +104,7 @@ const ListAddButton = ({
       );
 
       const newData = {
-        currentList: event.target.id,
+        currentList: listKey,
         itemId: itemId,
         title: title,
         type: type,
@@ -114,7 +119,7 @@ const ListAddButton = ({
         if (docSnapshot.exists()) {
           await updateDoc(itemDocRef, newData);
           setItemData(true);
-          setActiveList(event.target.id);
+          setActiveList(listKey);
           toast.success(`Added to list`, {
             style: {
               borderRadius: "10px",
@@ -125,7 +130,7 @@ const ListAddButton = ({
         } else {
           await setDoc(itemDocRef, newData);
           setItemData(true);
-          setActiveList(event.target.id);
+          setActiveList(listKey);
           toast.success(`Added to list`, {
             style: {
               borderRadius: "10px",
@@ -169,11 +174,46 @@ const ListAddButton = ({
         });
       }
     } else {
-      navigate("/login");
+      // signed out: sign in first, then come straight back here and finish
+      // adding it to the list they picked
+      setAnchorEl(null);
+      goToLogin(navigate, location, {
+        intent: { action: "add-to-list", itemType, itemId, list: listKey },
+      });
+      return;
     }
 
     setAnchorEl(null);
   };
+
+  // Back from signing in with an add-to-list waiting for this title: finish
+  // it once, then drop it from the history entry so a reload or Back/Forward
+  // doesn't add it again.
+  const pendingIntent = location.state && location.state.intent;
+  const resumedIntent = React.useRef(false);
+  React.useEffect(() => {
+    if (
+      resumedIntent.current ||
+      !pendingIntent ||
+      pendingIntent.action !== "add-to-list" ||
+      pendingIntent.itemType !== itemType ||
+      pendingIntent.itemId !== itemId
+    ) {
+      return;
+    }
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user || resumedIntent.current) return;
+      resumedIntent.current = true;
+      navigate(`${location.pathname}${location.search}${location.hash}`, {
+        replace: true,
+        state: null,
+      });
+      addToList(pendingIntent.list);
+    });
+    return () => unsubscribe();
+    // addToList reads the latest props; this only reacts to a new intent
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingIntent, itemType, itemId]);
 
   const handleListRemove = async () => {
     const itemDocRef = doc(
