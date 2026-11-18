@@ -47,7 +47,10 @@ module.exports = function (app) {
 
         res.status(result.statusCode || 200);
         res.set({ "Content-Type": "application/json", ...result.headers });
-        res.send(result.body);
+        // binary responses (images) come base64-encoded, as Netlify expects
+        res.send(
+          result.isBase64Encoded ? Buffer.from(result.body, "base64") : result.body,
+        );
       } catch (error) {
         console.error(`[local function ${name}]`, error);
         res.status(500).json({ error: "Local function crashed" });

@@ -174,7 +174,7 @@ function Navbar({ onToggle, onDarkModeToggle, isDarkMode }) {
                 style={{ marginRight: "30px" }}
               >
                 <div className="toggle-container">
-                  <DarkModeToggle onDarkModeToggle={onDarkModeToggle} />
+                  <DarkModeToggle isDarkMode={isDarkMode} onDarkModeToggle={onDarkModeToggle} />
                 </div>
 
                 <div className="toggle-container">

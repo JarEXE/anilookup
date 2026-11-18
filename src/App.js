@@ -13,8 +13,7 @@ import { auth } from "./firebase";
 import LoadingOverlay from "react-loading-overlay-ts";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Navbar from "./components/plugins/Navbar";
-import ScrollToBottomButton from "./components/plugins/ScrollToBottomButton";
-import MangaChapterList from "./components/manga/MangaChapterList";
+import BackToTopButton from "./components/plugins/BackToTopButton";
 
 const Register = lazy(() => import("./components/auth/Register"));
 const Login = lazy(() => import("./components/auth/Login"));
@@ -32,6 +31,7 @@ const ErrorPage = lazy(() => import("./components/ErrorPage"));
 const AnimeSearch = lazy(() => import("./components/anime/AnimeSearch"));
 const SearchResults = lazy(() => import("./components/search/SearchResults"));
 const Browse = lazy(() => import("./components/browse/Browse"));
+const Reader = lazy(() => import("./components/reader/Reader"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -98,8 +98,15 @@ function App() {
     setAllowNSFW(input);
   };
 
+  // the one place dark mode changes (navbar switch, reader settings), so
+  // every switch shows the same state; remembered for the session
   const handleDarkModeToggle = (value) => {
     setIsDarkMode(value);
+    try {
+      sessionStorage.setItem("darkMode", JSON.stringify(value));
+    } catch (error) {
+      // just not remembered
+    }
   };
 
 
@@ -172,7 +179,7 @@ function App() {
                         allowNSFW={allowNSFW}
                         user={user}
                       />
-                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      <BackToTopButton isDarkMode={isDarkMode} />
                     </div>
                   }
                 />
@@ -182,7 +189,7 @@ function App() {
                   element={
                     <div>
                       <Browse key="anime" type="anime" allowNSFW={allowNSFW} />
-                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      <BackToTopButton isDarkMode={isDarkMode} />
                     </div>
                   }
                 />
@@ -195,7 +202,7 @@ function App() {
                         allowNSFW={allowNSFW}
                         isDarkMode={isDarkMode}
                       />
-                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      <BackToTopButton isDarkMode={isDarkMode} />
                     </div>
                   }
                 />
@@ -209,7 +216,7 @@ function App() {
                         allowNSFW={allowNSFW}
                         user={user}
                       />
-                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      <BackToTopButton isDarkMode={isDarkMode} />
                     </RemountOnPathChange>
                   }
                 />
@@ -223,7 +230,7 @@ function App() {
                         allowNSFW={allowNSFW}
                         user={user}
                       />
-                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      <BackToTopButton isDarkMode={isDarkMode} />
                     </div>
                   }
                 />
@@ -232,7 +239,7 @@ function App() {
                   element={
                     <div>
                       <Browse key="manga" type="manga" allowNSFW={allowNSFW} />
-                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      <BackToTopButton isDarkMode={isDarkMode} />
                     </div>
                   }
                 />
@@ -245,7 +252,7 @@ function App() {
                         allowNSFW={allowNSFW}
                         isDarkMode={isDarkMode}
                       />
-                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      <BackToTopButton isDarkMode={isDarkMode} />
                     </div>
                   }
                 />
@@ -259,7 +266,7 @@ function App() {
                         allowNSFW={allowNSFW}
                         user={user}
                       />
-                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      <BackToTopButton isDarkMode={isDarkMode} />
                     </RemountOnPathChange>
                   }
                 />
@@ -270,12 +277,12 @@ function App() {
                     path={path}
                     element={
                       <div>
-                        <MangaChapterList
+                        <Reader
                           isDarkMode={isDarkMode}
                           allowNSFW={allowNSFW}
-                          user={user}
+                          onDarkModeToggle={handleDarkModeToggle}
                         />
-                        <ScrollToBottomButton isDarkMode={isDarkMode} />
+                        <BackToTopButton isDarkMode={isDarkMode} />
                       </div>
                     }
                   />
@@ -289,7 +296,7 @@ function App() {
                         isDarkMode={isDarkMode}
                         allowNSFW={allowNSFW}
                       />
-                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      <BackToTopButton isDarkMode={isDarkMode} />
                     </RemountOnPathChange>
                   }
                 />
@@ -301,7 +308,7 @@ function App() {
                         isDarkMode={isDarkMode}
                         allowNSFW={allowNSFW}
                       />
-                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      <BackToTopButton isDarkMode={isDarkMode} />
                     </RemountOnPathChange>
                   }
                 />
@@ -313,7 +320,7 @@ function App() {
                         isDarkMode={isDarkMode}
                         allowNSFW={allowNSFW}
                       />
-                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      <BackToTopButton isDarkMode={isDarkMode} />
                     </RemountOnPathChange>
                   }
                 />
@@ -351,7 +358,7 @@ function App() {
                   element={
                     <div>
                       <Lists isDarkMode={isDarkMode} user={user} />
-                      <ScrollToBottomButton isDarkMode={isDarkMode} />
+                      <BackToTopButton isDarkMode={isDarkMode} />
                     </div>
                   }
                 />

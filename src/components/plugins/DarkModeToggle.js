@@ -1,26 +1,17 @@
 import React from "react";
 import Switch from "react-switch";
 
-function DarkModeToggle({ onDarkModeToggle }) {
-  const darkStatus = JSON.parse(sessionStorage.getItem("darkMode"));
-  // darkmode will be enabled by default for first time visits or first time users. subsequent toggles will remain upon refresh
-  const [isDarkMode, setIsDarkMode] = React.useState(
-    darkStatus == null || typeof darkStatus === "undefined" ? false : darkStatus
-  );
-
-  const toggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
-    onDarkModeToggle(!isDarkMode); // Notify the parent component
-    sessionStorage.setItem("darkMode", JSON.stringify(!isDarkMode));
-  };
-
+// The navbar's dark mode switch. It shows App's state (the reader's settings
+// can change it too) and App remembers the choice.
+function DarkModeToggle({ isDarkMode, onDarkModeToggle }) {
   return (
     <div className="dark-mode-toggle">
-      <span>{isDarkMode ? "☀️" : "🌙"}</span>
+      <span aria-hidden="true">{isDarkMode ? "☀️" : "🌙"}</span>
       <Switch
-        onChange={toggleDarkMode}
-        checked={isDarkMode}
+        onChange={() => onDarkModeToggle(!isDarkMode)}
+        checked={Boolean(isDarkMode)}
         className="react-switch"
+        aria-label="Dark mode"
         height={20}
         width={46}
       />

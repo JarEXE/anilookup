@@ -12,6 +12,7 @@ import { fetchKitsuCover } from "../utils/kitsu";
 import ErrorPage from "./ErrorPage";
 import NsfwRedirect from "./plugins/NsfwRedirect";
 import { isNsfw } from "../utils/nsfw";
+import { lookupManga } from "./reader/mangadex";
 import DetailsHeader from "./details/DetailsHeader";
 import DetailsTabs from "./details/DetailsTabs";
 import OverviewTab from "./details/OverviewTab";
@@ -20,8 +21,6 @@ import CharactersTab from "./details/CharactersTab";
 import EpisodesTab from "./details/EpisodesTab";
 import RelatedTab from "./details/RelatedTab";
 import Recommendations from "./details/Recommendations";
-
-const MANGADEX_URL = "https://api.mangadex.org";
 
 const tabsFor = (type) => [
   { key: "overview", label: "Overview" },
@@ -67,7 +66,8 @@ function Details({ isDarkMode, type, allowNSFW }) {
   const [loadError, setLoadError] = React.useState(false);
   const [reloadKey, setReloadKey] = React.useState(0);
   const [authorPositions, setAuthorPositions] = React.useState(null);
-  const [mangaDexId, setMangaDexId] = React.useState(null);
+  // MangaDex's entry for this manga ({ found, id, languages }), for "Read"
+  const [mangaDex, setMangaDex] = React.useState(null);
   const [checkingMangaDex, setCheckingMangaDex] = React.useState(false);
 
   const tabs = tabsFor(type);
@@ -132,17 +132,9 @@ function Details({ isDarkMode, type, allowNSFW }) {
     });
 
     setCheckingMangaDex(true);
-    fetch("/.netlify/functions/manga-proxy", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: MANGADEX_URL, title: details.title }),
-    })
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to fetch Manga ID");
-        return response.json();
-      })
-      .then((mangaId) => {
-        if (!cancelled) setMangaDexId(mangaId);
+    lookupManga(details)
+      .then((result) => {
+        if (!cancelled) setMangaDex(result);
       })
       .catch((error) => console.log("MangaDex lookup:", error))
       .finally(() => {
@@ -155,13 +147,7 @@ function Details({ isDarkMode, type, allowNSFW }) {
   }, [details, type, allowNSFW]);
 
   const openReader = () => {
-    navigate(`/manga/${id}/read`, {
-      state: {
-        mangaDexId,
-        title: details.title,
-        image: details.images.jpg.large_image_url,
-      },
-    });
+    navigate(`/manga/${id}/read`, { state: { mangaDex } });
   };
 
   if (notFound) {
@@ -212,12 +198,12 @@ function Details({ isDarkMode, type, allowNSFW }) {
         }
         date={dateFormat(new Date(), "isoDateTime")}
       />
-      {type === "manga" && (mangaDexId || checkingMangaDex) ? (
+      {type === "manga" && ((mangaDex && mangaDex.found) || checkingMangaDex) ? (
         <button
           type="button"
           className="details-action"
           onClick={openReader}
-          disabled={!mangaDexId}
+          disabled={!(mangaDex && mangaDex.found)}
           aria-busy={checkingMangaDex}
         >
           <FontAwesomeIcon icon={faBookOpen} aria-hidden="true" />
